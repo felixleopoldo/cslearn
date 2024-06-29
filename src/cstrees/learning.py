@@ -3,10 +3,12 @@ import random
 
 import numpy as np
 from tqdm import tqdm
-
+import pandas as pd
+import causaldag as cd
 import cstrees.cstree as ct
 import cstrees.stage as stl
 import cstrees.scoring as sc
+import networkx as nx
 
 
 def all_stagings(cards: list[int], level, max_cvars: int = 1, poss_cvars=None):
@@ -544,3 +546,30 @@ def causallearn_graph_to_posscvars(graph, labels, alg="pc"):
         for i, j in np.argwhere(graph["G"] == -1):
             poss_cvars[labels[j]].append(labels[i])
     return poss_cvars
+
+def causallearn_graph_to_dag(graph, labels, alg="pc"):
+    """ This function converts a graph estimated by causallearn to DAG adjacency matrix.
+    """
+    
+    adj = np.zeros((len(labels), len(labels)))
+    
+    if alg == "pc":
+        for i, j in graph.find_adj():
+            adj[j, i] = 1
+    if alg == "grasp":
+        for i, j in np.argwhere(graph.graph == -1):
+            adj[i, j] = 1
+    if alg == "ges":
+        for i, j in np.argwhere(graph["G"] == -1):
+            adj[i, j] = 1
+            
+    causaldag_graph = cd.PDAG.from_amat(adj)
+    # convert to DAG
+    dag = causaldag_graph.to_dag().to_nx()
+    dag.add_nodes_from(range(len(labels)))
+    adj = nx.to_numpy_array(dag)
+
+    # create a dataframe with the adjacency matrix and the labels
+    df = pd.DataFrame(adj, columns=labels, index=labels, dtype=int)        
+    
+    return df

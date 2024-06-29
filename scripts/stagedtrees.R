@@ -28,7 +28,7 @@ estimate_joint_distribution <- function(data) {
     df <- cbind(space, prob = prob, log_prob = log_prob)
 }
 
-estimate_joint_distribution3 <- function(data) {
+estimate_joint_distribution_tabu <- function(data) {
 
     cardinalities <- data[1, ]
 

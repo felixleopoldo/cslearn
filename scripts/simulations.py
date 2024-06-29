@@ -14,6 +14,10 @@ import matplotlib.pyplot as plt
 import causaldag as cd
 from pgmpy.models import BayesianNetwork
 import networkx as nx
+from causallearn.utils.PDAG2DAG import pdag2dag
+
+
+
 
 old_environ = dict(os.environ)
 os.environ.update({"TQDM_DISABLE": "1", "TQDM_ENABLE": "0", "NUMEXPR_MAX_THREADS": "8"})
@@ -196,6 +200,7 @@ def estimate_cstree_distr(
                 np.random.seed(seed)
                 random.seed(seed)
 
+                dag_path = f"{data_path}/dags/{name}"
                 if Path(f"{est_path}/est/{name}/").is_file():
                     continue
                 print(f"Estimating CStree for {data_path}/est/{name}...")
@@ -208,9 +213,10 @@ def estimate_cstree_distr(
                 print(f"Method: {method}")
                 if method == "grasp_cslearn":
                     print("Using GRaSP")
-                    graspgraph = grasp(data[1:].values)
-                    print("GRaSP done")
-                    print(graspgraph)
+                    graspgraph = grasp(data[1:].values)                                        
+                    
+                    dag_adjmat_df = ctl.causallearn_graph_to_dag(graspgraph, labels=data.columns, alg="grasp")
+                    
                     poss_cvars = ctl.causallearn_graph_to_posscvars(
                         graspgraph, labels=data.columns, alg="grasp"
                     )
@@ -218,6 +224,10 @@ def estimate_cstree_distr(
                     pcgraph = pc(
                         data[1:].values, 0.05, "chisq", node_names=data.columns
                     )
+                    
+                   
+                    dag_adjmat_df = ctl.causallearn_graph_to_dag(pcgraph, labels=data.columns, alg="pc")
+                    
                     poss_cvars = ctl.causallearn_graph_to_posscvars(
                         pcgraph, labels=data.columns, alg="pc"
                     )
@@ -340,6 +350,8 @@ if __name__ == "__main__":
         samp_size_range,
         num_levels_range,
     )
+
+
 
     print("Estimating PC distributions")
     estimate_pc_distr(
@@ -594,10 +606,9 @@ if __name__ == "__main__":
     fig.savefig(f"fig_2c_kl.png")
     plt.clf()
 
-
     ############# Time taken results ###############
     print("Time taken results:")
-    
+
     # Figure 3 in paper (Three plots (3a) and (3b)):
 
     # Plot (3a): comparison of runtimes (total times only) for all algorithms on small graphs with multiple sample sizes:
@@ -612,9 +623,9 @@ if __name__ == "__main__":
     #  - bos (stagedtrees) with n = 250
     #  - bos (stagedtrees) with n = 1000
     #  - GrASP + bhc (stagedtrees) with n = 250
-    #  - GrASP + bhc (stagedtrees) with n = 1000    
-    
-   # Create a column of the form "method for n=10000" for each method, to be used as hue in the plot
+    #  - GrASP + bhc (stagedtrees) with n = 1000
+
+    # Create a column of the form "method for n=10000" for each method, to be used as hue in the plot
     df_time_plot_3a = df_time
     df_time_plot_3a["method_n"] = (
         df_time_plot_3a["method"]
@@ -653,10 +664,7 @@ if __name__ == "__main__":
     sns_plot.set_title(f"Timings based on {len(seeds)} seeds")
     fig = sns_plot.get_figure()
     fig.savefig(f"fig_3a_kl.png")
-    plt.clf()    
-
-
-
+    plt.clf()
 
     # Plot (3b): comparison of performance of scalable methods (total times only... I don't think there is much benefit to including the phase breakdown... text me if you want to discuss it):
 
@@ -709,5 +717,4 @@ if __name__ == "__main__":
     sns_plot.set_title(f"Timings based on {len(seeds)} seeds")
     fig = sns_plot.get_figure()
     fig.savefig(f"fig_3b_kl.png")
-    plt.clf()    
-
+    plt.clf()
