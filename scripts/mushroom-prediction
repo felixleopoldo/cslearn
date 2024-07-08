@@ -109,40 +109,40 @@ conf_mat = confusion_matrix(true, prediction)
 # plot LDAG
 ldag = opt_tree.to_LDAG()
 
-strs = (letter for letter in ascii_letters)
-legend_dict = {}
-for pa, ch, attr in ldag.edges(data=True):
-    if "label" not in attr:
-        continue
-    new_label = next(strs)
-    legend_dict[new_label] = attr["label"]
-    attr["label"] = new_label
+# strs = (letter for letter in ascii_letters)
+# legend_dict = {}
+# for pa, ch, attr in ldag.edges(data=True):
+#     if "label" not in attr:
+#         continue
+#     new_label = next(strs)
+#     legend_dict[new_label] = attr["label"]
+#     attr["label"] = new_label
 
-pos = nx.nx_agraph.graphviz_layout(ldag, prog="dot")
-nx.draw_networkx(
-    ldag,
-    pos=pos,
-    with_labels=True,
-)
-edge_labels = nx.get_edge_attributes(ldag, "label")
-nx.draw_networkx_edge_labels(ldag, pos, edge_labels=edge_labels)
+# pos = nx.nx_agraph.graphviz_layout(ldag, prog="dot")
+# nx.draw_networkx(
+#     ldag,
+#     pos=pos,
+#     with_labels=True,
+# )
+# edge_labels = nx.get_edge_attributes(ldag, "label")
+# nx.draw_networkx_edge_labels(ldag, pos, edge_labels=edge_labels)
 
-tikz_opts = "[scale=2]"
-caption = "LDAG of the CStree learned for the Mushroom data."
-latex_label = "fig:mushrooms-ldag"
-nx.write_latex(
-    ldag,
-    "ldag.tex",
-    edge_label=edge_labels,
-    pos=pos,
-    as_document=False,
-    tikz_options=tikz_opts,
-    caption=caption,
-    latex_label=latex_label,
-)
+# tikz_opts = "[scale=2]"
+# caption = "LDAG of the CStree learned for the Mushroom data."
+# latex_label = "fig:mushrooms-ldag"
+# nx.write_latex(
+#     ldag,
+#     "ldag.tex",
+#     edge_label=edge_labels,
+#     pos=pos,
+#     as_document=False,
+#     tikz_options=tikz_opts,
+#     caption=caption,
+#     latex_label=latex_label,
+# )
 
 agraph, legend = ldag.plot_graphviz(with_legend=True)
-agraph.draw("mushroom-ldag.pdf", prog="dot", args="-Nheight=2")
+agraph.draw("mushroom-ldag.pdf", prog="dot", args="-Grankdir='LR'")
 # , args="-Gratio=fill -Gsize=6 -Gfontsize=20")
 # args="-Grankdir='LR'"
 # )
