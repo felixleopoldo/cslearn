@@ -21,4 +21,4 @@ cstree.sample_stage_parameters(alpha=2)
 cstree_df = cstree.to_df(write_probs=True)
 
 # output
-cstree_df.to_csv(snakemake.output[0])
+cstree_df.to_csv(snakemake.output[0], index=False)
