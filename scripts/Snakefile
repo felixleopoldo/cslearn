@@ -4,14 +4,14 @@ rule all:
     input:
         "results/kl_divergence.png"
 
-rule generate_cstree:
+rule generate_cstree:           # tested
     # Calculate KL divergence between two distribution
     output:
         "cstrees/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/cstree.csv"
     script:
         "snake_scripts/generate_cstree.py"
 
-rule simulate_data:
+rule simulate_data:             # tested
     # Simulate data from a distribution
     input:
         rules.generate_cstree.output
@@ -24,29 +24,31 @@ rule estimate_cstree:
     # Estimate a distribution from data
     input:
         data=rules.simulate_data.output,
-        dag="some dag" if not "{input_dag}" is None else []
+        poss_cvars="some dag" if not "{input_dag}" is None else []
     output:
         cstree="cslearn_cstree/p={p}/input_dag={input_dag}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/" + rules.simulate_data.output[0] + "/cstree.csv"
     script:
         "snake_scripts/estimate_cstree.py"
 
-rule estimate_grasp:
-    # Estimate a distribution from data
+rule estimate_grasp:            # tested
+    # Use GRaSP to learn CPDAG from which poss_cvars and a Markov equiv DAG are selected
     input:
         rules.simulate_data.output
     output:
-        grasp="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
-               "grasp/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv"
+        grasp_dag="sim_results/distr/est/p={p}_n={n}_seed={seed}/grasp/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/dag.csv",
+        grasp_cvars="sim_results/distr/est/p={p}_n={n}_seed={seed}/grasp/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/poss_cvars.json"
     script:
         "snake_scripts/estimate_grasp.py"
 
 rule estimate_pc:
-    # Estimate a distribution from data
+    # Use PC to learn CPDAG from which poss_cvars and a Markov equiv DAG are selected
     input:
         rules.simulate_data.output
     output:
-        pc="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
-           "pc/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv"
+        pc_dag="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
+           "pc/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/dag.csv",
+        pc_cvars="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
+           "pc/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/poss_cvars.json"
     script:
         "snake_scripts/estimate_pc.py"
 
