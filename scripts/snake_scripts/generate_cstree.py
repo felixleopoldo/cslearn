@@ -4,11 +4,11 @@ from numpy import random as nprandom
 
 from cstrees import cstree as ct
 
-# input from snakemake somehow?
-p = p
-max_cvar = max_cvar
-prob_cvar = prob_cvar
-seed = seed
+# input
+p = int(snakemake.wildcards["p"])
+max_cvar = int(snakemake.wildcards["max_cvar"])
+prob_cvar = float(snakemake.wildcards["prob_cvar"])
+seed = int(snakemake.wildcards["seed"])
 
 # generate cstree
 nprandom.seed(seed)
@@ -20,6 +20,5 @@ cstree = ct.sample_cstree(
 cstree.sample_stage_parameters(alpha=2)
 cstree_df = cstree.to_df(write_probs=True)
 
-# save csv and output path with snakemake somehow?
-path = f"cstrees/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/cstree.csv"
-cstree_df.to_csv(path)
+# output
+cstree_df.to_csv(snakemake.output[0])

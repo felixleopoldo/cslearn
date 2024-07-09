@@ -6,72 +6,72 @@ rule all:
 
 rule generate_cstree:
     # Calculate KL divergence between two distribution
-    output: 
+    output:
         "cstrees/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/cstree.csv"
-    script: 
-        "scripts/generate_cstree.py"
-    
+    script:
+        "snake_scripts/generate_cstree.py"
+
 rule simulate_data:
     # Simulate data from a distribution
-    input: 
+    input:
         rules.generate_cstree.output
-    output: 
-        "data/n={n}/seed={seed}/" + rules.generate_cstree.output + "/data.csv"
-    script: 
-        "scripts/simulate_data.py"
+    output:
+        "data/n={n}/seed={seed}/" + rules.generate_cstree.output[0] + "/data.csv"
+    script:
+        "snake_scripts/simulate_data.py"
 
 rule estimate_cstree:
     # Estimate a distribution from data
-    input: 
+    input:
         data=rules.simulate_data.output,
         dag="some dag" if not "{input_dag}" is None else []
-    output: 
-        cstree="cslearn_cstree/p={p}/input_dag={input_dag}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/" + rules.simulate_data.output + "/cstree.csv"
-    script: 
-        "scripts/estimate_cstree.py"
+    output:
+        cstree="cslearn_cstree/p={p}/input_dag={input_dag}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/" + rules.simulate_data.output[0] + "/cstree.csv"
+    script:
+        "snake_scripts/estimate_cstree.py"
 
 rule estimate_grasp:
     # Estimate a distribution from data
-    input: 
+    input:
         rules.simulate_data.output
-    output: 
+    output:
         grasp="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
                "grasp/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv"
-    script: 
-        "scripts/estimate_grasp.py"
+    script:
+        "snake_scripts/estimate_grasp.py"
 
 rule estimate_pc:
     # Estimate a distribution from data
-    input: 
+    input:
         rules.simulate_data.output
-    output: 
+    output:
         pc="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
            "pc/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv"
-    script: 
-        "scripts/estimate_pc.py"
+    script:
+        "snake_scripts/estimate_pc.py"
 
 rule joint_dag_distribution:
     # Estimate a distribution from data
-    input: 
+    input:
         rules.simulate_data.output
-    output: 
+    output:
         joint_dag="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
                   "joint_dag/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv"
-    script: 
-        "scripts/joint_dag.py"
+    script:
+        "snake_scripts/joint_dag.py"
 
 rule joint_cstree_distrubtion:
     # Estimate a distribution from data
-    input: 
+    input:
         data=rules.simulate_data.output
-    output: 
+    output:
         joint_cstree="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
                      "joint_cstree/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv"
-    script: 
-        "scripts/joint_cstree.py"
+    script:
+        "snake_scripts/joint_cstree.py"
 
 
-rule: kl_plots
+rule kl_plots:
     input: "data/kl_divergence.csv"
     output: "results/kl_divergence.png"
     shell: "Rscript scripts/kl_divergence.R"
