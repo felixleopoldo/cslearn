@@ -922,9 +922,17 @@ class CStree:
             prediction = max(outcomes, key=_prob_of_outcome)
             return prediction
 
-    def fit(self, data: pd.DataFrame, gibbs_samples=5000, poss_cvars=None, 
-            pc_alpha=0.05, pc_method="gsq", max_cvars=2, 
-            alpha_tot=1.0, method="BDeu"):
+    def fit(
+        self,
+        data: pd.DataFrame,
+        gibbs_samples=5000,
+        poss_cvars=None,
+        pc_alpha=0.05,
+        pc_method="gsq",
+        max_cvars=2,
+        alpha_tot=1.0,
+        method="BDeu",
+    ):
         """High-level wrapper combining model selection and parameter estimation."""
         import cstrees.scoring as sc
         import cstrees.learning as ctl
@@ -932,13 +940,17 @@ class CStree:
         if poss_cvars is None:
             # estimate possible context variables and create score tables
             graph = pc(data.values, pc_alpha, pc_method, node_names=data.columns)
-            poss_cvars = ctl.causallearn_graph_to_posscvars(graph, 
-                                                            labels=data.columns,
-                                                            
-                                                            )
+            poss_cvars = ctl.causallearn_graph_to_posscvars(
+                graph,
+                labels=data.columns,
+            )
 
         score_table, context_scores, _ = sc.order_score_tables(
-            data, max_cvars=max_cvars, alpha_tot=alpha_tot, method=method , poss_cvars=poss_cvars
+            data,
+            max_cvars=max_cvars,
+            alpha_tot=alpha_tot,
+            method=method,
+            poss_cvars=poss_cvars,
         )
 
         # run Gibbs sampler to get MAP order
@@ -991,7 +1003,6 @@ class CStree:
 
         return LDAG
 
-
     def pmf(self, x, label_order=None):
         """Calculate the probability mass function of a given outcome.
 
@@ -1003,17 +1014,17 @@ class CStree:
         """
         if label_order is None:
             label_order = self.labels
-        
-        #print(label_order)
+
+        # print(label_order)
         x = [x[label_order.index(l)] for l in self.labels]
-        #print(x)
-        
+        # print(x)
+
         prob = 1
         for i, val in enumerate(x):
-            stage = self.get_stage(x[: i ])
-            #print(x[: i ])
-            #print(val)
-            #print(stage.probs[val])
+            stage = self.get_stage(x[:i])
+            # print(x[: i ])
+            # print(val)
+            # print(stage.probs[val])
             prob *= stage.probs[val]
 
         return prob
@@ -1032,11 +1043,11 @@ class CStree:
 
         # relabel the outcome
         x = [x[label_order.index(l)] for l in self.labels]
-        
+
         log_prob = 0
         for i, val in enumerate(x):
 
-            stage = self.get_stage(x[: i])
+            stage = self.get_stage(x[:i])
             if stage.probs[val] == 0:
                 return -np.inf
             log_prob += np.log(stage.probs[val])
@@ -1045,13 +1056,13 @@ class CStree:
 
     def to_joint_distribution(self, label_order=None):
         """Return the joint distribution of the CStree.
-        
+
         Args:
             label_order (list, optional): A list of labels from self.labels in the desired order. Defaults to None which means self.labels.
 
         Returns:
             Pandas Dataframe: The joint distribution of the CStree.
-            
+
         Example:
             >>> df = tree.to_joint_distribution()
             >>> print(df)
@@ -1077,21 +1088,22 @@ class CStree:
         ""
         if label_order is None:
             label_order = self.labels
-        
-        
+
         # Iterate over all possible outcomes and calculate the probability mass function.
         # Store the outcomes together with the probabilities in a Pandas Dataframe.
         outcomes = product(*[range(card) for card in self.cards])
         n_outcomes = np.prod(self.cards)
 
         # Create an empty dataframe with the correct column names
-        #df_outcomes = pd.DataFrame(columns=self.labels)
+        # df_outcomes = pd.DataFrame(columns=self.labels)
         df_outcomes = pd.DataFrame(columns=label_order)
         # store all the outcomes and probabilities
-        pmfs = [None]*np.prod(self.cards)
-        pmfs_log = [None]*np.prod(self.cards)
-        
-        for i, outcome in tqdm(enumerate(outcomes), total=n_outcomes, desc="Calculating joint distribution"):
+        pmfs = [None] * np.prod(self.cards)
+        pmfs_log = [None] * np.prod(self.cards)
+
+        for i, outcome in tqdm(
+            enumerate(outcomes), total=n_outcomes, desc="Calculating joint distribution"
+        ):
             df_outcomes.loc[i] = outcome
             pmfs[i] = self.pmf(outcome, label_order)
             pmfs_log[i] = self.pmf_log(outcome, label_order)
@@ -1102,6 +1114,7 @@ class CStree:
         df = pd.concat([df_outcomes, df_pmf, df_pmf_log], axis=1)
 
         return df
+
 
 def sample_cstree(
     cards: list[int],
@@ -1322,7 +1335,7 @@ def df_to_cstree(df, read_probs=True):
         has_probs = False
         nvars = len(collabs)
 
-    cards = df.iloc[0, :nvars].values  # [int(x[1]) for x in df.columns]
+    cards = df.iloc[0, :nvars].values.astype(int)  # [int(x[1]) for x in df.columns]
 
     stagings = {i: [] for i in range(-1, len(cards))}
 
