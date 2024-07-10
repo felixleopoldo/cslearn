@@ -154,7 +154,7 @@ def _optimal_staging_at_level(order, context_scores, level, max_cvars=2, poss_cv
                 continue
 
             # here we (=I) anyway extract just the context, so the stage format is a bit redundant.
-            stage_context = sc._stage_to_context_key(stage, order) 
+            stage_context = sc._stage_to_context_key(stage, order)
             if stage_context in context_scores["scores"][var]:
                 score = context_scores["scores"][var][stage_context]
             staging_score += score
@@ -537,8 +537,8 @@ def causallearn_graph_to_posscvars(graph, labels, alg="pc"):
     poss_cvars = {l: [] for l in labels}
 
     if alg == "pc":
-        for i, j in graph.find_adj():
-            poss_cvars[labels[i]].append(labels[j])
+        for i, j in np.argwhere(graph.G.graph == -1):
+            poss_cvars[labels[j]].append(labels[i])
     if alg == "grasp":
         for i, j in np.argwhere(graph.graph == -1):
             poss_cvars[labels[j]].append(labels[i])
@@ -547,22 +547,32 @@ def causallearn_graph_to_posscvars(graph, labels, alg="pc"):
             poss_cvars[labels[j]].append(labels[i])
     return poss_cvars
 
+
 def causallearn_graph_to_dag(graph, labels, alg="pc"):
-    """ This function converts a graph estimated by causallearn to DAG adjacency matrix.
-    """
-    
+    """This function converts a graph estimated by causallearn to DAG adjacency matrix."""
+
     adj = np.zeros((len(labels), len(labels)))
-    
+
     if alg == "pc":
-        for i, j in graph.find_adj():
-            adj[j, i] = 1
+        for i, j in np.argwhere(graph.G.graph == -1):
+            adj[i, j] = 1
     if alg == "grasp":
         for i, j in np.argwhere(graph.graph == -1):
             adj[i, j] = 1
     if alg == "ges":
         for i, j in np.argwhere(graph["G"] == -1):
             adj[i, j] = 1
-            
+
+    directed_mask = np.logical_and(adj == -1, adj.T == 1)
+    undirected_mask = np.logical_and(adj == -1, adj.T == -1)
+    directed_ebunch = [(u, v) for u, v in np.argwhere(directed_mask)]
+    undirected_ebunch = [(u, v) for u, v in np.argwhere(undirected_mask)]
+    cpdag = PDAG(directed_ebunch, undirected_ebunch)
+    dag = cpdag.to_dag()
+    nx_dag = nx.DiGraph(dag.edges())
+    nx_dag.add_nodes_from(range(p))
+    dag_df = nx.to_pandas_adjacency(nx_dag, dtype=int)
+
     causaldag_graph = cd.PDAG.from_amat(adj)
     # convert to DAG
     dag = causaldag_graph.to_dag().to_nx()
@@ -570,6 +580,6 @@ def causallearn_graph_to_dag(graph, labels, alg="pc"):
     adj = nx.to_numpy_array(dag)
 
     # create a dataframe with the adjacency matrix and the labels
-    df = pd.DataFrame(adj, columns=labels, index=labels, dtype=int)        
-    
+    df = pd.DataFrame(adj, columns=labels, index=labels, dtype=int)
+
     return df

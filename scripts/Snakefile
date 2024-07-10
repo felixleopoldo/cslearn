@@ -35,8 +35,10 @@ rule estimate_grasp:            # tested
     input:
         rules.simulate_data.output
     output:
-        grasp_dag="sim_results/distr/est/p={p}_n={n}_seed={seed}/grasp/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/dag.csv",
-        grasp_cvars="sim_results/distr/est/p={p}_n={n}_seed={seed}/grasp/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/poss_cvars.json"
+        grasp_dag="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
+        "grasp/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/dag.csv",
+        grasp_cvars="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
+        "grasp/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/poss_cvars.json"
     script:
         "snake_scripts/estimate_grasp.py"
 
