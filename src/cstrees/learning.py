@@ -555,7 +555,7 @@ def causallearn_graph_to_dag(graph, labels, alg="pc"):
     if alg == "pc":
         adj = graph.G.graph
     if alg == "grasp":
-        adj = graph.grapd
+        adj = graph.graph
     if alg == "ges":
         adj = graph["G"]
 
