@@ -60,7 +60,6 @@ setup(
             "python-boilerplate[dev]",
         ],
     },
-    scripts=["scripts/reproduce_uai"],
     include_package_data=True,
     # Other configurations
     zip_safe=False,
