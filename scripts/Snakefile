@@ -20,7 +20,7 @@ rule simulate_data:             # tested
     script:
         "snake_scripts/simulate_data.py"
 
-rule estimate_cstree:
+rule estimate_cstree:           # untested
     # Estimate a distribution from data
     input:
         data=rules.simulate_data.output,
@@ -54,20 +54,22 @@ rule estimate_pc:               # tested
     script:
         "snake_scripts/estimate_pc.py"
 
-rule joint_dag_distribution:
+rule joint_dag_distribution:    # untested
     # Estimate a distribution from data
     input:
-        rules.simulate_data.output
+        input_dag = rules.estimate_grasp.output['grasp_dag'] # optionally get dag from estimate_pc somehow
+        data = rules.simulate_data.output
     output:
         joint_dag="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
                   "joint_dag/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv"
     script:
         "snake_scripts/joint_dag.py"
 
-rule joint_cstree_distrubtion:
+rule joint_cstree_distrubtion:  # untested
     # Estimate a distribution from data
     input:
-        data=rules.simulate_data.output
+        cstree = rules.estimate_cstree.output
+        data = rules.simulate_data.output
     output:
         joint_cstree="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
                      "joint_cstree/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv"
@@ -75,7 +77,7 @@ rule joint_cstree_distrubtion:
         "snake_scripts/joint_cstree.py"
 
 
-rule kl_plots:
+rule kl_plots:                  # not implemented
     input: "data/kl_divergence.csv"
     output: "results/kl_divergence.png"
     shell: "Rscript scripts/kl_divergence.R"
