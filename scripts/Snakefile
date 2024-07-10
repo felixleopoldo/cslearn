@@ -57,22 +57,22 @@ rule estimate_pc:               # tested
 rule joint_dag_distribution:    # untested
     # Estimate a distribution from data
     input:
-        input_dag = rules.estimate_grasp.output['grasp_dag'] # optionally get dag from estimate_pc somehow
+        input_dag = rules.estimate_grasp.output['grasp_dag'], # optionally get dag from estimate_pc somehow
         data = rules.simulate_data.output
     output:
         joint_dag="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
-                  "joint_dag/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv"
+                  "joint_dag/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/dag_mle.csv"
     script:
         "snake_scripts/joint_dag.py"
 
 rule joint_cstree_distrubtion:  # untested
     # Estimate a distribution from data
     input:
-        cstree = rules.estimate_cstree.output
+        cstree = rules.estimate_cstree.output,
         data = rules.simulate_data.output
     output:
         joint_cstree="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
-                     "joint_cstree/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv"
+                     "joint_cstree/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/cstree_map.csv"
     script:
         "snake_scripts/joint_cstree.py"
 
