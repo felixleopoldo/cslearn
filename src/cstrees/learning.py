@@ -1,14 +1,15 @@
 from itertools import permutations
 import random
 
+import networkx as nx
 import numpy as np
-from tqdm import tqdm
 import pandas as pd
-import causaldag as cd
+from pgmpy.base import PDAG
+from tqdm import tqdm
+
 import cstrees.cstree as ct
 import cstrees.stage as stl
 import cstrees.scoring as sc
-import networkx as nx
 
 
 def all_stagings(cards: list[int], level, max_cvars: int = 1, poss_cvars=None):
@@ -551,35 +552,30 @@ def causallearn_graph_to_posscvars(graph, labels, alg="pc"):
 def causallearn_graph_to_dag(graph, labels, alg="pc"):
     """This function converts a graph estimated by causallearn to DAG adjacency matrix."""
 
-    adj = np.zeros((len(labels), len(labels)))
-
     if alg == "pc":
-        for i, j in np.argwhere(graph.G.graph == -1):
-            adj[i, j] = 1
+        adj = graph.G.graph
     if alg == "grasp":
-        for i, j in np.argwhere(graph.graph == -1):
-            adj[i, j] = 1
+        adj = graph.grapd
     if alg == "ges":
-        for i, j in np.argwhere(graph["G"] == -1):
-            adj[i, j] = 1
+        adj = graph["G"]
 
+    # convert to DAG
     directed_mask = np.logical_and(adj == -1, adj.T == 1)
     undirected_mask = np.logical_and(adj == -1, adj.T == -1)
     directed_ebunch = [(u, v) for u, v in np.argwhere(directed_mask)]
     undirected_ebunch = [(u, v) for u, v in np.argwhere(undirected_mask)]
     cpdag = PDAG(directed_ebunch, undirected_ebunch)
     dag = cpdag.to_dag()
-    nx_dag = nx.DiGraph(dag.edges())
-    nx_dag.add_nodes_from(range(p))
-    dag_df = nx.to_pandas_adjacency(nx_dag, dtype=int)
 
-    causaldag_graph = cd.PDAG.from_amat(adj)
-    # convert to DAG
-    dag = causaldag_graph.to_dag().to_nx()
-    dag.add_nodes_from(range(len(labels)))
-    adj = nx.to_numpy_array(dag)
+    # reformant into nx graph and relabel
+    nx_dag = nx.DiGraph(dag.edges())
+    nx_dag.add_nodes_from(range(len(labels)))
+
+    if labels is not None:
+        relabeler = {old: new for old, new in enumerate(labels)}
+        nx_dag = nx.relabel_nodes(nx_dag, relabeler)
 
     # create a dataframe with the adjacency matrix and the labels
-    df = pd.DataFrame(adj, columns=labels, index=labels, dtype=int)
+    dag_df = nx.to_pandas_adjacency(nx_dag, dtype=int)
 
-    return df
+    return dag_df
