@@ -571,9 +571,8 @@ def causallearn_graph_to_dag(graph, labels, alg="pc"):
     nx_dag = nx.DiGraph(dag.edges())
     nx_dag.add_nodes_from(range(len(labels)))
 
-    if labels is not None:
-        relabeler = {old: new for old, new in enumerate(labels)}
-        nx_dag = nx.relabel_nodes(nx_dag, relabeler)
+    relabeler = {old: new for old, new in enumerate(labels)}
+    nx_dag = nx.relabel_nodes(nx_dag, relabeler)
 
     # create a dataframe with the adjacency matrix and the labels
     dag_df = nx.to_pandas_adjacency(nx_dag, dtype=int)
