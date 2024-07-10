@@ -42,7 +42,7 @@ rule estimate_grasp:            # tested
     script:
         "snake_scripts/estimate_grasp.py"
 
-rule estimate_pc:
+rule estimate_pc:               # tested
     # Use PC to learn CPDAG from which poss_cvars and a Markov equiv DAG are selected
     input:
         rules.simulate_data.output
