@@ -1,5 +1,6 @@
 # Maybe we could prefix each pattern variable, e.g. pc_alpha
 pattern_cstree = "cstrees/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}"
+pattern_cstree_params = "true_cstree_params/alpha_tot/{alpha_tot}/seed={seed}"
 pattern_cstree_data = "data/n={n}/seed={seed}"
 pattern_cslearn = "cslearn/p={p}/input_dag={input_dag}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}"
 pattern_grasp = "grasp/seed={seed}"
