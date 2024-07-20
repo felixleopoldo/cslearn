@@ -222,13 +222,26 @@ algorithms:
 - CSlearn with GrASP (MLE) for n=10000
 """"
 rule: kl_plots_2b
-    input: expand("sim_results/kl_div/p={p}_n={n}_seed={seed}/joint_dag/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv",
+    input: 
+        cslearn=expand("sim_results/kl_div/p={p}_n={n}_seed={seed}/joint_dag/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv",
                      p=range(1, 11),
                      n=range(100, 1001, 100),
                      max_cvar=range(1, 11),
                      prob_cvar=range(1, 11),
                      seed=range(1, 11)) 
-                
+        pc=expand("sim_results/kl_div/p={p}_n={n}_seed={seed}/joint_dag/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv",
+                     p=range(1, 11),
+                     n=range(100, 1001, 100),
+                     max_cvar=range(1, 11),
+                     prob_cvar=range(1, 11),
+                     seed=range(1, 11))
+        cslearn_grasp=expand("sim_results/kl_div/p={p}_n={n}_seed={seed}/joint_dag/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv",
+                     p=range(1, 11),
+                     n=range(100, 1001, 100),
+                     max_cvar=range(1, 11),
+                     prob_cvar=range(1, 11),
+                     seed=range(1, 11))
+
     output: "results/kl_divergence_2b.png"
     shell: "Rscript scripts/kl_divergence.R"
 
