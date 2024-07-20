@@ -1,32 +1,46 @@
-
+# Maybe we could prefix each pattern variable, e.g. pc_alpha
+pattern_cstree = "cstrees/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}"
+pattern_cstree_data = "data/n={n}/seed={seed}"
+pattern_cslearn = "cslearn/p={p}/input_dag={input_dag}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}"
+pattern_grasp = "grasp/seed={seed}"
+pattern_pc = "pc/alpha={alpha}/seed={seed}"
+pattern_dag_param_est = "dag_param_est/estimation_type={estimation_type}/alpha={alpha}/seed={seed}" # type is bdeu or mle
+pattern_cslearn_param_est = "cslearn_param_est/estimation_type={estimation_type}/alpha={alpha}/seed={seed}" # type is bdeu or mle
 
 rule all:
     input:
-        "results/kl_divergence.png"
+        "results/kl_divergence_2a.png", 
+        "results/kl_divergence_2b.png", 
+        "results/kl_divergence_2c.png"
 
 rule generate_cstree:           # tested
     # Calculate KL divergence between two distribution
     output:
-        "cstrees/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/cstree.csv"
+        "true_cstree/"+ pattern_cstree + "/cstree.csv"
     script:
         "snake_scripts/generate_cstree.py"
 
-rule simulate_data:             # tested
+rule simulate_cstree_data:             # tested
     # Simulate data from a distribution
     input:
         rules.generate_cstree.output
     output:
-        "data/n={n}/seed={seed}/" + rules.generate_cstree.output[0] + "/data.csv"
+        ("data/true_cstree=/"+ pattern_cstree + 
+         "/data=/"+pattern_cstree_data + "/data.csv")
     script:
         "snake_scripts/simulate_data.py"
 
 rule estimate_cstree:           # untested
     # Estimate a distribution from data
     input:
-        data=rules.simulate_data.output,
-        poss_cvars="some dag" if not "{input_dag}" is None else []
+        data=rules.simulate_cstree_data.output,
+        #poss_cvars="some dag" if not "{input_dag}" is None else []
     output:
-        cstree="cslearn_cstree/p={p}/input_dag={input_dag}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/" + rules.simulate_data.output[0] + "/cstree.csv"
+        cstree = ("estimate" +
+                  "/alg=/" + pattern_cslearn + 
+                  "/true_cstree=/" + pattern_cstree +
+                  "/data=/" + pattern_cstree_data + 
+                  "/model.csv")
     script:
         "snake_scripts/estimate_cstree.py"
 
@@ -35,10 +49,16 @@ rule estimate_grasp:            # tested
     input:
         rules.simulate_data.output
     output:
-        grasp_dag="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
-        "grasp/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/dag.csv",
-        grasp_cvars="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
-        "grasp/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/poss_cvars.json"
+        grasp_dag=("estimate" +
+                   "/alg=/" + pattern_grasp + 
+                   "/true_cstree=/" + pattern_cstree +
+                   "/data=/" + pattern_cstree_data + 
+                   "/model.csv"), #
+        grasp_cvars=("estimate" +
+                     "/alg=/" + pattern_grasp + 
+                     "/true_cstree=/" + pattern_cstree +
+                     "/data=/" + pattern_cstree_data + 
+                     "/poss_cvars.json")
     script:
         "snake_scripts/estimate_grasp.py"
 
@@ -47,19 +67,43 @@ rule estimate_pc:               # tested
     input:
         rules.simulate_data.output
     output:
-        pc_dag="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
-           "pc/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/dag.csv",
-        pc_cvars="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
-           "pc/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/poss_cvars.json"
+        pc_dag=("estimate" +
+                "/alg=/" + pattern_pc + 
+                "/true_cstree=/" + pattern_cstree +
+                "/data=/" + pattern_cstree_data + 
+                "/model.csv"),
+        pc_cvars=("estimate" +
+                  "/alg=/" + pattern_pc + 
+                  "/true_cstree=/" + pattern_cstree +
+                  "/data=/" + pattern_cstree_data + 
+                  "/poss_cvars.json")
     script:
         "snake_scripts/estimate_pc.py"
+
+# The parameters fro the dag algorithms should be learned in separate rule,
+# as this is done in R for both grasp and pc.
+rule dag_bdeu_parameter_estimation:
+    input:
+        dag = ("estimate" +
+                "/alg=/{alg}" + 
+                "/true_cstree=/{true_cstree}" +
+                "/data=/{data}" + 
+                "/dag.csv"),
 
 rule joint_dag_distribution:    # untested
     # Estimate a distribution from data
     input:
-        input_dag = rules.estimate_grasp.output['grasp_dag'], # optionally get dag from estimate_pc somehow
-        data = rules.simulate_data.output
+        input_dag = ("estimate" +
+                    "/alg=/{alg}" + 
+                    "/true_cstree=/{true_cstree}" +
+                    "/data=/{data}" + 
+                    "/distr.json")
     output:
+        full_distr=("full_distr" +
+                    "/alg=/{alg}" + 
+                    "/true_cstree=/{true_cstree}" +
+                    "/data=/{data}" + 
+                    "/distr.json")
         joint_dag="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
                   "joint_dag/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/dag_mle.csv"
     script:
@@ -74,10 +118,99 @@ rule joint_cstree_distrubtion:  # untested
         joint_cstree="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
                      "joint_cstree/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/cstree_map.csv"
     script:
-        "snake_scripts/joint_cstree.py"
+        "scripts/joint_cstree.py"
+
+rule kl_div_to_true:
+    # Calculate KL divergence between estimated and true distribution
+    input: 
+        true="sim_results/distr/true/p={p}_n={n}_seed={seed}/.csv",
+        est="sim_results/distr/est/p={p}_n={n}_seed={seed}/joint_cstree/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv"
+    output: 
+        "sim_results/kl_div/p={p}_n={n}_seed={seed}/joint_cstree/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv"
+    script: 
+        "scripts/kl_div.py"
+
+""" Plot (2a): comparison of performance of parameter MAP estimate versus parameter MLE est with PC used in Phase 1:
+
+KL-divergence on y-axis
+x-axis: number of nodes (p = 5,7,10,15,20)
+algorithms:
+
+ - PC-estimated DAG (MLE) for n=10000
+
+ - CSlearn with PC (MLE) for n=250
+ - CSlearn with PC (MLE) for n=500
+ - CSlearn with PC (MLE) for n=1000
+ - CSlearn with PC (MLE) for n=10000
+
+ - CSlearn with PC (MAP) for n=250
+ - CSlearn with PC (MAP) for n=500
+ - CSlearn with PC (MAP) for n=1000
+ - CSlearn with PC (MAP) for n=10000
+"""
+rule: kl_plots_2a
+    input: expand("sim_results/kl_div/p={p}_n={n}_seed={seed}/joint_cstree/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv",
+                     p=range(1, 11),
+                     n=range(100, 1001, 100),
+                     max_cvar=range(1, 11),
+                     prob_cvar=range(1, 11),
+                     seed=range(1, 11)) 
+                
+    output: "results/kl_divergence_2a.png"
+    shell: "Rscript scripts/kl_divergence.R"
 
 
-rule kl_plots:                  # not implemented
-    input: "data/kl_divergence.csv"
-    output: "results/kl_divergence.png"
+"""
+Plot (2b): comparison of performance of parameter MAP estimate versus parameter MLE est with GrASP used in Phase 1:
+KL-divergence on y-axis
+x-axis: number of nodes (p = 5,7,10,15,20)
+algorithms:
+- GrASP-estimated DAG (MLE) for n=10000
+- CSlearn with GrASP (MAP) for n=250
+- CSlearn with GrASP (MAP) for n=500
+- CSlearn with GrASP (MAP) for n=1000
+- CSlearn with GrASP (MAP) for n=10000
+- CSlearn with GrASP (MLE) for n=250
+- CSlearn with GrASP (MLE) for n=500
+- CSlearn with GrASP (MLE) for n=1000
+- CSlearn with GrASP (MLE) for n=10000
+""""
+rule: kl_plots_2b
+    input: expand("sim_results/kl_div/p={p}_n={n}_seed={seed}/joint_dag/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv",
+                     p=range(1, 11),
+                     n=range(100, 1001, 100),
+                     max_cvar=range(1, 11),
+                     prob_cvar=range(1, 11),
+                     seed=range(1, 11)) 
+                
+    output: "results/kl_divergence_2b.png"
+    shell: "Rscript scripts/kl_divergence.R"
+
+"""
+Plot (2c): Comparison of CSlearn with other methods:
+
+KL-divergence on y-axis
+x-axis: number of nodes (p = 5,7,10,15,20)
+algorithms:
+    - GrASP-estimated DAG (MLE) for n = 10000
+    - CSlearn with GrASP for n = 1000
+    - CSlearn with GrASP for n = 10000
+    - bos (stagedtrees) with n = 1000
+    - GrASP + bhc (stagedtrees) with n = 1000
+    - GrASP + bhc (stagedtrees) with n = 10000
+* notes:
+    - best order search is only done for p = 5,7,10
+    - GrASP + bhc is done for p = 5,7,10,15,20
+    - bhc = backwards hill climbing
+    - bos = best order search
+"""
+rule: kl_plots_2c:
+    input: expand("sim_results/kl_div/p={p}_n={n}_seed={seed}/grasp/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/.csv",
+                     p=range(1, 11),
+                     n=range(100, 1001, 100),
+                     max_cvar=range(1, 11),
+                     prob_cvar=range(1, 11),
+                     seed=range(1, 11)) 
+                
+    output: "results/kl_divergence_2c.png"
     shell: "Rscript scripts/kl_divergence.R"
