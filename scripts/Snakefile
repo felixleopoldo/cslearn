@@ -5,7 +5,7 @@ pattern_cslearn = "cslearn/p={p}/input_dag={input_dag}/max_cvar={max_cvar}/prob_
 pattern_grasp = "grasp/seed={seed}"
 pattern_pc = "pc/alpha={alpha}/seed={seed}"
 pattern_dag_param_est = "dag_param_est/estimation_type={estimation_type}/alpha={alpha}/seed={seed}" # type is bdeu or mle
-pattern_cslearn_param_est = "cslearn_param_est/estimation_type={estimation_type}/alpha={alpha}/seed={seed}" # type is bdeu or mle
+pattern_cstree_param_est = "cstree_param_est/estimation_type={estimation_type}/alpha={alpha}/seed={seed}" # type is bdeu or mle
 
 rule all:
     input:
@@ -20,12 +20,23 @@ rule generate_cstree:           # tested
     script:
         "snake_scripts/generate_cstree.py"
 
+rule generate_cstree_params:     # untested
+    input:
+        cstree="true_cstree/"+ pattern_cstree + "/cstree.csv"
+    output:
+        "true_cstree_params/"+pattern_cstree_params+"/true_cstree/"+ pattern_cstree + "/cstree.csv"
+    script:
+        "snake_scripts/generate_cstree_params.py"
+
+# this gives the whole cstree, but we split it into separate rules for consistency
 rule simulate_cstree_data:             # tested
     # Simulate data from a distribution
     input:
-        rules.generate_cstree.output
+        cstree="true_cstree_params/"+pattern_cstree_params+"/true_cstree/"+ pattern_cstree + "/cstree.csv" 
     output:
-        ("data/true_cstree=/"+ pattern_cstree + 
+        ("data"+
+         "/true_cstree=/"+ pattern_cstree + 
+         "/true_cstree_params=/" + pattern_cstree_params +
          "/data=/"+pattern_cstree_data + "/data.csv")
     script:
         "snake_scripts/simulate_data.py"
@@ -37,10 +48,11 @@ rule estimate_cstree:           # untested
         #poss_cvars="some dag" if not "{input_dag}" is None else []
     output:
         cstree = ("estimate" +
-                  "/alg=/" + pattern_cslearn + 
+                  "/alg=/" + pattern_cslearn +                   
                   "/true_cstree=/" + pattern_cstree +
+                  "/true_cstree_params=/" + pattern_cstree_params +
                   "/data=/" + pattern_cstree_data + 
-                  "/model.csv")
+                  "/structure.csv")
     script:
         "snake_scripts/estimate_cstree.py"
 
@@ -53,7 +65,7 @@ rule estimate_grasp:            # tested
                    "/alg=/" + pattern_grasp + 
                    "/true_cstree=/" + pattern_cstree +
                    "/data=/" + pattern_cstree_data + 
-                   "/model.csv"), #
+                   "/structure.csv"), #
         grasp_cvars=("estimate" +
                      "/alg=/" + pattern_grasp + 
                      "/true_cstree=/" + pattern_cstree +
@@ -71,7 +83,7 @@ rule estimate_pc:               # tested
                 "/alg=/" + pattern_pc + 
                 "/true_cstree=/" + pattern_cstree +
                 "/data=/" + pattern_cstree_data + 
-                "/model.csv"),
+                "/structure.csv"),
         pc_cvars=("estimate" +
                   "/alg=/" + pattern_pc + 
                   "/true_cstree=/" + pattern_cstree +
@@ -86,9 +98,34 @@ rule dag_bdeu_parameter_estimation:
     input:
         dag = ("estimate" +
                 "/alg=/{alg}" + 
-                "/true_cstree=/{true_cstree}" +
+                "/true_cstree=/{true_cstree}" +                
                 "/data=/{data}" + 
-                "/dag.csv"),
+                "/dag_est/{dag_est}" +
+                "/dag.csv")
+    output:
+        dag_param_est=("dag_param_est" +
+                       "/alg=/{alg}" + 
+                       "/true_cstree=/{true_cstree}" +
+                       "/true_cstree_params=/{true_cstree_params}" +
+                       "/data=/{data}" + 
+                       "/dag_est/{dag_est}" +
+                       "/param_est=/"+pattern_dag_param_est+"/params.csv")
+
+# CS-BDeu
+rule cstree_bdeu_parameter_estimation:
+    input:
+        cstree = rules.estimate_cstree.output,
+        data = rules.simulate_data.output
+    output:
+        cstree_param_est=("cstree_param_est" +
+                          "/alg=/{alg}" + 
+                          "/true_cstree=/{true_cstree}" +
+                          "/true_cstree_params=/{true_cstree_params}" +
+                          "/data=/{data}" + 
+                          "/param_est=/"+pattern_cstree_param_est+"/cstree.csv")
+    script:
+        "scripts/cstree_bdeu_parameter_estimation.R"
+
 
 rule joint_dag_distribution:    # untested
     # Estimate a distribution from data
@@ -96,16 +133,16 @@ rule joint_dag_distribution:    # untested
         input_dag = ("estimate" +
                     "/alg=/{alg}" + 
                     "/true_cstree=/{true_cstree}" +
+                    "/true_cstree_params=/{true_cstree_params}" +
                     "/data=/{data}" + 
-                    "/distr.json")
+                    "/structure.csv")
     output:
         full_distr=("full_distr" +
                     "/alg=/{alg}" + 
                     "/true_cstree=/{true_cstree}" +
+                    "/true_cstree_params=/{true_cstree_params}" +
                     "/data=/{data}" + 
-                    "/distr.json")
-        joint_dag="sim_results/distr/est/p={p}_n={n}_seed={seed}/"
-                  "joint_dag/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}/dag_mle.csv"
+                    "/distr.csv")
     script:
         "snake_scripts/joint_dag.py"
 
