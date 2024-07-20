@@ -1,10 +1,13 @@
 # Maybe we could prefix each pattern variable, e.g. pc_alpha
+# cstree model
 pattern_cstree = "cstrees/p={p}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}"
 pattern_cstree_params = "true_cstree_params/alpha_tot/{alpha_tot}/seed={seed}"
 pattern_cstree_data = "data/n={n}/seed={seed}"
+# Structure learning
 pattern_cslearn = "cslearn/p={p}/input_dag={input_dag}/max_cvar={max_cvar}/prob_cvar={prob_cvar}/seed={seed}"
 pattern_grasp = "grasp/seed={seed}"
 pattern_pc = "pc/alpha={alpha}/seed={seed}"
+# parameter
 pattern_dag_param_est = "dag_param_est/estimation_type={estimation_type}/alpha={alpha}/seed={seed}" # type is bdeu or mle
 pattern_cstree_param_est = "cstree_param_est/estimation_type={estimation_type}/alpha={alpha}/seed={seed}" # type is bdeu or mle
 
