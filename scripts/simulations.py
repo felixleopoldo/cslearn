@@ -196,11 +196,11 @@ def estimate_cstree_distr(
         cards = [2] * num_levels
         for samp_size in samp_size_range:
             for seed in seeds:
-                name = f"p={num_levels}_n={samp_size}_seed={seed}.csv"
+                name = Path(f"p={num_levels}_n={samp_size}_seed={seed}.csv")
                 np.random.seed(seed)
                 random.seed(seed)
 
-                dag_path = f"{data_path}/dags/{name}"
+                dag_path = Path(f"{data_path}/dags/{name}")
                 if Path(f"{est_path}/est/{name}/").is_file():
                     continue
                 print(f"Estimating CStree for {data_path}/est/{name}...")
@@ -216,6 +216,10 @@ def estimate_cstree_distr(
                     graspgraph = grasp(data[1:].values)                                        
                     
                     dag_adjmat_df = ctl.causallearn_graph_to_dag(graspgraph, labels=data.columns, alg="grasp")
+                    
+                    # write adjmat to file  
+                    dag_adjmat_df.to_csv(dag_path / name, index=False)
+                    
                     
                     poss_cvars = ctl.causallearn_graph_to_posscvars(
                         graspgraph, labels=data.columns, alg="grasp"
@@ -360,6 +364,16 @@ if __name__ == "__main__":
 
     ######### KL divergence ##########
 
+    print("Estimated GRaSP + CSlearn KL")
+    df_kl_grasp_cslearn, df_time_grasp_cslearn = kl_div_from_files(
+        f"{path}/distr/grasp_cslearn/",
+        f"{path}/distr/true",
+        "grasp_cslearn",
+        seeds,
+        samp_size_range,
+        num_levels_range,
+    )
+
     print("Estimated PC + CSlearn KL")
     df_kl_cstree, df_time_cstree = kl_div_from_files(
         f"{path}/distr/pc_cslearn/",
@@ -370,15 +384,7 @@ if __name__ == "__main__":
         num_levels_range,
     )
 
-    print("Estimated GRaSP + CSlearn KL")
-    df_kl_grasp_cslearn, df_time_grasp_cslearn = kl_div_from_files(
-        f"{path}/distr/grasp_cslearn/",
-        f"{path}/distr/true",
-        "grasp_cslearn",
-        seeds,
-        samp_size_range,
-        num_levels_range,
-    )
+
 
     print("Estimated PC KL")
     df_kl_pc, df_time_pc = kl_div_from_files(
