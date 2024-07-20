@@ -44,6 +44,17 @@ rule generate_cstree_params:     # untested
     script:
         "snake_scripts/generate_cstree_params.py"
 
+rule full_true_cstree_distr:     # untested
+    input:
+        cstree="true_cstree/"+ pattern_cstree + "/cstree.csv",
+        cstree_params="true_cstree_params/"+pattern_cstree_params+"/true_cstree/"+ pattern_cstree + "/cstree.csv"
+    output:
+        ("full_true_distr/"+
+        pattern_cstree+"/true_cstree_params/"+
+        pattern_cstree_params+"/distr.csv")
+    script:
+        "snake_scripts/full_true_cstree_distr.py"
+
 # this gives the whole cstree, but we split it into separate rules for consistency
 rule simulate_cstree_data:             # tested
     # Simulate data from a distribution
@@ -203,13 +214,13 @@ rule stagedtree_ml_parameter_estimation:
 
 rule joint_stagedtree_distribution:
     input:
-        input_st = ("estimate" +                    
+        input_st = ("cstree_param_est" +                    
                     "/true_cstree=/{true_cstree}" +
                     "/true_cstree_params=/{true_cstree_params}" +
                     "/data=/{data}" + 
                     "/alg=/{alg}" + 
                     "/param_est=/{param_est}" +
-                    "/structure.csv")
+                    "/st.rds")
     output:
         full_distr=("full_distr" +                    
                     "/true_cstree=/{true_cstree}" +
@@ -226,7 +237,7 @@ rule joint_stagedtree_distribution:
 rule joint_dag_distribution:    # untested
     # Estimate a distribution from data
     input:
-        input_dag = ("estimate" +                    
+        input_bn = ("estimate" +                    
                     "/true_cstree=/{true_cstree}" +
                     "/true_cstree_params=/{true_cstree_params}" +
                     "/data=/{data}" + 
