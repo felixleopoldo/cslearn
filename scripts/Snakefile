@@ -65,11 +65,11 @@ rule estimate_grasp:            # tested
     input:
         rules.simulate_data.output
     output:
-        grasp_dag=("estimate" +
-                   "/alg=/" + pattern_grasp + 
+        grasp_dag=("estimate" +                   
                    "/true_cstree=/" + pattern_cstree +
                    "/true_cstree_params=/" + pattern_cstree_params +
                    "/data=/" + pattern_cstree_data + 
+                   "/alg=/" + pattern_grasp + 
                    "/structure.csv"), #
         grasp_cvars=("estimate" +
                      "/alg=/" + pattern_grasp + 
@@ -104,13 +104,13 @@ rule estimate_pc:               # tested
 # as this is done in R for both grasp and pc.
 rule dag_bdeu_parameter_estimation:
     input:
-        dag = ("estimate" +
-                "/alg=/{alg}" + 
+        dag = ("estimate" +                
                 "/true_cstree=/{true_cstree}" +   
                 "/true_cstree_params=/{true_cstree_params}"             
                 "/data=/{data}" + 
-                "/dag_est/{dag_est}" +
-                "/dag.csv")
+                "/alg=/{alg}" + 
+                "/param_est=/"+pattern_dag_param_est+
+                "/distr.csv")
     output:
         dag_param_est=("dag_param_est" +
                        "/alg=/{alg}" + 
