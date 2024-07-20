@@ -64,11 +64,13 @@ rule estimate_grasp:            # tested
         grasp_dag=("estimate" +
                    "/alg=/" + pattern_grasp + 
                    "/true_cstree=/" + pattern_cstree +
+                   "/true_cstree_params=/" + pattern_cstree_params +
                    "/data=/" + pattern_cstree_data + 
                    "/structure.csv"), #
         grasp_cvars=("estimate" +
                      "/alg=/" + pattern_grasp + 
                      "/true_cstree=/" + pattern_cstree +
+                     "/true_cstree_params=/" + pattern_cstree_params +
                      "/data=/" + pattern_cstree_data + 
                      "/poss_cvars.json")
     script:
@@ -82,11 +84,13 @@ rule estimate_pc:               # tested
         pc_dag=("estimate" +
                 "/alg=/" + pattern_pc + 
                 "/true_cstree=/" + pattern_cstree +
+                "/true_cstree_params=/" + pattern_cstree_params +
                 "/data=/" + pattern_cstree_data + 
                 "/structure.csv"),
         pc_cvars=("estimate" +
                   "/alg=/" + pattern_pc + 
                   "/true_cstree=/" + pattern_cstree +
+                  "/true_cstree_params=/" + pattern_cstree_params +
                   "/data=/" + pattern_cstree_data + 
                   "/poss_cvars.json")
     script:
@@ -98,7 +102,8 @@ rule dag_bdeu_parameter_estimation:
     input:
         dag = ("estimate" +
                 "/alg=/{alg}" + 
-                "/true_cstree=/{true_cstree}" +                
+                "/true_cstree=/{true_cstree}" +   
+                "/true_cstree_params=/{true_cstree_params}"             
                 "/data=/{data}" + 
                 "/dag_est/{dag_est}" +
                 "/dag.csv")
