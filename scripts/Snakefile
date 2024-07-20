@@ -59,22 +59,50 @@ rule simulate_cstree_data:             # tested
 
 def input_cvars(wildcards):
 
-    if wildcards.poss_cvars is None:
+    if wildcards.poss_cvars == "None":
         return []
-    
-    elif wildcards.poss_cvars == "grasp":
+    else:
+        # the poss_cvars will be the pattern string of a DAG estimation algorithm
         return ("estimate" +
-                "/alg=/" + pattern_grasp + 
+                "/alg=/" + wildcards.poss_cvars + 
                 "/true_cstree=/" + pattern_cstree +
                 "/true_cstree_params=/" + pattern_cstree_params +
                 "/data=/" + pattern_cstree_data + 
-                "/poss_cvars.json") # fill out the grasp parameters
+                "/poss_cvars.json")
 
-rule estimate_cstree:           # untested
+rule bos:
+    # Use BOS to learn CPDAG from which poss_cvars and a Markov equiv DAG are selected
+    input:
+        rules.simulate_data.output
+    output:
+        bos_dag=("estimate" +                   
+                 "/true_cstree=/" + pattern_cstree +
+                 "/true_cstree_params=/" + pattern_cstree_params +
+                 "/data=/" + pattern_cstree_data + 
+                 "/alg=/" + pattern_bos + 
+                 "/structure.csv")
+    script:
+        "snake_scripts/estimate_bos.R"
+
+rule bhc:
+    # Use BHC to learn CPDAG from which poss_cvars and a Markov equiv DAG are selected
+    input:
+        rules.simulate_data.output
+    output:
+        bhc_dag=("estimate" +                   
+                 "/true_cstree=/" + pattern_cstree +
+                 "/true_cstree_params=/" + pattern_cstree_params +
+                 "/data=/" + pattern_cstree_data + 
+                 "/alg=/" + pattern_bhc + 
+                 "/structure.csv")
+    script:
+        "snake_scripts/estimate_bhc.R"
+
+rule cslearn:           # untested
     # Estimate a distribution from data
     input:
         data=rules.simulate_cstree_data.output,
-        poss_cvars=input_cvars
+        poss_cvars=input_cvars # will be empty if poss_cvars is None
     output:
         cstree = ("estimate" +
                   "/alg=/" + pattern_cslearn +                   
@@ -85,7 +113,7 @@ rule estimate_cstree:           # untested
     script:
         "snake_scripts/estimate_cstree.py"
 
-rule estimate_grasp:            # tested
+rule grasp:            # tested
     # Use GRaSP to learn CPDAG from which poss_cvars and a Markov equiv DAG are selected
     input:
         rules.simulate_data.output
@@ -105,7 +133,7 @@ rule estimate_grasp:            # tested
     script:
         "snake_scripts/estimate_grasp.py"
 
-rule estimate_pc:               # tested
+rule pc:               # tested
     # Use PC to learn CPDAG from which poss_cvars and a Markov equiv DAG are selected
     input:
         rules.simulate_data.output
@@ -159,6 +187,41 @@ rule cstree_bdeu_parameter_estimation:
     script:
         "scripts/cstree_bdeu_parameter_estimation.R"
 
+rule stagedtree_ml_parameter_estimation:
+    input:
+        cstree = rules.estimate_cstree.output,
+        data = rules.simulate_data.output
+    output:
+        cstree_param_est=("cstree_param_est" +                          
+                          "/true_cstree=/{true_cstree}" +
+                          "/true_cstree_params=/{true_cstree_params}" +
+                          "/data=/{data}" + 
+                          "/alg=/{alg}" + 
+                          "/param_est=/"+pattern_st_param_est+"/st.rds")
+    script:
+        "scripts/stagedtree_ml_parameter_estimation.R"
+
+rule joint_stagedtree_distribution:
+    input:
+        input_st = ("estimate" +                    
+                    "/true_cstree=/{true_cstree}" +
+                    "/true_cstree_params=/{true_cstree_params}" +
+                    "/data=/{data}" + 
+                    "/alg=/{alg}" + 
+                    "/param_est=/{param_est}" +
+                    "/structure.csv")
+    output:
+        full_distr=("full_distr" +                    
+                    "/true_cstree=/{true_cstree}" +
+                    "/true_cstree_params=/{true_cstree_params}" +
+                    "/data=/{data}" +
+                    "/alg=/{alg}/" +
+                    "/param_est=/{param_est}" + 
+                    "/distr.csv") # this needs to be matched better
+    wildcard_constraints:
+        alg = "bos|bhc"
+    script:
+        "snake_scripts/joint_stagedtree_distr.R"
 
 rule joint_dag_distribution:    # untested
     # Estimate a distribution from data
@@ -168,13 +231,15 @@ rule joint_dag_distribution:    # untested
                     "/true_cstree_params=/{true_cstree_params}" +
                     "/data=/{data}" + 
                     "/alg=/{alg}" + 
+                    "/param_est=/{param_est}" +
                     "/structure.csv")
     output:
         full_distr=("full_distr" +                    
                     "/true_cstree=/{true_cstree}" +
                     "/true_cstree_params=/{true_cstree_params}" +
                     "/data=/{data}" +
-                    "/alg=/{alg}" +  
+                    "/alg=/{alg}" +
+                    "/param_est=/{param_est}" +
                     "/distr.csv")
     script:
         "snake_scripts/joint_dag.py"
@@ -393,6 +458,7 @@ rule: kl_plots_2c_csv:
                         dag_param_est_alpha=[0.05], # this will be ignored for dag_param_est_type="mle"
                         dag_param_est_type=["mle"],
                         seed=range(1, 11)),
+
         bos = expand(("kl_div" +                   
                     "/true_cstree=/" + pattern_cstree +
                     "/true_cstree_params=/" + pattern_cstree_params +
@@ -408,6 +474,7 @@ rule: kl_plots_2c_csv:
                 dag_param_est_alpha=[0.05],
                 dag_param_est_type=["mle"],
                 seed=range(1, 11)),
+
         grasp_bhc = expand(("kl_div" +                    
                             "/true_cstree=/" + pattern_cstree +
                             "/true_cstree_params=/" + pattern_cstree_params +
@@ -429,17 +496,17 @@ rule: kl_plots_2c_csv:
     script: 
         "rule_scripts/join_kl.py" # this script will join the csv files
 
-rule_kl_plots_2a:
+rule kl_plots_2a:
     input: "results/kl_divergence_2a.csv"
     output: "results/kl_divergence_2a.png"
     script: "rule_scripts/plot_kl.py"
 
-rule_kl_plots_2b:
+rule kl_plots_2b:
     input: "results/kl_divergence_2b.csv"
     output: "results/kl_divergence_2b.png"
     script: "rule_scripts/plot_kl.py"
 
-rule_kl_plots_2c:
+rule kl_plots_2c:
     input: "results/kl_divergence_2c.csv"
     output: "results/kl_divergence_2c.png"
     script: "rule_scripts/plot_kl.py"
