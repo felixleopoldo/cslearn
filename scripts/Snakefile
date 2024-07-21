@@ -1,8 +1,8 @@
 # Maybe we could prefix each pattern variable, e.g. pc_alpha
 
 # cstree model
-pattern_cstree = "cstree/{cstree_p}/cstree_max_cvar={cstree_max_cvar}/cstree_prob_cvar={cstree_prob_cvar}/seed={seed}"
-pattern_cstree_params = "true_cstree_params/cstree_params_alpha/{cstree_params_alpha}/seed={seed}"
+pattern_cstree = "cstree/cstree_p={cstree_p}/cstree_max_cvar={cstree_max_cvar}/cstree_prob_cvar={cstree_prob_cvar}/seed={seed}"
+pattern_cstree_params = "true_cstree_params/cstree_params_alpha={cstree_params_alpha}/seed={seed}"
 pattern_cstree_data = "data/cstree_data_n={cstree_data_n}/seed={seed}"
 
 # Structure learning
