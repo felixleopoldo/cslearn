@@ -29,16 +29,16 @@ rule all:
         "results/kl_divergence_2b.png", 
         "results/kl_divergence_2c.png"
 
-rule generate_cstree:           # tested
+rule gcstree:           # tested
     # Calculate KL divergence between two distribution
     output:
         "true_cstree/"+ pattern_cstree + "/cstree.csv"
     script:
         "snake_scripts/generate_cstree.py"
 
-rule generate_cstree_params:     # untested
+rule cstree_params:     # untested
     input:
-        cstree="true_cstree/"+ pattern_cstree + "/cstree.csv"
+        cstree=rules.cstree.output
     output:
         "true_cstree_params/"+pattern_cstree_params+"/true_cstree/"+ pattern_cstree + "/cstree.csv"
     script:
@@ -46,8 +46,8 @@ rule generate_cstree_params:     # untested
 
 rule full_true_cstree_distr:     # untested
     input:
-        cstree="true_cstree/"+ pattern_cstree + "/cstree.csv",
-        cstree_params="true_cstree_params/"+pattern_cstree_params+"/true_cstree/"+ pattern_cstree + "/cstree.csv"
+        cstree=rules.cstree.output,
+        cstree_params=rules.cstree_params.output
     output:
         ("full_true_distr/"+
         pattern_cstree+"/true_cstree_params/"+
@@ -59,7 +59,7 @@ rule full_true_cstree_distr:     # untested
 rule simulate_cstree_data:             # tested
     # Simulate data from a distribution
     input:
-        cstree="true_cstree_params/"+pattern_cstree_params+"/true_cstree/"+ pattern_cstree + "/cstree.csv" 
+        cstree=rules.cstree_params.output
     output:
         ("data"+
          "/true_cstree=/"+ pattern_cstree + 
