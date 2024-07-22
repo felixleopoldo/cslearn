@@ -124,6 +124,7 @@ rule bhc:
     input:
         rules.cstree_data.output,
         input_alg=input_alg
+        # add input ti,e
     output:
         ("estimate" +
         "/true_cstree=/" + pattern_cstree +
@@ -139,6 +140,7 @@ rule cslearn:           # untested
     input:
         data=rules.cstree_data.output,
         poss_cvars=input_cvars # will be empty if poss_cvars is None
+        # add input time
     output:
         cstree = ("estimate" +
                   "/true_cstree=/" + pattern_cstree +
@@ -146,6 +148,9 @@ rule cslearn:           # untested
                   "/data=/" + pattern_cstree_data +
                   "/alg=/" + pattern_cslearn +
                   "/structure.csv")
+        #  add time and total time (including poss_csvars time)
+        # time = 
+        # total_time =
     script:
         "snake_scripts/estimate_cstree.py"
 
@@ -533,6 +538,34 @@ rule kl_plots_2c_csv:
         "results/kl_divergence_2c.csv"
     script:
         "rule_scripts/join_kl.py" # this script will join the csv files
+"""
+Plot (3a): comparison of runtimes (total times only) for all algorithms on small graphs with multiple sample sizes:
+
+Total Runtime on y-axis
+x-axis: number of nodes (p = 5,7,10,15,20)
+algorithms: 
+ - CSlearn with PC for n = 250
+ - CSlearn with PC for n = 1000
+ - CSlearn with GrASP for n = 250
+ - CSlearn with GrASP for n = 1000
+ - bos (stagedtrees) with n = 250
+ - bos (stagedtrees) with n = 1000
+ - GrASP + bhc (stagedtrees) with n = 250
+ - GrASP + bhc (stagedtrees) with n = 1000
+ """
+
+"""
+Plot (3b): comparison of performance of scalable methods (total times only... I don't think there is much benefit to including the phase breakdown... text me if you want to discuss it):
+
+Total Runtime on y-axis
+x-axis: number of nodes (p = 10, 25, 50, 100, 250, 500) 
+algorithms: 
+ - CSlearn with PC
+ - CSlearn with GrASP
+ - GrASP + bhc (stagedtrees)
+*notes:
+ - number of samples n = 1000
+"""
 
 rule kl_plots_2a:
     input: "results/kl_divergence_2a.csv"
@@ -548,3 +581,4 @@ rule kl_plots_2c:
     input: "results/kl_divergence_2c.csv"
     output: "results/kl_divergence_2c.png"
     script: "rule_scripts/plot_kl.py"
+
