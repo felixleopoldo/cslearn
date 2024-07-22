@@ -1,31 +1,40 @@
-# Maybe we could prefix each pattern variable, e.g. pc_alpha
+# Run by typing:
+# snakemake all
+# For dry run type:
+# snakemake all -n
 
-# cstree model
+# Cstree model
 pattern_cstree = "cstree/cstree_p={cstree_p}/cstree_max_cvar={cstree_max_cvar}/cstree_prob_cvar={cstree_prob_cvar}/seed={seed}"
 pattern_cstree_params = "true_cstree_params/cstree_params_alpha={cstree_params_alpha}/seed={seed}"
 pattern_cstree_data = "data/cstree_data_n={cstree_data_n}/seed={seed}"
 
 # Structure learning
-pattern_cslearn = "cslearn/cslearn_poss_cvars={cslearn_poss_cvars}/cslearn_max_cvar={cslearn_max_cvar}/cslearn_prob_cvar={cslearn_prob_cvar}/seed={seed}"
+pattern_cslearn = ("cslearn/cslearn_poss_cvars={cslearn_poss_cvars}/cslearn_mcmc_iterations={cslearn_mcmc_iterations}/"
+                   "cslearn_alpha_tot={cslearn_alpha_tot}/cslearn_param_prior={cslearn_param_prior}/"
+                   "cslearn_max_cvar={cslearn_max_cvar}/cslearn_prob_cvar={cslearn_prob_cvar}/seed={seed}")
 pattern_grasp = "grasp/seed={seed}"
 pattern_pc = "pc/pc_alpha={pc_alpha}/seed={seed}"
 pattern_bos = "bos/seed={seed}"
 pattern_bhc = "bhc/bhc_start_alg={bhc_start_alg}/seed={seed}"
 
-# With imposed start algorithm
+# Structure learning with imposed start algorithm pattern
 pattern_grasp_bhc = "bhc/bhc_start_alg="+ pattern_grasp +"/seed={seed}"
 pattern_pc_bhc = "bhc/bhc_start_alg="+pattern_pc +"/seed={seed}"
 
-# with imposed poss_cvars
-pattern_pc_cslearn = "cslearn/cslearn_poss_cvars="+pattern_pc+"/cslearn_max_cvar={cslearn_max_cvar}/cslearn_prob_cvar={cslearn_prob_cvar}/seed={seed}"
-pattern_grasp_cslearn = "cslearn/cslearn_poss_cvars="+pattern_grasp+"/cslearn_max_cvar={cslearn_max_cvar}/cslearn_prob_cvar={cslearn_prob_cvar}/seed={seed}"
+# With imposed poss_cvars
+pattern_pc_cslearn = ("cslearn/cslearn_poss_cvars="+pattern_pc+"/cslearn_mcmc_iterations={cslearn_mcmc_iterations}/"
+                      "cslearn_alpha_tot={cslearn_alpha_tot}/cslearn_param_prior={cslearn_param_prior}/"
+                      "cslearn_max_cvar={cslearn_max_cvar}/cslearn_prob_cvar={cslearn_prob_cvar}/seed={seed}")
+pattern_grasp_cslearn = ("cslearn/cslearn_poss_cvars="+pattern_grasp+"/cslearn_mcmc_iterations={cslearn_mcmc_iterations}/"
+                         "cslearn_alpha_tot={cslearn_alpha_tot}/cslearn_param_prior={cslearn_param_prior}/"
+                         "cslearn_max_cvar={cslearn_max_cvar}/cslearn_prob_cvar={cslearn_prob_cvar}/seed={seed}")
 
-# parameter
+# Parameter estimation
 pattern_dag_param_est = "dag_param_est/dag_param_est_estimation_type={dag_param_est_estimation_type}/dag_param_est_alpha={dag_param_est_alpha}/seed={seed}" # type is bdeu or mle
 pattern_cstree_param_est = "cstree_param_est/cstree_param_est_estimation_type={cstree_param_est_estimation_type}/cstree_param_est_alpha={cstree_param_est_alpha}/seed={seed}" # type is bdeu or mle
 pattern_st_param_est = "st_param_est/st_param_est_estimation_type={st_param_est_estimation_type}/st_param_est_alpha={st_param_est_alpha}/seed={seed}" # type is bdeu or mle
 
-# evaluation
+# Evaluation
 pattern_kl_div = "kl_div"
 
 
@@ -38,7 +47,7 @@ def input_cvars(wildcards):
         return []
     else:
         # the poss_cvars will be the pattern string of a DAG estimation algorithm
-        return ("estimate" +                
+        return ("estimate" +
                 "/true_cstree=/" + pattern_cstree +
                 "/true_cstree_params=/" + pattern_cstree_params +
                 "/data=/" + pattern_cstree_data +
@@ -51,18 +60,46 @@ def input_alg(wildcards):
         return []
     else:
         # the poss_cvars will be the pattern string of a DAG estimation algorithm
-        return ("estimate" +                
+        return ("estimate" +
                 "/true_cstree=/" + pattern_cstree +
                 "/true_cstree_params=/" + pattern_cstree_params +
                 "/data=/" + pattern_cstree_data +
                 "/alg=/" + wildcards.bhc_start_alg +
                 "/structure.csv")
 
+def input_time_bhc(wildcards):
+
+        if wildcards.bhc_start_alg == "None":
+            return []
+        else:
+            # the poss_cvars will be the pattern string of a DAG estimation algorithm
+            return ("time" +
+                    "/true_cstree=/" + pattern_cstree +
+                    "/true_cstree_params=/" + pattern_cstree_params +
+                    "/data=/" + pattern_cstree_data +
+                    "/alg=/" + wildcards.bhc_start_alg +
+                    "/time.csv")
+
+def input_time_cslearn(wildcards):
+
+        if wildcards.cslearn_poss_cvars == "None":
+            return []
+        else:
+            # the poss_cvars will be the pattern string of a DAG estimation algorithm
+            return ("time" +
+                    "/true_cstree=/" + pattern_cstree +
+                    "/true_cstree_params=/" + pattern_cstree_params +
+                    "/data=/" + pattern_cstree_data +
+                    "/alg=/" + wildcards.cslearn_poss_cvars +
+                    "/time.csv")
+
 rule all:
     input:
         "results/kl_divergence_2a.png",
         "results/kl_divergence_2b.png",
-        "results/kl_divergence_2c.png"
+        "results/kl_divergence_2c.png",
+        "results/time_3a.png",
+        "results/time_3b.png"
 
 rule cstree:           # tested
     # Calculate KL divergence between two distribution
@@ -115,7 +152,14 @@ rule bos:
                  "/true_cstree_params=/" + pattern_cstree_params +
                  "/data=/" + pattern_cstree_data +
                  "/alg=/" + pattern_bos +
-                 "/structure.csv")
+                 "/structure.csv"),
+
+        time=("time" +
+              "/true_cstree=/" + pattern_cstree +
+              "/true_cstree_params=/" + pattern_cstree_params +
+              "/data=/" + pattern_cstree_data +
+              "/alg=/" + pattern_bos +
+              "/time.csv")
     script:
         "snake_scripts/estimate_bos.R"
 
@@ -123,15 +167,28 @@ rule bhc:
     # Use BHC to learn CPDAG from which poss_cvars and a Markov equiv DAG are selected
     input:
         rules.cstree_data.output,
-        input_alg=input_alg
-        # add input ti,e
+        input_alg=input_alg,
+        input_time=input_time_bhc
+
     output:
-        ("estimate" +
+        structure=("estimate" +
         "/true_cstree=/" + pattern_cstree +
         "/true_cstree_params=/" + pattern_cstree_params +
         "/data=/" + pattern_cstree_data +
         "/alg=/" + pattern_bhc +
-        "/structure.csv") # This might not be a csv file
+        "/structure.csv"), # This might not be a csv file
+        time=("time" +
+              "/true_cstree=/" + pattern_cstree +
+              "/true_cstree_params=/" + pattern_cstree_params +
+              "/data=/" + pattern_cstree_data +
+              "/alg=/" + pattern_bhc +
+              "/time.csv"),
+        total_time=("time" +
+                    "/true_cstree=/" + pattern_cstree +
+                    "/true_cstree_params=/" + pattern_cstree_params +
+                    "/data=/" + pattern_cstree_data +
+                    "/alg=/" + pattern_bhc +
+                    "/total_time.csv")
     script:
         "snake_scripts/estimate_bhc.R"
 
@@ -139,18 +196,28 @@ rule cslearn:           # untested
     # Estimate a distribution from data
     input:
         data=rules.cstree_data.output,
-        poss_cvars=input_cvars # will be empty if poss_cvars is None
-        # add input time
+        poss_cvars=input_cvars, # will be empty if poss_cvars is None
+        input_time=input_time_cslearn
     output:
         cstree = ("estimate" +
                   "/true_cstree=/" + pattern_cstree +
                   "/true_cstree_params=/" + pattern_cstree_params +
                   "/data=/" + pattern_cstree_data +
                   "/alg=/" + pattern_cslearn +
-                  "/structure.csv")
+                  "/structure.csv"),
         #  add time and total time (including poss_csvars time)
-        # time = 
-        # total_time =
+        time = ("time" +
+                "/true_cstree=/" + pattern_cstree +
+                "/true_cstree_params=/" + pattern_cstree_params +
+                "/data=/" + pattern_cstree_data +
+                "/alg=/" + pattern_cslearn +
+                "/time.csv"),
+        total_time = ("time" +
+                      "/true_cstree=/" + pattern_cstree +
+                      "/true_cstree_params=/" + pattern_cstree_params +
+                      "/data=/" + pattern_cstree_data +
+                      "/alg=/" + pattern_cslearn +
+                      "/total_time.csv") # this will be same as time if poss_cvars is None
     script:
         "snake_scripts/estimate_cstree.py"
 
@@ -170,7 +237,13 @@ rule grasp:            # tested
                 "/true_cstree_params=/" + pattern_cstree_params +
                 "/data=/" + pattern_cstree_data +
                 "/alg=/" + pattern_grasp +
-                "/poss_cvars.json")
+                "/poss_cvars.json"),
+        time=("time" +
+              "/true_cstree=/" + pattern_cstree +
+              "/true_cstree_params=/" + pattern_cstree_params +
+              "/data=/" + pattern_cstree_data +
+              "/alg=/" + pattern_grasp +
+              "/time.csv")
     script:
         "snake_scripts/estimate_grasp.py"
 
@@ -190,7 +263,14 @@ rule pc:               # tested
                   "/true_cstree_params=/" + pattern_cstree_params +
                   "/data=/" + pattern_cstree_data +
                   "/alg=/" + pattern_pc +
-                  "/poss_cvars.json")
+                  "/poss_cvars.json"),
+        time=("time" +
+              "/true_cstree=/" + pattern_cstree +
+              "/true_cstree_params=/" + pattern_cstree_params +
+              "/data=/" + pattern_cstree_data +
+              "/alg=/" + pattern_pc +
+              "/time.csv")
+
     script:
         "snake_scripts/estimate_pc.py"
 
@@ -236,7 +316,7 @@ rule stagedtree_ml_parameter_estimation:
         "/true_cstree_params=/" + pattern_cstree_params +
         "/data=/" + pattern_cstree_data +
         "/alg=/{alg}" +
-        "/structure.csv") 
+        "/structure.csv")
     output:
         param_est=("stagedtree_param_est" +
                     "/true_cstree=/" + pattern_cstree +
@@ -381,7 +461,9 @@ rule kl_plots_2a_csv:
                     cstree_data_n=[250, 500, 1000, 10000],
                     cslearn_max_cvar=[2],
                     cslearn_prob_cvar=[1],
-                    #cslearn_poss_cvars=["None"],
+                    cslearn_mcmc_iterations=[5000],
+                    cslearn_alpha_tot=[1.0],
+                    cslearn_param_prior=["BDeu"],
                     pc_alpha=0.05,
                     cstree_param_est_alpha=[0.05], # this will be ignored for dag_param_est_type="mle"
                     cstree_param_est_estimation_type=["mle", "map"],
@@ -440,6 +522,9 @@ rule kl_plots_2b_csv:
                         cstree_data_n=[250, 500, 1000, 10000],
                         cslearn_max_cvar=[2],
                         cslearn_prob_cvar=[1],
+                        cslearn_mcmc_iterations=[5000],
+                        cslearn_alpha_tot=[1.0],
+                        cslearn_param_prior=["BDeu"],
                         cstree_param_est_alpha=[0.05], # this will be ignored for dag_param_est_type="mle"
                         cstree_param_est_estimation_type=["mle", "map"],
                         seed=range(1, 11))
@@ -498,6 +583,9 @@ rule kl_plots_2c_csv:
                         cstree_data_n=[1000, 10000],
                         cslearn_max_cvar=[2],
                         cslearn_prob_cvar=[1],
+                        cslearn_mcmc_iterations=[5000],
+                        cslearn_alpha_tot=[1.0],
+                        cslearn_param_prior=["BDeu"],
                         cstree_param_est_alpha=[0.05], # this will be ignored for dag_param_est_type="mle"
                         cstree_param_est_estimation_type=["mle"],
                         seed=range(1, 11)),
@@ -543,7 +631,7 @@ Plot (3a): comparison of runtimes (total times only) for all algorithms on small
 
 Total Runtime on y-axis
 x-axis: number of nodes (p = 5,7,10,15,20)
-algorithms: 
+algorithms:
  - CSlearn with PC for n = 250
  - CSlearn with PC for n = 1000
  - CSlearn with GrASP for n = 250
@@ -553,19 +641,149 @@ algorithms:
  - GrASP + bhc (stagedtrees) with n = 250
  - GrASP + bhc (stagedtrees) with n = 1000
  """
+rule time_plots_3a_csv:
+    input:
+        cslearn_pc = expand(("time" +
+                            "/true_cstree=/" + pattern_cstree +
+                            "/true_cstree_params=/" + pattern_cstree_params +
+                            "/data=/" + pattern_cstree_data +
+                            "/alg=/" + pattern_pc_cslearn +
+                            "/total_time.csv"),
+                    cstree_p=[5,7,10,15],
+                    cstree_max_cvar=[2],
+                    cstree_prob_cvar=[1],
+                    cstree_params_alpha=[0.05],
+                    cstree_data_n=[250, 1000],
+                    cslearn_max_cvar=[2],
+                    cslearn_prob_cvar=[1],
+                    cslearn_mcmc_iterations=[5000],
+                    cslearn_alpha_tot=[1.0],
+                    cslearn_param_prior=["BDeu"],
+                    pc_alpha=0.05,
+                    seed=range(1, 11)),
+
+        cslearn_grasp = expand(("time" +
+                                "/true_cstree=/" + pattern_cstree +
+                                "/true_cstree_params=/" + pattern_cstree_params +
+                                "/data=/" + pattern_cstree_data +
+                                "/alg=/" + pattern_grasp_cslearn +
+                                "/total_time.csv"),
+                        cstree_p=[5,7,10,15],
+                        cstree_max_cvar=[2],
+                        cstree_prob_cvar=[1],
+                        cstree_params_alpha=[0.05],
+                        cstree_data_n=[250, 1000],
+                        cslearn_max_cvar=[2],
+                        cslearn_prob_cvar=[1],
+                        cslearn_mcmc_iterations=[5000],
+                        cslearn_alpha_tot=[1.0],
+                        cslearn_param_prior=["BDeu"],
+                        seed=range(1, 11)),
+
+        bos = expand(("time" +
+                    "/true_cstree=/" + pattern_cstree +
+                    "/true_cstree_params=/" + pattern_cstree_params +
+                    "/data=/" + pattern_cstree_data +
+                    "/alg=/" + pattern_bos +
+                    "/time.csv"),
+                cstree_p=[5,7,10,15],
+                cstree_max_cvar=[2],
+                cstree_prob_cvar=[1],
+                cstree_params_alpha=[0.05],
+                cstree_data_n=[250, 1000],
+                seed=range(1, 11)),
+
+        grasp_bhc = expand(("time" +
+                            "/true_cstree=/" + pattern_cstree +
+                            "/true_cstree_params=/" + pattern_cstree_params +
+                            "/data=/" + pattern_cstree_data +
+                            "/alg=/" + pattern_grasp_bhc +
+                            "/total_time.csv"),
+                cstree_p=[5,7,10,15],
+                cstree_max_cvar=[2],
+                cstree_prob_cvar=[1],
+                cstree_params_alpha=[0.05],
+                cstree_data_n=[250, 1000],
+                seed=range(1, 11)),
+    output:
+        "results/time_3a.csv"
 
 """
 Plot (3b): comparison of performance of scalable methods (total times only... I don't think there is much benefit to including the phase breakdown... text me if you want to discuss it):
 
 Total Runtime on y-axis
-x-axis: number of nodes (p = 10, 25, 50, 100, 250, 500) 
-algorithms: 
+x-axis: number of nodes (p = 10, 25, 50, 100, 250, 500)
+algorithms:
  - CSlearn with PC
  - CSlearn with GrASP
  - GrASP + bhc (stagedtrees)
 *notes:
  - number of samples n = 1000
 """
+
+rule time_plots_3b_csv:
+    input:
+        cslearn_pc = expand(("time" +
+                            "/true_cstree=/" + pattern_cstree +
+                            "/true_cstree_params=/" + pattern_cstree_params +
+                            "/data=/" + pattern_cstree_data +
+                            "/alg=/" + pattern_pc_cslearn +
+                            "/total_time.csv"),
+                    cstree_p=[10, 25, 50, 100, 250, 500],
+                    cstree_max_cvar=[2],
+                    cstree_prob_cvar=[1],
+                    cstree_params_alpha=[0.05],
+                    cstree_data_n=[1000],
+                    pc_alpha=0.05,
+                    cslearn_max_cvar=[2],
+                    cslearn_prob_cvar=[1],
+                    cslearn_mcmc_iterations=[5000],
+                    cslearn_alpha_tot=[1.0],
+                    cslearn_param_prior=["BDeu"],
+                    seed=range(1, 11)),
+
+        cslearn_grasp = expand(("time" +
+                                "/true_cstree=/" + pattern_cstree +
+                                "/true_cstree_params=/" + pattern_cstree_params +
+                                "/data=/" + pattern_cstree_data +
+                                "/alg=/" + pattern_grasp_cslearn +
+                                "/total_time.csv"),
+                        cstree_p=[10, 25, 50, 100, 250, 500],
+                        cstree_max_cvar=[2],
+                        cstree_prob_cvar=[1],
+                        cstree_params_alpha=[0.05],
+                        cstree_data_n=[1000],
+                        cslearn_max_cvar=[2],
+                        cslearn_prob_cvar=[1],
+                        cslearn_mcmc_iterations=[5000],
+                        cslearn_alpha_tot=[1.0],
+                        cslearn_param_prior=["BDeu"],
+                        seed=range(1, 11)),
+
+        grasp_bhc = expand(("time" +
+                            "/true_cstree=/" + pattern_cstree +
+                            "/true_cstree_params=/" + pattern_cstree_params +
+                            "/data=/" + pattern_cstree_data +
+                            "/alg=/" + pattern_grasp_bhc +
+                            "/total_time.csv"),
+                cstree_p=[10, 25, 50, 100, 250, 500],
+                cstree_max_cvar=[2],
+                cstree_prob_cvar=[1],
+                cstree_params_alpha=[0.05],
+                cstree_data_n=[1000],
+                seed=range(1, 11))
+    output:
+        "results/time_3b.csv"
+
+rule time_plots_3a:
+    input: "results/time_3a.csv"
+    output: "results/time_3a.png"
+    script: "rule_scripts/plot_time.py"
+
+rule time_plots_3b:
+    input: "results/time_3b.csv"
+    output: "results/time_3b.png"
+    script: "rule_scripts/plot_time.py"
 
 rule kl_plots_2a:
     input: "results/kl_divergence_2a.csv"
