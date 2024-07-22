@@ -13,8 +13,8 @@ pattern_bos = "bos/seed={seed}"
 pattern_bhc = "bhc/bhc_start_alg={bhc_start_alg}/seed={seed}"
 
 # With imposed start algorithm
-pattern_grasp_bhc = "grasp_bhc/start_alg="+ pattern_grasp +"/seed={seed}"
-pattern_pc_bhc = "pc_bhc/start_alg="+pattern_pc +"/seed={seed}"
+pattern_grasp_bhc = "bhc/bhc_start_alg="+ pattern_grasp +"/seed={seed}"
+pattern_pc_bhc = "bhc/bhc_start_alg="+pattern_pc +"/seed={seed}"
 
 # with imposed poss_cvars
 pattern_pc_cslearn = "cslearn/cslearn_poss_cvars="+pattern_pc+"/cslearn_max_cvar={cslearn_max_cvar}/cslearn_prob_cvar={cslearn_prob_cvar}/seed={seed}"
@@ -47,7 +47,7 @@ def input_cvars(wildcards):
 
 def input_alg(wildcards):
 
-    if wildcards.input_alg == "None":
+    if wildcards.bhc_start_alg == "None":
         return []
     else:
         # the poss_cvars will be the pattern string of a DAG estimation algorithm
@@ -55,7 +55,7 @@ def input_alg(wildcards):
                 "/true_cstree=/" + pattern_cstree +
                 "/true_cstree_params=/" + pattern_cstree_params +
                 "/data=/" + pattern_cstree_data +
-                "/alg=/" + wildcards.input_alg +
+                "/alg=/" + wildcards.bhc_start_alg +
                 "/structure.csv")
 
 rule all:
@@ -513,21 +513,21 @@ rule kl_plots_2c_csv:
                 st_param_est_estimation_type=["mle"],
                 seed=range(1, 11)),
 
-        # grasp_bhc = expand(("kl_div" +
-        #                     "/true_cstree=/" + pattern_cstree +
-        #                     "/true_cstree_params=/" + pattern_cstree_params +
-        #                     "/data=/" + pattern_cstree_data +
-        #                     "/alg=/" + pattern_grasp_bhc +
-        #                     "/param_est=/" + pattern_st_param_est +
-        #                     "/kl_div.csv"),
-        #         cstree_p=[5,7,10,15,20],
-        #         cstree_max_cvar=[2],
-        #         cstree_prob_cvar=[1],
-        #         cstree_params_alpha=[0.05],
-        #         cstree_data_n=[1000, 10000],
-        #         st_param_est_alpha=[0.05],
-        #         st_param_est_estimation_type=["mle"],
-        #         seed=range(1, 11)),
+        grasp_bhc = expand(("kl_div" +
+                            "/true_cstree=/" + pattern_cstree +
+                            "/true_cstree_params=/" + pattern_cstree_params +
+                            "/data=/" + pattern_cstree_data +
+                            "/alg=/" + pattern_grasp_bhc +
+                            "/param_est=/" + pattern_st_param_est +
+                            "/kl_div.csv"),
+                cstree_p=[5,7,10,15,20],
+                cstree_max_cvar=[2],
+                cstree_prob_cvar=[1],
+                cstree_params_alpha=[0.05],
+                cstree_data_n=[1000, 10000],
+                st_param_est_alpha=[0.05],
+                st_param_est_estimation_type=["mle"],
+                seed=range(1, 11)),
 
     output:
         "results/kl_divergence_2c.csv"
