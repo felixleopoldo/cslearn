@@ -101,6 +101,18 @@ rule all:
         "results/time_3a.png",
         "results/time_3b.png"
 
+# Reads a DAG (adjacency matrix) and returns a list of possible cvars
+# as a JSON file.
+rule dag_to_poss_cvar:
+    output:
+        "{whatever}/alg=/{algname}/{andever}/poss_cvars.json"
+    input:
+        "{whatever}/alg=/{algname}/{andever}/structure.csv"
+    wildcard_constraints:
+        algname = "grasp|pc"
+    script:
+        "snake_scripts/dag_to_poss_cvar.py"
+
 rule cstree:           # tested
     # Calculate KL divergence between two distribution
     output:
@@ -231,13 +243,7 @@ rule grasp:            # tested
                    "/true_cstree_params=/" + pattern_cstree_params +
                    "/data=/" + pattern_cstree_data +
                    "/alg=/" + pattern_grasp +
-                   "/structure.csv"), #
-        cvars=("estimate" +
-                "/true_cstree=/" + pattern_cstree +
-                "/true_cstree_params=/" + pattern_cstree_params +
-                "/data=/" + pattern_cstree_data +
-                "/alg=/" + pattern_grasp +
-                "/poss_cvars.json"),
+                   "/structure.csv"), 
         time=("time" +
               "/true_cstree=/" + pattern_cstree +
               "/true_cstree_params=/" + pattern_cstree_params +
@@ -258,12 +264,6 @@ rule pc:               # tested
                 "/data=/" + pattern_cstree_data +
                 "/alg=/" + pattern_pc +
                 "/structure.csv"),
-        cvars=("estimate" +
-                  "/true_cstree=/" + pattern_cstree +
-                  "/true_cstree_params=/" + pattern_cstree_params +
-                  "/data=/" + pattern_cstree_data +
-                  "/alg=/" + pattern_pc +
-                  "/poss_cvars.json"),
         time=("time" +
               "/true_cstree=/" + pattern_cstree +
               "/true_cstree_params=/" + pattern_cstree_params +
@@ -775,16 +775,6 @@ rule time_plots_3b_csv:
     output:
         "results/time_3b.csv"
 
-rule time_plots_3a:
-    input: "results/time_3a.csv"
-    output: "results/time_3a.png"
-    script: "rule_scripts/plot_time.py"
-
-rule time_plots_3b:
-    input: "results/time_3b.csv"
-    output: "results/time_3b.png"
-    script: "rule_scripts/plot_time.py"
-
 rule kl_plots_2a:
     input: "results/kl_divergence_2a.csv"
     output: "results/kl_divergence_2a.png"
@@ -800,3 +790,12 @@ rule kl_plots_2c:
     output: "results/kl_divergence_2c.png"
     script: "rule_scripts/plot_kl.py"
 
+rule time_plots_3a:
+    input: "results/time_3a.csv"
+    output: "results/time_3a.png"
+    script: "rule_scripts/plot_time.py"
+
+rule time_plots_3b:
+    input: "results/time_3b.csv"
+    output: "results/time_3b.png"
+    script: "rule_scripts/plot_time.py"
