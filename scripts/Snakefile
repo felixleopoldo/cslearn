@@ -18,7 +18,7 @@ pattern_pc_bhc = "pc_bhc/start_alg="+pattern_pc +"/seed={seed}"
 
 # with imposed poss_cvars
 pattern_pc_cslearn = "cslearn/cslearn_poss_cvars="+pattern_pc+"/cslearn_max_cvar={cslearn_max_cvar}/cslearn_prob_cvar={cslearn_prob_cvar}/seed={seed}"
-pattern_grasp_cslearn = "cslearn/poss_cvars="+pattern_grasp+"/cslearn_max_cvar={cslearn_max_cvar}/cslearn_prob_cvar={cslearn_prob_cvar}/seed={seed}"
+pattern_grasp_cslearn = "cslearn/cslearn_poss_cvars="+pattern_grasp+"/cslearn_max_cvar={cslearn_max_cvar}/cslearn_prob_cvar={cslearn_prob_cvar}/seed={seed}"
 
 # parameter
 pattern_dag_param_est = "dag_param_est/dag_param_est_estimation_type={dag_param_est_estimation_type}/dag_param_est_alpha={dag_param_est_alpha}/seed={seed}" # type is bdeu or mle
@@ -205,7 +205,8 @@ rule dag_bdeu_parameter_estimation:
                        "/true_cstree_params=/{true_cstree_params}" +
                        "/data=/{data}" +
                        "/alg=/{alg}" +
-                       "/param_est=/"+pattern_dag_param_est+"/params.csv")
+                       "/param_est=/"+pattern_dag_param_est +
+                       "/params.csv")
 
 # CS-BDeu
 rule cstree_bdeu_parameter_estimation:
@@ -218,7 +219,8 @@ rule cstree_bdeu_parameter_estimation:
                     "/true_cstree_params=/" + pattern_cstree_params +
                     "/data=/" + pattern_cstree_data +
                     "/alg=/" + pattern_cslearn +
-                    "/param_est=/"+pattern_cstree_param_est+"/cstree.csv")
+                    "/param_est=/"+pattern_cstree_param_est+
+                    "/cstree.csv")
     script:
         "scripts/cstree_bdeu_parameter_estimation.R"
 
@@ -262,13 +264,13 @@ rule joint_stagedtree_distribution:
 rule joint_dag_distribution:    # untested
     # Estimate a distribution from data
     input:
-        input_bn = ("estimate" +
+        input_bn = ("dag_param_est" +
                     "/true_cstree=/{true_cstree}" +
                     "/true_cstree_params=/{true_cstree_params}" +
                     "/data=/{data}" +
                     "/alg=/{alg_name}/{alg}" +
                     "/param_est=/{param_est}" +
-                    "/structure.csv")
+                    "/params.csv")
     output:
         full_distr=("full_distr" +
                     "/true_cstree=/{true_cstree}" +
@@ -282,26 +284,18 @@ rule joint_dag_distribution:    # untested
     script:
         "snake_scripts/joint_dag.py"
 
-rule joint_cstree_distrubtion:  # untested
+rule joint_cstree_distribution:  # untested
     # Estimate a distribution from data
     input:
-        input_cstree = ("cstree_param_est" +
-                    "/true_cstree=/{true_cstree}" +
-                    "/true_cstree_params=/{true_cstree_params}" +
-                    "/data=/{data}" +
-                    "/alg=/{alg_name}/{alg}" +
-                    "/param_est=/{param_est}" +
-                    "/cstree.csv")
+        input_cstree = rules.cstree_bdeu_parameter_estimation.output
     output:
         full_distr=("full_distr" +
-                    "/true_cstree=/{true_cstree}" +
-                    "/true_cstree_params=/{true_cstree_params}" +
-                    "/data=/{data}" +
-                    "/alg=/{alg_name}/{alg}" +
-                    "/param_est=/{param_est}" +
+                    "/true_cstree=/" + pattern_cstree +
+                    "/true_cstree_params=/" + pattern_cstree_params +
+                    "/data=/" + pattern_cstree_data +
+                    "/alg=/" + pattern_cslearn +
+                    "/param_est=/" + pattern_cstree_param_est +
                     "/distr.csv")
-    wildcard_constraints:
-        alg_name = "cslearn"
     script:
         "scripts/joint_cstree.py"
 
