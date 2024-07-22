@@ -125,12 +125,12 @@ rule bhc:
         rules.cstree_data.output,
         input_alg=input_alg
     output:
-        bhc_dag=("estimate" +
-                 "/true_cstree=/" + pattern_cstree +
-                 "/true_cstree_params=/" + pattern_cstree_params +
-                 "/data=/" + pattern_cstree_data +
-                 "/alg=/" + pattern_bhc +
-                 "/structure.csv")
+        ("estimate" +
+        "/true_cstree=/" + pattern_cstree +
+        "/true_cstree_params=/" + pattern_cstree_params +
+        "/data=/" + pattern_cstree_data +
+        "/alg=/" + pattern_bhc +
+        "/structure.csv") # This might not be a csv file
     script:
         "snake_scripts/estimate_bhc.R"
 
@@ -226,13 +226,17 @@ rule cstree_bdeu_parameter_estimation:
 
 rule stagedtree_ml_parameter_estimation:
     input:
-        cstree = rules.cslearn.output,
-        data = rules.cstree_data.output
+        ("estimate" +
+        "/true_cstree=/" + pattern_cstree +
+        "/true_cstree_params=/" + pattern_cstree_params +
+        "/data=/" + pattern_cstree_data +
+        "/alg=/{alg}" +
+        "/structure.csv") 
     output:
-        param_est=("cstree_param_est" +
-                    "/true_cstree=/{true_cstree}" +
-                    "/true_cstree_params=/{true_cstree_params}" +
-                    "/data=/{data}" +
+        param_est=("stagedtree_param_est" +
+                    "/true_cstree=/" + pattern_cstree +
+                    "/true_cstree_params=/" + pattern_cstree_params +
+                    "/data=/" + pattern_cstree_data +
                     "/alg=/{alg}" +
                     "/param_est=/"+pattern_st_param_est+"/st.rds")
 
@@ -240,20 +244,20 @@ rule stagedtree_ml_parameter_estimation:
         "scripts/stagedtree_ml_parameter_estimation.R"
 
 rule joint_stagedtree_distribution:
-    input: # here we 
-        input_st = ("cstree_param_est" +
+    input: # this coud be either bhc or bos
+        input_st = ("stagedtree_param_est" +
                     "/true_cstree=/{true_cstree}" +
                     "/true_cstree_params=/{true_cstree_params}" +
                     "/data=/{data}" +
-                    "/alg=/{alg_name}/{alg}" +
+                    "/alg=/{alg_name}/{alg_parameters}" +
                     "/param_est=/{param_est}" +
                     "/st.rds")
     output:
         full_distr=("full_distr" +
-                    "/true_cstree=/{alg_name}/{true_cstree}" +
+                    "/true_cstree=/{true_cstree}" +
                     "/true_cstree_params=/{true_cstree_params}" +
                     "/data=/{data}" +
-                    "/alg=/{alg_name}/{alg}/" +
+                    "/alg=/{alg_name}/{alg_parameters}" +
                     "/param_est=/{param_est}" +
                     "/distr.csv") # this needs to be matched better
     wildcard_constraints:
@@ -489,7 +493,6 @@ rule kl_plots_2c_csv:
                         cstree_data_n=[1000, 10000],
                         cslearn_max_cvar=[2],
                         cslearn_prob_cvar=[1],
-                        #cslearn_poss_cvars=["None"],
                         cstree_param_est_alpha=[0.05], # this will be ignored for dag_param_est_type="mle"
                         cstree_param_est_estimation_type=["mle"],
                         seed=range(1, 11)),
@@ -510,21 +513,21 @@ rule kl_plots_2c_csv:
                 st_param_est_estimation_type=["mle"],
                 seed=range(1, 11)),
 
-        grasp_bhc = expand(("kl_div" +
-                            "/true_cstree=/" + pattern_cstree +
-                            "/true_cstree_params=/" + pattern_cstree_params +
-                            "/data=/" + pattern_cstree_data +
-                            "/alg=/" + pattern_grasp_bhc +
-                            "/param_est=/" + pattern_st_param_est +
-                            "/kl_div.csv"),
-                cstree_p=[5,7,10,15,20],
-                cstree_max_cvar=[2],
-                cstree_prob_cvar=[1],
-                cstree_params_alpha=[0.05],
-                cstree_data_n=[1000, 10000],
-                st_param_est_alpha=[0.05],
-                st_param_est_estimation_type=["mle"],
-                seed=range(1, 11)),
+        # grasp_bhc = expand(("kl_div" +
+        #                     "/true_cstree=/" + pattern_cstree +
+        #                     "/true_cstree_params=/" + pattern_cstree_params +
+        #                     "/data=/" + pattern_cstree_data +
+        #                     "/alg=/" + pattern_grasp_bhc +
+        #                     "/param_est=/" + pattern_st_param_est +
+        #                     "/kl_div.csv"),
+        #         cstree_p=[5,7,10,15,20],
+        #         cstree_max_cvar=[2],
+        #         cstree_prob_cvar=[1],
+        #         cstree_params_alpha=[0.05],
+        #         cstree_data_n=[1000, 10000],
+        #         st_param_est_alpha=[0.05],
+        #         st_param_est_estimation_type=["mle"],
+        #         seed=range(1, 11)),
 
     output:
         "results/kl_divergence_2c.csv"
