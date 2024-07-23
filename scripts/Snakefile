@@ -104,10 +104,10 @@ rule all:
 # Reads a DAG (adjacency matrix) and returns a list of possible cvars
 # as a JSON file.
 rule dag_to_poss_cvar:
-    output:
-        "{whatever}/alg=/{algname}/{andever}/poss_cvars.json"
     input:
-        "{whatever}/alg=/{algname}/{andever}/structure.csv"
+        "{whatever}/structure.csv"
+    output:
+        "{whatever}/poss_cvars.json"
     wildcard_constraints:
         algname = "grasp|pc"
     script:
