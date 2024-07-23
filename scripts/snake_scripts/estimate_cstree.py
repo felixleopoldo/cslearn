@@ -1,23 +1,50 @@
+from time import perf_counter as timer
+import json
+import warnings
+
+
+from pandas import read_csv
+
 import cstrees.learning as ctl
 import cstrees.scoring as sc
 
 
+warnings.simplefilter(action="ignore", category=FutureWarning)
+
 # input
-data = snakemake.input["data"]
-poss_cvars = snakemake.input["poss_cvars"]
+data_path = snakemake.input[0]
+poss_cvars_path = snakemake.input[1]
+prev_runtime_path = snakemake.input[2]
+max_cvars = int(snakemake.wildcards["cslearn_max_cvar"])
+num_iter = int(snakemake.wildcards["cslearn_mcmc_iterations"])
+alpha_tot = float(snakemake.wildcards["cslearn_alpha_tot"])
+prior = snakemake.wildcards["cslearn_param_prior"]
+
+# load inputs
+data = read_csv(data_path)
+with open(poss_cvars_path, "r") as f:
+    poss_cvars = json.load(f)
 
 # estimate cstree
+start = timer()
 score_table, context_scores, _ = sc.order_score_tables(
-    data, max_cvars=2, alpha_tot=1.0, method="BDeu", poss_cvars=poss_cvars
+    data, mak_cvars=max_cvars, alpha_tot=alpha_tot, method=prior, poss_cvars=poss_cvars
 )
-
-# run Gibbs sampler to get MAP order
-orders, scores = ctl.gibbs_order_sampler(5000, score_table)
+orders, scores = ctl.gibbs_order_sampler(num_iter, score_table)
 map_order = orders[scores.index(max(scores))]
-
-# estimate CStree
 opt_tree = ctl._optimal_cstree_given_order(map_order, context_scores)
-cstree_df = opt_tree.to_df(write_probs=True)
+end = timer()
+runtime = end - start
+
+with open(prev_runtime_path, "r") as f:
+    prev_runtime = f.read()
+total_runtime = float(runtime) + prev_runtime
+
+cstree_df = opt_tree.to_df()
 
 # output
 cstree_df.to_csv(snakemake.output[0])
+with open(snakemake.output[1], "w") as f:
+    f.write(str(runtime))
+with open(snakemake.output[2], "w") as f:
+    f.write(str(total_runtime))

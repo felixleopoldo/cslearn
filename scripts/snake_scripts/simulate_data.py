@@ -1,16 +1,16 @@
 from numpy import random as nprandom
-import pandas as pd
+from pandas import read_csv
 
 from cstrees import cstree as ct
 
 # input
 input_path = snakemake.input[0]
-n = int(snakemake.wildcards["n"])
+n = int(snakemake.wildcards["cstree_data_n"])
 seed = int(snakemake.wildcards["seed"])
 
 # simulate data
 nprandom.seed(seed)
-df = pd.read_csv(input_path)
+df = read_csv(input_path, index_col=(0))
 t = ct.df_to_cstree(df)
 data = t.sample(n)
 

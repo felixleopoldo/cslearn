@@ -3,7 +3,9 @@
 # For dry run type:
 # snakemake all -n
 
-# Cstree model
+seed_range = range(1, 2)   # can replace with range(1, 11) after testing
+
+# CStree model
 pattern_cstree = "cstree/cstree_p={cstree_p}/cstree_max_cvar={cstree_max_cvar}/cstree_prob_cvar={cstree_prob_cvar}/seed={seed}"
 pattern_cstree_params = "true_cstree_params/cstree_params_alpha={cstree_params_alpha}/seed={seed}"
 pattern_cstree_data = "data/cstree_data_n={cstree_data_n}/seed={seed}"
@@ -95,15 +97,15 @@ def input_time_cslearn(wildcards):
 
 rule all:
     input:
-        "results/kl_divergence_2a.png",
-        "results/kl_divergence_2b.png",
-        "results/kl_divergence_2c.png",
+        # "results/kl_divergence_2a.png",
+        # "results/kl_divergence_2b.png",
+        # "results/kl_divergence_2c.png",
         "results/time_3a.png",
         "results/time_3b.png"
 
 # Reads a DAG (adjacency matrix) and returns a list of possible cvars
 # as a JSON file.
-rule dag_to_poss_cvar:
+rule dag_to_poss_cvar:          # tested
     input:
         "{whatever}/structure.csv"
     output:
@@ -111,14 +113,13 @@ rule dag_to_poss_cvar:
     script:
         "snake_scripts/dag_to_poss_cvar.py"
 
-rule cstree:           # tested
-    # Calculate KL divergence between two distribution
+rule cstree:                    # tested
     output:
         "true_cstree/"+ pattern_cstree + "/cstree.csv"
     script:
         "snake_scripts/generate_cstree.py"
 
-rule cstree_params:     # untested
+rule cstree_params:             # tested
     input:
         cstree=rules.cstree.output
     output:
@@ -127,9 +128,8 @@ rule cstree_params:     # untested
     script:
         "snake_scripts/generate_cstree_params.py"
 
-rule full_true_cstree_distr:     # untested
+rule full_true_cstree_distr:    # tested
     input:
-        cstree=rules.cstree.output,
         cstree_params=rules.cstree_params.output
     output:
         ("full_true_distr/"+
@@ -138,9 +138,7 @@ rule full_true_cstree_distr:     # untested
     script:
         "snake_scripts/full_true_cstree_distr.py"
 
-# this gives the whole cstree, but we split it into separate rules for consistency
-rule cstree_data:             # tested
-    # Simulate data from a distribution
+rule cstree_data:               # tested
     input:
         cstree=rules.cstree_params.output
     output:
@@ -202,7 +200,7 @@ rule bhc:
     script:
         "snake_scripts/estimate_bhc.R"
 
-rule cslearn:           # untested
+rule cslearn:
     # Estimate a distribution from data
     input:
         data=rules.cstree_data.output,
@@ -231,7 +229,7 @@ rule cslearn:           # untested
     script:
         "snake_scripts/estimate_cstree.py"
 
-rule grasp:            # tested
+rule grasp:                     # tested
     # Use GRaSP to learn CPDAG from which poss_cvars and a Markov equiv DAG are selected
     input:
         rules.cstree_data.output
@@ -241,7 +239,7 @@ rule grasp:            # tested
                    "/true_cstree_params=/" + pattern_cstree_params +
                    "/data=/" + pattern_cstree_data +
                    "/alg=/" + pattern_grasp +
-                   "/structure.csv"), 
+                   "/structure.csv"),
         time=("time" +
               "/true_cstree=/" + pattern_cstree +
               "/true_cstree_params=/" + pattern_cstree_params +
@@ -348,7 +346,7 @@ rule joint_stagedtree_distribution:
     script:
         "snake_scripts/joint_stagedtree_distr.R"
 
-rule joint_dag_distribution:    # untested
+rule joint_dag_distribution:
     # Estimate a distribution from data
     input:
         input_bn = ("dag_param_est" +
@@ -371,7 +369,7 @@ rule joint_dag_distribution:    # untested
     script:
         "snake_scripts/joint_dag.py"
 
-rule joint_cstree_distribution:  # untested
+rule joint_cstree_distribution:
     # Estimate a distribution from data
     input:
         input_cstree = rules.cstree_bdeu_parameter_estimation.output
@@ -438,12 +436,12 @@ rule kl_plots_2a_csv:
                 cstree_p=[5,7,10,15],
                 cstree_max_cvar=[2],
                 cstree_prob_cvar=[1],
-                cstree_params_alpha=[0.05],
+                cstree_params_alpha=[1.0],
                 cstree_data_n=[10000],
                 pc_alpha=0.05,
                 dag_param_est_alpha=[0.05],
                 dag_param_est_estimation_type=["mle"],
-                seed=range(1, 11)),
+                seed=seed_range),
 
         cslearn_pc = expand(("kl_div" +
                             "/true_cstree=/" + pattern_cstree +
@@ -455,7 +453,7 @@ rule kl_plots_2a_csv:
                     cstree_p=[5,7,10,15],
                     cstree_max_cvar=[2],
                     cstree_prob_cvar=[1],
-                    cstree_params_alpha=[0.05],
+                    cstree_params_alpha=[1.0],
                     cstree_data_n=[250, 500, 1000, 10000],
                     cslearn_max_cvar=[2],
                     cslearn_prob_cvar=[1],
@@ -465,7 +463,7 @@ rule kl_plots_2a_csv:
                     pc_alpha=0.05,
                     cstree_param_est_alpha=[0.05], # this will be ignored for dag_param_est_type="mle"
                     cstree_param_est_estimation_type=["mle", "map"],
-                    seed=range(1, 11))
+                    seed=seed_range)
     output:
         "results/kl_divergence_2a.csv"
 
@@ -500,11 +498,11 @@ rule kl_plots_2b_csv:
                 cstree_p=[5,7,10,15],
                 cstree_max_cvar=[2],
                 cstree_prob_cvar=[1],
-                cstree_params_alpha=[0.05],
+                cstree_params_alpha=[1.0],
                 cstree_data_n=[10000],
                 dag_param_est_alpha=[0.05],
                 dag_param_est_estimation_type=["mle"],
-                seed=range(1, 11)),
+                seed=seed_range),
 
         cslearn_grasp = expand(("kl_div" +
                                 "/true_cstree=/" + pattern_cstree +
@@ -516,7 +514,7 @@ rule kl_plots_2b_csv:
                         cstree_p=[5,7,10,15],
                         cstree_max_cvar=[2],
                         cstree_prob_cvar=[1],
-                        cstree_params_alpha=[0.05],
+                        cstree_params_alpha=[1.0],
                         cstree_data_n=[250, 500, 1000, 10000],
                         cslearn_max_cvar=[2],
                         cslearn_prob_cvar=[1],
@@ -525,7 +523,7 @@ rule kl_plots_2b_csv:
                         cslearn_param_prior=["BDeu"],
                         cstree_param_est_alpha=[0.05], # this will be ignored for dag_param_est_type="mle"
                         cstree_param_est_estimation_type=["mle", "map"],
-                        seed=range(1, 11))
+                        seed=seed_range)
 
     output:
         "results/kl_divergence_2b.csv"
@@ -562,11 +560,11 @@ rule kl_plots_2c_csv:
                 cstree_p=[5,7,10,15],
                 cstree_max_cvar=[2],
                 cstree_prob_cvar=[1],
-                cstree_params_alpha=[0.05],
+                cstree_params_alpha=[1.0],
                 cstree_data_n=[10000],
                 dag_param_est_alpha=[0.05],
                 dag_param_est_estimation_type=["mle"],
-                seed=range(1, 11)),
+                seed=seed_range),
         cslearn_grasp = expand(("kl_div" +
                                 "/true_cstree=/" + pattern_cstree +
                                 "/true_cstree_params=/" + pattern_cstree_params +
@@ -577,7 +575,7 @@ rule kl_plots_2c_csv:
                         cstree_p=[5,7,10,15],
                         cstree_max_cvar=[2],
                         cstree_prob_cvar=[1],
-                        cstree_params_alpha=[0.05],
+                        cstree_params_alpha=[1.0],
                         cstree_data_n=[1000, 10000],
                         cslearn_max_cvar=[2],
                         cslearn_prob_cvar=[1],
@@ -586,7 +584,7 @@ rule kl_plots_2c_csv:
                         cslearn_param_prior=["BDeu"],
                         cstree_param_est_alpha=[0.05], # this will be ignored for dag_param_est_type="mle"
                         cstree_param_est_estimation_type=["mle"],
-                        seed=range(1, 11)),
+                        seed=seed_range),
 
         bos = expand(("kl_div" +
                     "/true_cstree=/" + pattern_cstree +
@@ -598,11 +596,11 @@ rule kl_plots_2c_csv:
                 cstree_p=[5,7,10,15],
                 cstree_max_cvar=[2],
                 cstree_prob_cvar=[1],
-                cstree_params_alpha=[0.05],
+                cstree_params_alpha=[1.0],
                 cstree_data_n=[1000],
                 st_param_est_alpha=[0.05],
                 st_param_est_estimation_type=["mle"],
-                seed=range(1, 11)),
+                seed=seed_range),
 
         grasp_bhc = expand(("kl_div" +
                             "/true_cstree=/" + pattern_cstree +
@@ -614,11 +612,11 @@ rule kl_plots_2c_csv:
                 cstree_p=[5,7,10,15,20],
                 cstree_max_cvar=[2],
                 cstree_prob_cvar=[1],
-                cstree_params_alpha=[0.05],
+                cstree_params_alpha=[1.0],
                 cstree_data_n=[1000, 10000],
                 st_param_est_alpha=[0.05],
                 st_param_est_estimation_type=["mle"],
-                seed=range(1, 11)),
+                seed=seed_range),
 
     output:
         "results/kl_divergence_2c.csv"
@@ -650,7 +648,7 @@ rule time_plots_3a_csv:
                     cstree_p=[5,7,10,15],
                     cstree_max_cvar=[2],
                     cstree_prob_cvar=[1],
-                    cstree_params_alpha=[0.05],
+                    cstree_params_alpha=[1.0],
                     cstree_data_n=[250, 1000],
                     cslearn_max_cvar=[2],
                     cslearn_prob_cvar=[1],
@@ -658,7 +656,7 @@ rule time_plots_3a_csv:
                     cslearn_alpha_tot=[1.0],
                     cslearn_param_prior=["BDeu"],
                     pc_alpha=0.05,
-                    seed=range(1, 11)),
+                    seed=seed_range),
 
         cslearn_grasp = expand(("time" +
                                 "/true_cstree=/" + pattern_cstree +
@@ -669,14 +667,14 @@ rule time_plots_3a_csv:
                         cstree_p=[5,7,10,15],
                         cstree_max_cvar=[2],
                         cstree_prob_cvar=[1],
-                        cstree_params_alpha=[0.05],
+                        cstree_params_alpha=[1.0],
                         cstree_data_n=[250, 1000],
                         cslearn_max_cvar=[2],
                         cslearn_prob_cvar=[1],
                         cslearn_mcmc_iterations=[5000],
                         cslearn_alpha_tot=[1.0],
                         cslearn_param_prior=["BDeu"],
-                        seed=range(1, 11)),
+                        seed=seed_range),
 
         bos = expand(("time" +
                     "/true_cstree=/" + pattern_cstree +
@@ -687,9 +685,9 @@ rule time_plots_3a_csv:
                 cstree_p=[5,7,10,15],
                 cstree_max_cvar=[2],
                 cstree_prob_cvar=[1],
-                cstree_params_alpha=[0.05],
+                cstree_params_alpha=[1.0],
                 cstree_data_n=[250, 1000],
-                seed=range(1, 11)),
+                seed=seed_range),
 
         grasp_bhc = expand(("time" +
                             "/true_cstree=/" + pattern_cstree +
@@ -700,9 +698,9 @@ rule time_plots_3a_csv:
                 cstree_p=[5,7,10,15],
                 cstree_max_cvar=[2],
                 cstree_prob_cvar=[1],
-                cstree_params_alpha=[0.05],
+                cstree_params_alpha=[1.0],
                 cstree_data_n=[250, 1000],
-                seed=range(1, 11)),
+                seed=seed_range),
     output:
         "results/time_3a.csv"
 
@@ -730,7 +728,7 @@ rule time_plots_3b_csv:
                     cstree_p=[10, 25, 50, 100, 250, 500],
                     cstree_max_cvar=[2],
                     cstree_prob_cvar=[1],
-                    cstree_params_alpha=[0.05],
+                    cstree_params_alpha=[1.0],
                     cstree_data_n=[1000],
                     pc_alpha=0.05,
                     cslearn_max_cvar=[2],
@@ -738,7 +736,7 @@ rule time_plots_3b_csv:
                     cslearn_mcmc_iterations=[5000],
                     cslearn_alpha_tot=[1.0],
                     cslearn_param_prior=["BDeu"],
-                    seed=range(1, 11)),
+                    seed=seed_range),
 
         cslearn_grasp = expand(("time" +
                                 "/true_cstree=/" + pattern_cstree +
@@ -749,14 +747,14 @@ rule time_plots_3b_csv:
                         cstree_p=[10, 25, 50, 100, 250, 500],
                         cstree_max_cvar=[2],
                         cstree_prob_cvar=[1],
-                        cstree_params_alpha=[0.05],
+                        cstree_params_alpha=[1.0],
                         cstree_data_n=[1000],
                         cslearn_max_cvar=[2],
                         cslearn_prob_cvar=[1],
                         cslearn_mcmc_iterations=[5000],
                         cslearn_alpha_tot=[1.0],
                         cslearn_param_prior=["BDeu"],
-                        seed=range(1, 11)),
+                        seed=seed_range),
 
         grasp_bhc = expand(("time" +
                             "/true_cstree=/" + pattern_cstree +
@@ -767,9 +765,9 @@ rule time_plots_3b_csv:
                 cstree_p=[10, 25, 50, 100, 250, 500],
                 cstree_max_cvar=[2],
                 cstree_prob_cvar=[1],
-                cstree_params_alpha=[0.05],
+                cstree_params_alpha=[1.0],
                 cstree_data_n=[1000],
-                seed=range(1, 11))
+                seed=seed_range)
     output:
         "results/time_3b.csv"
 
