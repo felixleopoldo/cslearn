@@ -108,8 +108,6 @@ rule dag_to_poss_cvar:
         "{whatever}/structure.csv"
     output:
         "{whatever}/poss_cvars.json"
-    wildcard_constraints:
-        algname = "grasp|pc"
     script:
         "snake_scripts/dag_to_poss_cvar.py"
 
