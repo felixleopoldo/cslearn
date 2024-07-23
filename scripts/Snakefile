@@ -94,12 +94,15 @@ def input_time_cslearn(wildcards):
                     "/data=/" + pattern_cstree_data +
                     "/alg=/" + wildcards.cslearn_poss_cvars +
                     "/time.csv")
+rule test:
+    input:
+        "results/time_3a.png"
 
 rule all:
     input:
-        # "results/kl_divergence_2a.png",
-        # "results/kl_divergence_2b.png",
-        # "results/kl_divergence_2c.png",
+        "results/kl_divergence_2a.png",
+        "results/kl_divergence_2b.png",
+        "results/kl_divergence_2c.png",
         "results/time_3a.png",
         "results/time_3b.png"
 

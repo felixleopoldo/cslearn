@@ -24,11 +24,13 @@ prior = snakemake.wildcards["cslearn_param_prior"]
 data = read_csv(data_path)
 with open(poss_cvars_path, "r") as f:
     poss_cvars = json.load(f)
+if poss_cvars == "":
+    poss_cvars = None
 
 # estimate cstree
 start = timer()
 score_table, context_scores, _ = sc.order_score_tables(
-    data, mak_cvars=max_cvars, alpha_tot=alpha_tot, method=prior, poss_cvars=poss_cvars
+    data, max_cvars=max_cvars, alpha_tot=alpha_tot, method=prior, poss_cvars=poss_cvars
 )
 orders, scores = ctl.gibbs_order_sampler(num_iter, score_table)
 map_order = orders[scores.index(max(scores))]
