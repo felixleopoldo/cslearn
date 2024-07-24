@@ -23,8 +23,7 @@ prior = snakemake.wildcards["cslearn_param_prior"]
 # load inputs
 data = read_csv(data_path)
 with open(poss_cvars_path, "r") as f:
-    keys_to_int = lambda x: {int(k): v for k, v in x.items()}
-    poss_cvars = json.load(f, object_hook=keys_to_int)
+    poss_cvars = json.load(f)
 if poss_cvars == "":
     poss_cvars = None
 
@@ -41,7 +40,7 @@ runtime = end - start
 
 with open(prev_runtime_path, "r") as f:
     prev_runtime = f.read()
-total_runtime = float(runtime) + prev_runtime
+total_runtime = float(prev_runtime) + runtime
 
 cstree_df = opt_tree.to_df()
 

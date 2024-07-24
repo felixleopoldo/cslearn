@@ -10,7 +10,7 @@ import cstrees.learning as ctl
 data_path = snakemake.input[0]
 
 # run pc, get cvars, get dag
-data = pd.read_csv(data_path)
+data = pd.read_csv(data_path, dtype=int)
 
 start = timer()
 pc_graph = pc(data.values[1:], 0.05, "gsq", node_names=data.columns)

@@ -96,6 +96,7 @@ def input_time_cslearn(wildcards):
                     "/time.csv")
 rule test:
     input:
+        "results/kl_divergence_2c.png",
         "results/time_3a.png"
 
 rule all:
@@ -203,7 +204,7 @@ rule bhc:
     script:
         "snake_scripts/estimate_bhc.R"
 
-rule cslearn:
+rule cslearn:                   # tested
     # Estimate a distribution from data
     input:
         data=rules.cstree_data.output,
@@ -589,42 +590,43 @@ rule kl_plots_2c_csv:
                         cstree_param_est_estimation_type=["mle"],
                         seed=seed_range),
 
-        bos = expand(("kl_div" +
-                    "/true_cstree=/" + pattern_cstree +
-                    "/true_cstree_params=/" + pattern_cstree_params +
-                    "/data=/" + pattern_cstree_data +
-                    "/alg=/" + pattern_bos +
-                    "/param_est=/" + pattern_st_param_est +
-                    "/kl_div.csv"),
-                cstree_p=[5,7,10,15],
-                cstree_max_cvar=[2],
-                cstree_prob_cvar=[1],
-                cstree_params_alpha=[1.0],
-                cstree_data_n=[1000],
-                st_param_est_alpha=[0.05],
-                st_param_est_estimation_type=["mle"],
-                seed=seed_range),
+        # bos = expand(("kl_div" +
+        #             "/true_cstree=/" + pattern_cstree +
+        #             "/true_cstree_params=/" + pattern_cstree_params +
+        #             "/data=/" + pattern_cstree_data +
+        #             "/alg=/" + pattern_bos +
+        #             "/param_est=/" + pattern_st_param_est +
+        #             "/kl_div.csv"),
+        #         cstree_p=[5,7,10,15],
+        #         cstree_max_cvar=[2],
+        #         cstree_prob_cvar=[1],
+        #         cstree_params_alpha=[1.0],
+        #         cstree_data_n=[1000],
+        #         st_param_est_alpha=[0.05],
+        #         st_param_est_estimation_type=["mle"],
+        #         seed=seed_range),
 
-        grasp_bhc = expand(("kl_div" +
-                            "/true_cstree=/" + pattern_cstree +
-                            "/true_cstree_params=/" + pattern_cstree_params +
-                            "/data=/" + pattern_cstree_data +
-                            "/alg=/" + pattern_grasp_bhc +
-                            "/param_est=/" + pattern_st_param_est +
-                            "/kl_div.csv"),
-                cstree_p=[5,7,10,15,20],
-                cstree_max_cvar=[2],
-                cstree_prob_cvar=[1],
-                cstree_params_alpha=[1.0],
-                cstree_data_n=[1000, 10000],
-                st_param_est_alpha=[0.05],
-                st_param_est_estimation_type=["mle"],
-                seed=seed_range),
+        # grasp_bhc = expand(("kl_div" +
+        #                     "/true_cstree=/" + pattern_cstree +
+        #                     "/true_cstree_params=/" + pattern_cstree_params +
+        #                     "/data=/" + pattern_cstree_data +
+        #                     "/alg=/" + pattern_grasp_bhc +
+        #                     "/param_est=/" + pattern_st_param_est +
+        #                     "/kl_div.csv"),
+        #         cstree_p=[5,7,10,15,20],
+        #         cstree_max_cvar=[2],
+        #         cstree_prob_cvar=[1],
+        #         cstree_params_alpha=[1.0],
+        #         cstree_data_n=[1000, 10000],
+        #         st_param_est_alpha=[0.05],
+        #         st_param_est_estimation_type=["mle"],
+        #         seed=seed_range),
 
     output:
         "results/kl_divergence_2c.csv"
     script:
         "rule_scripts/join_kl.py" # this script will join the csv files
+
 """
 Plot (3a): comparison of runtimes (total times only) for all algorithms on small graphs with multiple sample sizes:
 
@@ -679,33 +681,35 @@ rule time_plots_3a_csv:
                         cslearn_param_prior=["BDeu"],
                         seed=seed_range),
 
-        bos = expand(("time" +
-                    "/true_cstree=/" + pattern_cstree +
-                    "/true_cstree_params=/" + pattern_cstree_params +
-                    "/data=/" + pattern_cstree_data +
-                    "/alg=/" + pattern_bos +
-                    "/time.csv"),
-                cstree_p=[5,7,10,15],
-                cstree_max_cvar=[2],
-                cstree_prob_cvar=[1],
-                cstree_params_alpha=[1.0],
-                cstree_data_n=[250, 1000],
-                seed=seed_range),
+        # bos = expand(("time" +
+        #             "/true_cstree=/" + pattern_cstree +
+        #             "/true_cstree_params=/" + pattern_cstree_params +
+        #             "/data=/" + pattern_cstree_data +
+        #             "/alg=/" + pattern_bos +
+        #             "/time.csv"),
+        #         cstree_p=[5,7,10,15],
+        #         cstree_max_cvar=[2],
+        #         cstree_prob_cvar=[1],
+        #         cstree_params_alpha=[1.0],
+        #         cstree_data_n=[250, 1000],
+        #         seed=seed_range),
 
-        grasp_bhc = expand(("time" +
-                            "/true_cstree=/" + pattern_cstree +
-                            "/true_cstree_params=/" + pattern_cstree_params +
-                            "/data=/" + pattern_cstree_data +
-                            "/alg=/" + pattern_grasp_bhc +
-                            "/total_time.csv"),
-                cstree_p=[5,7,10,15],
-                cstree_max_cvar=[2],
-                cstree_prob_cvar=[1],
-                cstree_params_alpha=[1.0],
-                cstree_data_n=[250, 1000],
-                seed=seed_range),
+        # grasp_bhc = expand(("time" +
+        #                     "/true_cstree=/" + pattern_cstree +
+        #                     "/true_cstree_params=/" + pattern_cstree_params +
+        #                     "/data=/" + pattern_cstree_data +
+        #                     "/alg=/" + pattern_grasp_bhc +
+        #                     "/total_time.csv"),
+        #         cstree_p=[5,7,10,15],
+        #         cstree_max_cvar=[2],
+        #         cstree_prob_cvar=[1],
+        #         cstree_params_alpha=[1.0],
+        #         cstree_data_n=[250, 1000],
+        #         seed=seed_range),
     output:
         "results/time_3a.csv"
+    script:
+        "rule_scripts/join_time.py" # this script will join the csv files
 
 """
 Plot (3b): comparison of performance of scalable methods (total times only... I don't think there is much benefit to including the phase breakdown... text me if you want to discuss it):
@@ -773,6 +777,8 @@ rule time_plots_3b_csv:
                 seed=seed_range)
     output:
         "results/time_3b.csv"
+    script:
+        "rule_scripts/join_time.py" # this script will join the csv files
 
 rule kl_plots_2a:
     input: "results/kl_divergence_2a.csv"
