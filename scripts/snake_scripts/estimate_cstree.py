@@ -23,7 +23,8 @@ prior = snakemake.wildcards["cslearn_param_prior"]
 # load inputs
 data = read_csv(data_path)
 with open(poss_cvars_path, "r") as f:
-    poss_cvars = json.load(f)
+    keys_to_int = lambda x: {int(k): v for k, v in x.items()}
+    poss_cvars = json.load(f, object_hook=keys_to_int)
 if poss_cvars == "":
     poss_cvars = None
 
