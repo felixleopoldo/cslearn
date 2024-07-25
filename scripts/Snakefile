@@ -96,16 +96,16 @@ def input_time_cslearn(wildcards):
                     "/time.csv")
 rule test:
     input:
-        "results/kl_divergence_2c.png",
-        "results/time_3a.png"
+        "results/kl_divergence_2c.pdf",
+        "results/time_3a.pdf"
 
 rule all:
     input:
-        "results/kl_divergence_2a.png",
-        "results/kl_divergence_2b.png",
-        "results/kl_divergence_2c.png",
-        "results/time_3a.png",
-        "results/time_3b.png"
+        "results/kl_divergence_2a.pdf",
+        "results/kl_divergence_2b.pdf",
+        "results/kl_divergence_2c.pdf",
+        "results/time_3a.pdf",
+        "results/time_3b.pdf"
 
 # Reads a DAG (adjacency matrix) and returns a list of possible cvars
 # as a JSON file.
@@ -812,25 +812,25 @@ rule time_plots_3b_csv:
 
 rule kl_plots_2a:
     input: "results/kl_divergence_2a.csv"
-    output: "results/kl_divergence_2a.png"
+    output: "results/kl_divergence_2a.pdf"
     script: "rule_scripts/plot_kl.py"
 
 rule kl_plots_2b:
     input: "results/kl_divergence_2b.csv"
-    output: "results/kl_divergence_2b.png"
+    output: "results/kl_divergence_2b.pdf"
     script: "rule_scripts/plot_kl.py"
 
 rule kl_plots_2c:
     input: "results/kl_divergence_2c.csv"
-    output: "results/kl_divergence_2c.png"
+    output: "results/kl_divergence_2c.pdf"
     script: "rule_scripts/plot_kl.py"
 
 rule time_plots_3a:
     input: "results/time_3a.csv"
-    output: "results/time_3a.png"
+    output: "results/time_3a.pdf"
     script: "rule_scripts/plot_time.py"
 
 rule time_plots_3b:
     input: "results/time_3b.csv"
-    output: "results/time_3b.png"
+    output: "results/time_3b.pdf"
     script: "rule_scripts/plot_time.py"
