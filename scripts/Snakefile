@@ -369,7 +369,7 @@ rule joint_stagedtree_distribution:
     script:
         "snake_scripts/joint_stagedtree_distr.R"
 
-rule joint_dag_distribution:
+rule joint_dag_distribution:    # tested
     # Estimate a distribution from data
     input:
         input_bn = ("dag_param_est" +
@@ -493,7 +493,7 @@ rule kl_plots_2a_csv:
         "results/kl_divergence_2a.csv"
 
     script:
-        "rule_scripts/joint_kl.py" # this script will join the csv files
+        "rule_scripts/join_kl.py" # this script will join the csv files
 
 
 """
@@ -667,7 +667,7 @@ algorithms:
  - GrASP + bhc (stagedtrees) with n = 250
  - GrASP + bhc (stagedtrees) with n = 1000
  """
-rule time_plots_3a_csv:
+rule time_plots_3a_csv:         # test
     input:
         cslearn_pc = expand(("time" +
                             "/true_cstree=/" + pattern_cstree +
@@ -792,19 +792,19 @@ rule time_plots_3b_csv:
                         cslearn_param_prior=["BDeu"],
                         seed=seed_range),
 
-        grasp_bhc = expand(("time" +
-                            "/true_cstree=/" + pattern_cstree +
-                            "/true_cstree_params=/" + pattern_cstree_params +
-                            "/data=/" + pattern_cstree_data +
-                            "/alg=/" + pattern_grasp_bhc +
-                            "/total_time.csv"),
-                cstree_p=[10, 25, 50, 100, 250, 500],
-                cstree_max_cvar=[2],
-                cstree_prob_cvar=[1],
-                cstree_params_alpha=[1.0],
-                cstree_data_n=[1000],
-                alg_name="bhc",
-                seed=seed_range)
+        # grasp_bhc = expand(("time" +
+        #                     "/true_cstree=/" + pattern_cstree +
+        #                     "/true_cstree_params=/" + pattern_cstree_params +
+        #                     "/data=/" + pattern_cstree_data +
+        #                     "/alg=/" + pattern_grasp_bhc +
+        #                     "/total_time.csv"),
+        #         cstree_p=[10, 25, 50, 100, 250, 500],
+        #         cstree_max_cvar=[2],
+        #         cstree_prob_cvar=[1],
+        #         cstree_params_alpha=[1.0],
+        #         cstree_data_n=[1000],
+        #         alg_name="bhc",
+        #         seed=seed_range)
     output:
         "results/time_3b.csv"
     script:
@@ -825,7 +825,7 @@ rule kl_plots_2c:
     output: "results/kl_divergence_2c.pdf"
     script: "rule_scripts/plot_kl.py"
 
-rule time_plots_3a:
+rule time_plots_3a:             # tested
     input: "results/time_3a.csv"
     output: "results/time_3a.pdf"
     script: "rule_scripts/plot_time.py"
