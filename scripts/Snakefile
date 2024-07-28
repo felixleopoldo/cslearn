@@ -190,7 +190,7 @@ rule bos:
               "/data=/" + pattern_cstree_data +
               "/alg=/" + pattern_bos +
               "/time.csv")
-    container: "docker://bpimages/stagedtrees:2.3.0-arm64"
+    container: "docker://bpimages/stagedtrees:2.3.0"
     script:
         "snake_scripts/estimate_bos.R"
 
@@ -220,7 +220,7 @@ rule bhc:
                     "/data=/" + pattern_cstree_data +
                     "/alg=/" + pattern_bhc +
                     "/total_time.csv")        
-    container: "docker://bpimages/stagedtrees:2.3.0-arm64"
+    container: "docker://bpimages/stagedtrees:2.3.0"
     script:
         "snake_scripts/estimate_bhc.R"
 
@@ -328,7 +328,7 @@ rule cstree_bdeu_parameter_estimation:
                     "/alg=/" + pattern_cslearn +
                     "/param_est=/"+pattern_cstree_param_est+
                     "/cstree.csv")
-    container: "docker://bpimages/stagedtrees:2.3.0-arm64"
+    container: "docker://bpimages/stagedtrees:2.3.0"
     script:
         "scripts/cstree_bdeu_parameter_estimation.R"
 
@@ -347,7 +347,7 @@ rule stagedtree_ml_parameter_estimation:
                     "/data=/" + pattern_cstree_data +
                     "/alg=/{alg}" +
                     "/param_est=/"+pattern_st_param_est+"/st.rds")
-    container: "docker://bpimages/stagedtrees:2.3.0-arm64"
+    container: "docker://bpimages/stagedtrees:2.3.0"
 
     script:
         "snake_scripts/stagedtree_ml_parameter_estimation.R"
@@ -371,7 +371,7 @@ rule joint_stagedtree_distribution:
                     "/distr.csv") # this needs to be matched better
     wildcard_constraints:
         alg_name = "bos|bhc"
-    container: "docker://bpimages/stagedtrees:2.3.0-arm64"
+    container: "docker://bpimages/stagedtrees:2.3.0"
     script:
         "snake_scripts/joint_stagedtree_distr.R"
 
