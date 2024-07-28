@@ -11,7 +11,7 @@ import cstrees.learning as ctl
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 # input
-data_path = snakemake.input[0]
+data_path = snakemake.input["data"]
 seed = int(snakemake.wildcards["seed"])
 
 # run grasp, get cvars, get dag
@@ -26,6 +26,16 @@ runtime = end - start
 dag_df = ctl.causallearn_graph_to_dag(grasp_graph, labels=data.columns, alg="grasp")
 
 # output
-dag_df.to_csv(snakemake.output[0], index=False, header=False)
-with open(snakemake.output[1], "w") as f:
+# There should be a header. Otherwise we dont know which variable corresponds to which column.
+dag_df.to_csv(snakemake.output["dag"], index=False, header=False) 
+
+# This should be a csv file, see estimate_bos.R
+with open(snakemake.output["time"], "w") as f:
     f.write(str(runtime))
+    
+# This should be a csv file, see estimate_bos.R
+time_df = pd.DataFrame({"time": [runtime], "seed": [seed], 
+                        "algorithm": ["grasp"], "p": [data.shape[1]], "n": [data.shape[0]]})
+
+# write to csv
+time_df.to_csv(snakemake.output["time_csv"], index=False)

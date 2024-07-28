@@ -1,7 +1,7 @@
-FROM python
+FROM python:3.12.4-bullseye
 
 RUN apt update -y 
-RUN apt-get install -y python-dev graphviz libgraphviz-dev pkg-config
+RUN apt-get install -y python-dev-is-python3 graphviz libgraphviz-dev pkg-config
 
 RUN pip install --upgrade pip
 

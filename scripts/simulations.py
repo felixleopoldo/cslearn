@@ -16,9 +16,6 @@ from pgmpy.models import BayesianNetwork
 import networkx as nx
 from causallearn.utils.PDAG2DAG import pdag2dag
 
-
-
-
 old_environ = dict(os.environ)
 os.environ.update({"TQDM_DISABLE": "1", "TQDM_ENABLE": "0", "NUMEXPR_MAX_THREADS": "8"})
 

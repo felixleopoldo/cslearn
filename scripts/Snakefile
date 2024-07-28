@@ -39,6 +39,7 @@ pattern_st_param_est = "st_param_est/st_param_est_estimation_type={st_param_est_
 # Evaluation
 pattern_kl_div = "kl_div"
 
+container: "docker://bpimages/cslearn:1.3.0-arm64"
 
 def input_cvars(wildcards):
     """
@@ -96,7 +97,7 @@ def input_time_cslearn(wildcards):
                     "/time.csv")
 rule test:
     input:
-        "results/kl_divergence_2c.pdf",
+        #"results/kl_divergence_2c.pdf",
         "results/time_3a.pdf"
 
 rule all:
@@ -182,22 +183,23 @@ rule bos:
             "/true_cstree_params=/" + pattern_cstree_params +
             "/data=/" + pattern_cstree_data +
             "/alg=/" + pattern_bos +
-            "/structure.csv"),
+            "/structure.rds"),
         time=("time" +
               "/true_cstree=/" + pattern_cstree +
               "/true_cstree_params=/" + pattern_cstree_params +
               "/data=/" + pattern_cstree_data +
               "/alg=/" + pattern_bos +
               "/time.csv")
+    container: "docker://bpimages/stagedtrees:2.3.0-arm64"
     script:
         "snake_scripts/estimate_bos.R"
 
 rule bhc:
     # Use BHC to learn CPDAG from which poss_cvars and a Markov equiv DAG are selected
     input:
-        rules.cstree_data.output,
-        input_alg=input_alg,
-        input_time=input_time_bhc
+        data=rules.cstree_data.output,
+        input_alg_dag=input_alg,
+        input_alg_time=input_time_bhc
 
     output:
         structure=("estimate" +
@@ -205,7 +207,7 @@ rule bhc:
                    "/true_cstree_params=/" + pattern_cstree_params +
                    "/data=/" + pattern_cstree_data +
                    "/alg=/" + pattern_bhc +
-                   "/structure.csv"), # This might not be a csv file
+                   "/structure.rds"), # This might not be a csv file
         time=("time" +
               "/true_cstree=/" + pattern_cstree +
               "/true_cstree_params=/" + pattern_cstree_params +
@@ -217,7 +219,8 @@ rule bhc:
                     "/true_cstree_params=/" + pattern_cstree_params +
                     "/data=/" + pattern_cstree_data +
                     "/alg=/" + pattern_bhc +
-                    "/total_time.csv")
+                    "/total_time.csv")        
+    container: "docker://bpimages/stagedtrees:2.3.0-arm64"
     script:
         "snake_scripts/estimate_bhc.R"
 
@@ -253,7 +256,7 @@ rule cslearn:                   # tested
 rule grasp:                     # tested
     # Use GRaSP to learn CPDAG from which poss_cvars and a Markov equiv DAG are selected
     input:
-        rules.cstree_data.output
+        data=rules.cstree_data.output
     output:
         dag=("estimate" +
                    "/true_cstree=/" + pattern_cstree +
@@ -325,6 +328,7 @@ rule cstree_bdeu_parameter_estimation:
                     "/alg=/" + pattern_cslearn +
                     "/param_est=/"+pattern_cstree_param_est+
                     "/cstree.csv")
+    container: "docker://bpimages/stagedtrees:2.3.0-arm64"
     script:
         "scripts/cstree_bdeu_parameter_estimation.R"
 
@@ -343,6 +347,7 @@ rule stagedtree_ml_parameter_estimation:
                     "/data=/" + pattern_cstree_data +
                     "/alg=/{alg}" +
                     "/param_est=/"+pattern_st_param_est+"/st.rds")
+    container: "docker://bpimages/stagedtrees:2.3.0-arm64"
 
     script:
         "snake_scripts/stagedtree_ml_parameter_estimation.R"
@@ -366,6 +371,7 @@ rule joint_stagedtree_distribution:
                     "/distr.csv") # this needs to be matched better
     wildcard_constraints:
         alg_name = "bos|bhc"
+    container: "docker://bpimages/stagedtrees:2.3.0-arm64"
     script:
         "snake_scripts/joint_stagedtree_distr.R"
 
@@ -623,6 +629,7 @@ rule kl_plots_2c_csv:
         #             "/param_est=/" + pattern_st_param_est +
         #             "/kl_div.csv"),
         #         cstree_p=[5,7,10,15],
+        #         alg_name="bos",
         #         cstree_max_cvar=[2],
         #         cstree_prob_cvar=[1],
         #         cstree_params_alpha=[1.0],
@@ -639,6 +646,7 @@ rule kl_plots_2c_csv:
         #                     "/param_est=/" + pattern_st_param_est +
         #                     "/kl_div.csv"),
         #         cstree_p=[5,7,10,15,20],
+        #         alg_name="grasp",
         #         cstree_max_cvar=[2],
         #         cstree_prob_cvar=[1],
         #         cstree_params_alpha=[1.0],
@@ -707,32 +715,33 @@ rule time_plots_3a_csv:         # test
                         cslearn_alpha_tot=[1.0],
                         cslearn_param_prior=["BDeu"],
                         seed=seed_range),
-        # bos = expand(("time" +
-        #             "/true_cstree=/" + pattern_cstree +
-        #             "/true_cstree_params=/" + pattern_cstree_params +
-        #             "/data=/" + pattern_cstree_data +
-        #             "/alg=/" + pattern_bos +
-        #             "/time.csv"),
-        #         cstree_p=[5,7,10,15],
-        #         cstree_max_cvar=[2],
-        #         cstree_prob_cvar=[1],
-        #         cstree_params_alpha=[1.0],
-        #         cstree_data_n=[250, 1000],
-        #         alg_name="bos",
-        #         seed=seed_range),
+        bos = expand(("time" +
+                    "/true_cstree=/" + pattern_cstree +
+                    "/true_cstree_params=/" + pattern_cstree_params +
+                    "/data=/" + pattern_cstree_data +
+                    "/alg=/" + pattern_bos +
+                    "/time.csv"),
+                cstree_p=[5,7],#[5,7,10,15],
+                cstree_max_cvar=[2],
+                cstree_prob_cvar=[1],
+                cstree_params_alpha=[1.0],
+                cstree_data_n=[250, 1000],
+                alg_name="bos",
+                seed=seed_range),
 
-        # grasp_bhc = expand(("time" +
-        #                     "/true_cstree=/" + pattern_cstree +
-        #                     "/true_cstree_params=/" + pattern_cstree_params +
-        #                     "/data=/" + pattern_cstree_data +
-        #                     "/alg=/" + pattern_grasp_bhc +
-        #                     "/total_time.csv"),
-        #         cstree_p=[5,7,10,15],
-        #         cstree_max_cvar=[2],
-        #         cstree_prob_cvar=[1],
-        #         cstree_params_alpha=[1.0],
-        #         cstree_data_n=[250, 1000],
-        #         seed=seed_range),
+        grasp_bhc = expand(("time" +
+                            "/true_cstree=/" + pattern_cstree +
+                            "/true_cstree_params=/" + pattern_cstree_params +
+                            "/data=/" + pattern_cstree_data +
+                            "/alg=/" + pattern_grasp_bhc +
+                            "/total_time.csv"),
+                cstree_p=[5,7,10,15],
+                cstree_max_cvar=[2],
+                cstree_prob_cvar=[1],
+                cstree_params_alpha=[1.0],
+                cstree_data_n=[250, 1000],
+                alg_name="bhc",
+                seed=seed_range),
     output:
         "results/time_3a.csv"
     script:
