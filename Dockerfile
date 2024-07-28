@@ -5,11 +5,13 @@ RUN apt-get install -y python-dev-is-python3 graphviz libgraphviz-dev pkg-config
 
 RUN pip install --upgrade pip
 
-WORKDIR /cstrees
+RUN pip install cstrees==1.3.0
 
-COPY . .
+# This would be the way to install the package from the source code:
+#WORKDIR /cstrees
+#COPY . .
+#RUN pip install -r requirements.txt
+#RUN pip install -e .
 
-RUN pip install -r requirements.txt
-RUN pip install -e .
 
 # For vscode, also install packages Python and Python Extension Pack.
