@@ -7,11 +7,11 @@ plot_data_path = snakemake.input[0]
 
 # make plot
 plot_data = pd.read_csv(plot_data_path)
-plot_data["hue"] = plot_data["alg"] + ", n=" + plot_data["n"].astype(str)
+plot_data["hue"] = plot_data["method"] + ", n=" + plot_data["n"].astype(str)
 sns.set(font_scale=1.25)
 sns.set_style("white")
 sns.set_style({"legend.frameon": False})
-g = sns.boxplot(data=plot_data, x="p", y="time", hue="alg", style="n")
+g = sns.boxplot(data=plot_data, x="p", y="total_time", hue="method")
 
 g.set(
     title=f"",

@@ -11,7 +11,7 @@ import cstrees.learning as ctl
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 # input
-data_path = snakemake.input["data"]
+data_path = snakemake.input[0]
 seed = int(snakemake.wildcards["seed"])
 
 # run grasp, get cvars, get dag

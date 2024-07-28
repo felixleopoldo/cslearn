@@ -38,8 +38,8 @@ end = timer()
 runtime = end - start
 
 cvar_alg_df = pd.read_csv(prev_runtime_path)
-cvar_alg = cvar_alg_df["method"]
-cvar_runtime = cvar_alg_df["time"]
+cvar_alg = cvar_alg_df["method"][0]
+cvar_runtime = cvar_alg_df["time"][0]
 total_runtime = float(cvar_runtime) + runtime
 
 cstree_df = opt_tree.to_df()

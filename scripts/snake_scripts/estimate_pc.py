@@ -20,7 +20,7 @@ runtime = end - start
 dag_df = ctl.causallearn_graph_to_dag(pc_graph, labels=data.columns, alg="pc")
 time_df = pd.DataFrame(
     {
-        "method": ["GRaSP"],
+        "method": ["PC"],
         "time": [runtime],
         "seed": [snakemake.wildcards["seed"]],
         "p": [snakemake.wildcards["cstree_p"]],
