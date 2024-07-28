@@ -29,8 +29,8 @@ time_df = pd.DataFrame(
         "method": ["GRaSP"],
         "time": [runtime],
         "seed": [seed],
-        "p": [snakemake.wildcards["p"]],
-        "n": [snakemake.wildcards["n"]],
+        "p": [snakemake.wildcards["cstree_p"]],
+        "n": [data.shape[0]],
     }
 )
 

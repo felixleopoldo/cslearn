@@ -49,8 +49,8 @@ time_df = pd.DataFrame(
         "time": [cvar_runtime],
         "total_time": [runtime],
         "seed": [snakemake.wildcards["seed"]],
-        "p": [snakemake.wildcards["p"]],
-        "n": [snakemake.wildcards["n"]],
+        "p": [snakemake.wildcards["cstree_p"]],
+        "n": [data.shape[0]],
     }
 )
 
