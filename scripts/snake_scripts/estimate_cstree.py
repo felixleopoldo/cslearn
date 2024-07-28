@@ -2,8 +2,7 @@ from time import perf_counter as timer
 import json
 import warnings
 
-
-from pandas import read_csv
+import pandas as pd
 
 import cstrees.learning as ctl
 import cstrees.scoring as sc
@@ -21,7 +20,7 @@ alpha_tot = float(snakemake.wildcards["cslearn_alpha_tot"])
 prior = snakemake.wildcards["cslearn_param_prior"]
 
 # load inputs
-data = read_csv(data_path)
+data = pd.read_csv(data_path)
 with open(poss_cvars_path, "r") as f:
     poss_cvars = json.load(f)
 if poss_cvars == "":
@@ -38,15 +37,23 @@ opt_tree = ctl._optimal_cstree_given_order(map_order, context_scores)
 end = timer()
 runtime = end - start
 
-with open(prev_runtime_path, "r") as f:
-    prev_runtime = f.read()
-total_runtime = float(prev_runtime) + runtime
+cvar_alg_df = pd.read_csv(prev_runtime_path)
+cvar_alg = cvar_alg_df["method"]
+cvar_runtime = cvar_alg_df["time"]
+total_runtime = float(cvar_runtime) + runtime
 
 cstree_df = opt_tree.to_df()
+time_df = pd.DataFrame(
+    {
+        "method": ["CSlearn+" + cvar_alg],
+        "time": [cvar_runtime],
+        "total_time": [runtime],
+        "seed": [snakemake.wildcards["seed"]],
+        "p": [snakemake.wildcards["p"]],
+        "n": [snakemake.wildcards["n"]],
+    }
+)
 
 # output
-cstree_df.to_csv(snakemake.output[0])
-with open(snakemake.output[1], "w") as f:
-    f.write(str(runtime))
-with open(snakemake.output[2], "w") as f:
-    f.write(str(total_runtime))
+cstree_df.to_csv(snakemake.output["cstree"])
+time_df.to_csv(snakemake.output["time"], index=False)

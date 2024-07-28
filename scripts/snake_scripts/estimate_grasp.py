@@ -24,18 +24,16 @@ end = timer()
 runtime = end - start
 
 dag_df = ctl.causallearn_graph_to_dag(grasp_graph, labels=data.columns, alg="grasp")
+time_df = pd.DataFrame(
+    {
+        "method": ["GRaSP"],
+        "time": [runtime],
+        "seed": [seed],
+        "p": [snakemake.wildcards["p"]],
+        "n": [snakemake.wildcards["n"]],
+    }
+)
 
 # output
-# There should be a header. Otherwise we dont know which variable corresponds to which column.
-dag_df.to_csv(snakemake.output["dag"], index=False, header=False) 
-
-# This should be a csv file, see estimate_bos.R
-with open(snakemake.output["time"], "w") as f:
-    f.write(str(runtime))
-    
-# This should be a csv file, see estimate_bos.R
-time_df = pd.DataFrame({"time": [runtime], "seed": [seed], 
-                        "algorithm": ["grasp"], "p": [data.shape[1]], "n": [data.shape[0]]})
-
-# write to csv
-time_df.to_csv(snakemake.output["time_csv"], index=False)
+dag_df.to_csv(snakemake.output["dag"], index=False, header=False)
+time_df.to_csv(snakemake.output["time"], index=False)

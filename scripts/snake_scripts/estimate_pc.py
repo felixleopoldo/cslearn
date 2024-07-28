@@ -18,9 +18,16 @@ end = timer()
 runtime = end - start
 
 dag_df = ctl.causallearn_graph_to_dag(pc_graph, labels=data.columns, alg="pc")
+time_df = pd.DataFrame(
+    {
+        "method": ["GRaSP"],
+        "time": [runtime],
+        "seed": [seed],
+        "p": [snakemake.wildcards["p"]],
+        "n": [snakemake.wildcards["n"]],
+    }
+)
 
 # output
-dag_df.to_csv(snakemake.output[0], index=False, header=False)
-
-with open(snakemake.output[1], "w") as f:
-    f.write(str(runtime))
+dag_df.to_csv(snakemake.output["dag"], index=False, header=False)
+time_df.to_csv(snakemake.output["time"], index=False)

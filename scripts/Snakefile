@@ -214,12 +214,6 @@ rule bhc:
               "/data=/" + pattern_cstree_data +
               "/alg=/" + pattern_bhc +
               "/time.csv"),
-        total_time=("time" +
-                    "/true_cstree=/" + pattern_cstree +
-                    "/true_cstree_params=/" + pattern_cstree_params +
-                    "/data=/" + pattern_cstree_data +
-                    "/alg=/" + pattern_bhc +
-                    "/total_time.csv")        
     container: "docker://bpimages/stagedtrees:2.3.0"
     script:
         "snake_scripts/estimate_bhc.R"
@@ -244,12 +238,6 @@ rule cslearn:                   # tested
                 "/data=/" + pattern_cstree_data +
                 "/alg=/" + pattern_cslearn +
                 "/time.csv"),
-        total_time = ("time" +
-                      "/true_cstree=/" + pattern_cstree +
-                      "/true_cstree_params=/" + pattern_cstree_params +
-                      "/data=/" + pattern_cstree_data +
-                      "/alg=/" + pattern_cslearn +
-                      "/total_time.csv") # this will be same as time if poss_cvars is None
     script:
         "snake_scripts/estimate_cstree.py"
 
@@ -682,7 +670,7 @@ rule time_plots_3a_csv:         # test
                             "/true_cstree_params=/" + pattern_cstree_params +
                             "/data=/" + pattern_cstree_data +
                             "/alg=/" + pattern_pc_cslearn +
-                            "/total_time.csv"),
+                            "/time.csv"),
                     cstree_p=[5,7,10,15],
                     cstree_max_cvar=[2],
                     cstree_prob_cvar=[1],
@@ -702,7 +690,7 @@ rule time_plots_3a_csv:         # test
                                 "/true_cstree_params=/" + pattern_cstree_params +
                                 "/data=/" + pattern_cstree_data +
                                 "/alg=/" + pattern_grasp_cslearn +
-                                "/total_time.csv"),
+                                "/time.csv"),
                         cstree_p=[5,7,10,15],
                         cstree_max_cvar=[2],
                         cstree_prob_cvar=[1],
@@ -734,7 +722,7 @@ rule time_plots_3a_csv:         # test
                             "/true_cstree_params=/" + pattern_cstree_params +
                             "/data=/" + pattern_cstree_data +
                             "/alg=/" + pattern_grasp_bhc +
-                            "/total_time.csv"),
+                            "/time.csv"),
                 cstree_p=[5,7,10,15],
                 cstree_max_cvar=[2],
                 cstree_prob_cvar=[1],
@@ -767,7 +755,7 @@ rule time_plots_3b_csv:
                             "/true_cstree_params=/" + pattern_cstree_params +
                             "/data=/" + pattern_cstree_data +
                             "/alg=/" + pattern_pc_cslearn +
-                            "/total_time.csv"),
+                            "/time.csv"),
                     cstree_p=[10, 25, 50, 100, 250, 500],
                     cstree_max_cvar=[2],
                     cstree_prob_cvar=[1],
@@ -787,7 +775,7 @@ rule time_plots_3b_csv:
                                 "/true_cstree_params=/" + pattern_cstree_params +
                                 "/data=/" + pattern_cstree_data +
                                 "/alg=/" + pattern_grasp_cslearn +
-                                "/total_time.csv"),
+                                "/time.csv"),
                         cstree_p=[10, 25, 50, 100, 250, 500],
                         cstree_max_cvar=[2],
                         cstree_prob_cvar=[1],
@@ -806,7 +794,7 @@ rule time_plots_3b_csv:
         #                     "/true_cstree_params=/" + pattern_cstree_params +
         #                     "/data=/" + pattern_cstree_data +
         #                     "/alg=/" + pattern_grasp_bhc +
-        #                     "/total_time.csv"),
+        #                     "/time.csv"),
         #         cstree_p=[10, 25, 50, 100, 250, 500],
         #         cstree_max_cvar=[2],
         #         cstree_prob_cvar=[1],
