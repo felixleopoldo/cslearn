@@ -795,7 +795,7 @@ rule time_plots_3b_csv:
                             "/data=/" + pattern_cstree_data +
                             "/alg=/" + pattern_grasp_bhc +
                             "/time.csv"),
-                cstree_p=[10, 25],#[10, 25, 50, 100, 250, 500],
+                cstree_p=[10],#[10, 25, 50, 100, 250, 500],
                 cstree_max_cvar=[2],
                 cstree_prob_cvar=[1],
                 cstree_params_alpha=[1.0],
