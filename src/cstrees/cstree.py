@@ -1371,7 +1371,4 @@ def df_to_cstree(df, read_probs=True):
 
     cstree.update_stages(stagings)
 
-    if has_probs:
-        cstree._set_tree_probs()
-
     return cstree

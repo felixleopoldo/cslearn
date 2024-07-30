@@ -5,7 +5,7 @@ RUN apt-get install -y python-dev-is-python3 graphviz libgraphviz-dev pkg-config
 
 RUN pip install --upgrade pip
 
-RUN pip install cstrees==1.3.0
+RUN pip install cstrees==1.3.1
 
 # This would be the way to install the package from the source code:
 #WORKDIR /cstrees

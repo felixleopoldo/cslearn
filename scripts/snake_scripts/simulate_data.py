@@ -12,7 +12,7 @@ seed = int(snakemake.wildcards["seed"])
 nprandom.seed(seed)
 
 df = read_csv(input_path, index_col=(0))
-print(df)
+#print(df)
 print("Reading cstree")
 tree = ct.df_to_cstree(df)
 
