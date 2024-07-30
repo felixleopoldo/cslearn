@@ -42,8 +42,8 @@ pattern_kl_div = "kl_div"
 
 container: "docker://bpimages/cslearn:1.3.1"
 # export APPTAINER_TMPDIR=/home/alex/Downloads/tmp-snake/
-envvars:
-    "APPTAINER_TMPDIR"
+#envvars:
+#    "APPTAINER_TMPDIR"
 
 def input_cvars(wildcards):
     """
@@ -295,17 +295,17 @@ rule pc:               # tested
 rule dag_bdeu_parameter_estimation: # no script? not implemented?
     input:
         dag = ("estimate" +
-                "/true_cstree=/{true_cstree}" +
-                "/true_cstree_params=/{true_cstree_params}"
-                "/data=/{data}" +
+                "/true_cstree=/"  + pattern_cstree +
+                "/true_cstree_params=/" + pattern_cstree_params +
+                "/data=/" + pattern_cstree_data +
                 "/alg=/{alg}" +
                 "/dag.csv"), # should be dag.csv
         data = rules.cstree_data.output
     output:
         dag_param_est=("dag_param_est" +
-                       "/true_cstree=/{true_cstree}" +
-                       "/true_cstree_params=/{true_cstree_params}" +
-                       "/data=/{data}" +
+                       "/true_cstree=/" + pattern_cstree +
+                       "/true_cstree_params=/" + pattern_cstree_params +
+                       "/data=/"  + pattern_cstree_data +
                        "/alg=/{alg}" +
                        "/param_est=/"+pattern_dag_param_est +
                        "/model.bif")

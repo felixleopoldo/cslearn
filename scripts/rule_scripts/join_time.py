@@ -14,6 +14,7 @@ print(snakemake.input.keys())
 results = []
 for key, value in snakemake.input.items():
         for path in value:
+            print(path)
             results.append(pd.read_csv(path))
 
 #for path in chain(csl_pc_paths, csl_grasp_paths, bos_paths, grasp_bhc_path):
