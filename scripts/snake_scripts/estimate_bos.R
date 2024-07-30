@@ -23,9 +23,9 @@ modelfile <- snakemake@output$st
 saveRDS(model, modelfile)
 # create a csv file with the time
 timefile <- snakemake@output$time
-total_time <- start_time - end_time
+total_time <- end_time - start_time
 
-time <- data.frame(method = "bos", 
+time <- data.frame(method = "bos",
                    time = total_time,
                    total_time = total_time,
                    n=snakemake@wildcards$cstree_data_n,
