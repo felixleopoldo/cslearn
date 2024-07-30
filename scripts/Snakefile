@@ -98,7 +98,8 @@ def input_time_cslearn(wildcards):
 rule test:
     input:
         #"results/kl_divergence_2c.pdf",
-        "results/time_3a.pdf"
+        "results/time_3a.pdf",
+        "results/time_3b.pdf"
 
 rule all:
     input:
@@ -756,7 +757,7 @@ rule time_plots_3b_csv:
                             "/data=/" + pattern_cstree_data +
                             "/alg=/" + pattern_pc_cslearn +
                             "/time.csv"),
-                    cstree_p=[10, 25, 50, 100, 250, 500],
+                    cstree_p=[10, 25, 50],#[10, 25, 50, 100, 250, 500],
                     cstree_max_cvar=[2],
                     cstree_prob_cvar=[1],
                     cstree_params_alpha=[1.0],
@@ -776,7 +777,7 @@ rule time_plots_3b_csv:
                                 "/data=/" + pattern_cstree_data +
                                 "/alg=/" + pattern_grasp_cslearn +
                                 "/time.csv"),
-                        cstree_p=[10, 25, 50, 100, 250, 500],
+                        cstree_p=[10, 25, 50],#[10, 25, 50, 100, 250, 500],
                         cstree_max_cvar=[2],
                         cstree_prob_cvar=[1],
                         cstree_params_alpha=[1.0],
@@ -788,20 +789,19 @@ rule time_plots_3b_csv:
                         cslearn_alpha_tot=[1.0],
                         cslearn_param_prior=["BDeu"],
                         seed=seed_range),
-
-        # grasp_bhc = expand(("time" +
-        #                     "/true_cstree=/" + pattern_cstree +
-        #                     "/true_cstree_params=/" + pattern_cstree_params +
-        #                     "/data=/" + pattern_cstree_data +
-        #                     "/alg=/" + pattern_grasp_bhc +
-        #                     "/time.csv"),
-        #         cstree_p=[10, 25, 50, 100, 250, 500],
-        #         cstree_max_cvar=[2],
-        #         cstree_prob_cvar=[1],
-        #         cstree_params_alpha=[1.0],
-        #         cstree_data_n=[1000],
-        #         alg_name="bhc",
-        #         seed=seed_range)
+        grasp_bhc = expand(("time" +
+                            "/true_cstree=/" + pattern_cstree +
+                            "/true_cstree_params=/" + pattern_cstree_params +
+                            "/data=/" + pattern_cstree_data +
+                            "/alg=/" + pattern_grasp_bhc +
+                            "/time.csv"),
+                cstree_p=[10, 25, 50],#[10, 25, 50, 100, 250, 500],
+                cstree_max_cvar=[2],
+                cstree_prob_cvar=[1],
+                cstree_params_alpha=[1.0],
+                cstree_data_n=[1000],
+                alg_name="bhc",
+                seed=seed_range)
     output:
         "results/time_3b.csv"
     script:
