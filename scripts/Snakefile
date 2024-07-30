@@ -4,7 +4,7 @@
 # snakemake all -n
 
 seed_range = range(1, 2)   # can replace with range(1, 11) after testing
-p_list = cstree_p=[5,7] # can replace with [5,7,10,15] after testing
+p_list = [5,7] # can replace with [5,7,10,15] after testing
 
 # CStree model
 pattern_cstree = "cstree/cstree_p={cstree_p}/cstree_max_cvar={cstree_max_cvar}/cstree_prob_cvar={cstree_prob_cvar}/seed={seed}"
@@ -224,7 +224,7 @@ rule bhc:
         "snake_scripts/estimate_bhc.R"
 
 rule cslearn:                   # tested
-    # Estimate a distribution from data
+    # cstree structure learning
     input:
         data=rules.cstree_data.output,
         poss_cvars=input_cvars, # will be empty if poss_cvars is None
@@ -292,14 +292,15 @@ rule pc:               # tested
 
 # The parameters fro the dag algorithms should be learned in separate rule,
 # as this is done in R for both grasp and pc.
-rule dag_bdeu_parameter_estimation:
+rule dag_bdeu_parameter_estimation: # no script? not implemented?
     input:
         dag = ("estimate" +
                 "/true_cstree=/{true_cstree}" +
                 "/true_cstree_params=/{true_cstree_params}"
                 "/data=/{data}" +
                 "/alg=/{alg}" +
-                "/dag.csv") # should be dag.csv
+                "/dag.csv"), # should be dag.csv
+        data = rules.cstree_data.output
     output:
         dag_param_est=("dag_param_est" +
                        "/true_cstree=/{true_cstree}" +
@@ -307,12 +308,15 @@ rule dag_bdeu_parameter_estimation:
                        "/data=/{data}" +
                        "/alg=/{alg}" +
                        "/param_est=/"+pattern_dag_param_est +
-                       "/params.csv")
+                       "/model.bif")
+    script:
+        "snake_scripts/dag_bdeu_parameter_estimation.py"
+
 
 # CS-BDeu
-rule cstree_bdeu_parameter_estimation:
+rule cslearn_bdeu_parameter_estimation: # not implemented?
     input:
-        cstree = rules.cslearn.output,
+        cstree = rules.cslearn.output['cstree'],
         data = rules.cstree_data.output
     output:
         param_est=("cstree_param_est" +
@@ -322,11 +326,11 @@ rule cstree_bdeu_parameter_estimation:
                     "/alg=/" + pattern_cslearn +
                     "/param_est=/"+pattern_cstree_param_est+
                     "/cstree.csv")
-    container: "docker://bpimages/stagedtrees:2.3.0"
+    # container: "docker://bpimages/stagedtrees:2.3.0"
     script:
-        "scripts/cstree_bdeu_parameter_estimation.R"
+        "snake_scripts/cslearn_bdeu_parameter_estimation.py"
 
-rule stagedtree_ml_parameter_estimation:
+rule stagedtree_ml_parameter_estimation: # not implemented?
     input:
         ("estimate" +
         "/true_cstree=/" + pattern_cstree +
@@ -378,7 +382,7 @@ rule joint_dag_distribution:    # tested
                     "/data=/{data}" +
                     "/alg=/{alg_name}/{alg}" +
                     "/param_est=/{param_est}" +
-                    "/params.csv")
+                    "/model.bif")
     output:
         full_distr=("full_distr" +
                     "/true_cstree=/{true_cstree}" +
@@ -395,7 +399,7 @@ rule joint_dag_distribution:    # tested
 rule joint_cstree_distribution:
     # Estimate a distribution from data
     input:
-        input_cstree = rules.cstree_bdeu_parameter_estimation.output
+        input_cstree = rules.cslearn_bdeu_parameter_estimation.output
     output:
         full_distr=("full_distr" +
                     "/true_cstree=/" + pattern_cstree +

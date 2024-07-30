@@ -1,21 +1,15 @@
 from itertools import product
 
-import networkx as nx
 import numpy as np
 import pandas as pd
 from pgmpy.models import BayesianNetwork
 from tqdm import tqdm
 
+
 # input
-dag_csv = snakemake.input["input_dag"]
-data = snakemake.input["data"]
+pgm = BayesianNetwork.load(snakemake.input[0])
 
-# get MLE of DAG
-dag = nx.from_pandas_adjacency(dag_csv, nx.DiGraph)
-pgm = BayesianNetwork(dag)
-pgm.fit(data[1:])
-
-cards = dag.number_of_nodes() * [2]
+cards = pgm.number_of_nodes() * [2]
 
 # Iterate over all possible outcomes and calculate the probability mass function.
 # Store the outcomes together with the probabilities in a Pandas Dataframe.
@@ -24,7 +18,7 @@ n_outcomes = np.prod(cards)
 
 # Create an empty dataframe with the correct column names
 # df_outcomes = pd.DataFrame(columns=self.labels)
-df_outcomes = pd.DataFrame(columns=list(dag))
+df_outcomes = pd.DataFrame(columns=list(pgm))
 # store all the outcomes and probabilities
 pmfs = [None] * np.prod(cards)
 
@@ -32,7 +26,7 @@ for i, outcome in tqdm(
     enumerate(outcomes), total=n_outcomes, desc="Calculating joint distribution"
 ):
     df_outcomes.loc[i] = outcome
-    pgmpy_outcome = {var: marg_outcome for var, marg_outcome in zip(list(dag), outcome)}
+    pgmpy_outcome = {var: marg_outcome for var, marg_outcome in zip(list(pgm), outcome)}
     pmfs[i] = pgm.get_state_probability(pgmpy_outcome)
 
     # logprob not given by pgmpy, but could implement based on
