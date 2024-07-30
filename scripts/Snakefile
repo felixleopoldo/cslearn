@@ -40,6 +40,9 @@ pattern_st_param_est = "st_param_est/st_param_est_estimation_type={st_param_est_
 pattern_kl_div = "kl_div"
 
 container: "docker://bpimages/cslearn:1.3.1"
+# export APPTAINER_TMPDIR=/home/alex/Downloads/tmp-snake/
+envvars:
+    "APPTAINER_TMPDIR"
 
 def input_cvars(wildcards):
     """
@@ -401,7 +404,7 @@ rule joint_cstree_distribution:
                     "/param_est=/" + pattern_cstree_param_est +
                     "/distr.csv")
     script:
-        "scripts/joint_cstree.py"
+        "snake_scripts/joint_cstree.py"
 
 # Calculate KL divergence between estimated and true distribution
 rule kl_div_to_true:
@@ -423,7 +426,7 @@ rule kl_div_to_true:
                 "/param_est=/{param_est}" +
                 "/kl_div.csv")
     script:
-        "scripts/kl_div.py"
+        "snake_scripts/kl_div.py"
 
 """ Plot (2a): comparison of performance of parameter MAP estimate versus parameter MLE est with PC used in Phase 1:
 
