@@ -21,6 +21,7 @@ g.set(
 
 g.legend_.set_title("")
 g.legend_.set_frame_on(False)
+# Labels can be saved i the CSV files
 # new_labels = [
 #     "constraint-based phase (PC)",
 #     "Gibbs sampler and exact search",

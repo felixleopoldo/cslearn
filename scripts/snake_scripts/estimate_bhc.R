@@ -26,41 +26,23 @@ data <- data[-1, ] ## remove first row
 start_time <- Sys.time()
 
 # read dag from file as csv
-print("read dag")
 dag_adjmat <- read.csv(snakemake@input$input_alg_dag, header = FALSE, check.names = FALSE)
 
 dag_matrix <- as.matrix(dag_adjmat)
 
-colnames(data) <- paste0("X",c(1:ncol(data)))
-
 colnames(dag_matrix) <- colnames(data)
 colnames(data) <- colnames(data)
-
-print(colnames(data))
-
 # convert to bnlearn dag
 dag <- empty.graph(nodes = colnames(data))
-
 # Set the adjacency matrix
 amat(dag) <- dag_matrix
-
-# Display the DAG
-dag
-print("fit")
-
-#print(data)
-# convert to data frame columns to factors
-#df <- as.data.frame(data)
-#df <- lapply(df, as.factor)
-#print(df)
 
 
 df <- matrixToDataframe(data, colnames(data))
 #dagfit <- bnlearn::tabu(df)
 dagfit <- bnlearn::bn.fit(dag, df)
-print("fited dag")
-print(dagfit)
 
+# Are we estimating the parameters here? Do we need that?
 model <- as_sevt(dagfit) |> sevt_fit(df, lambda = 0) |> stages_bhc()
 
 #model <- stagedtrees::search_best(df, alg = stages_bhc)
@@ -71,28 +53,12 @@ modelfile <- snakemake@output$st
 saveRDS(model, modelfile)
 # create a csv file with the time
 timefile <- snakemake@output$time
-bhc_time <- start_time - end_time
+bhc_time <- end_time - start_time
 
 # get the input algorithm time
-print("read input time")
-# read as ordinary file
-input_alg_time <- readLines(snakemake@input$time)
-
-#input_alg_time <- read.csv(snakemake@input$time, header = TRUE, check.names = FALSE)
-
-
-print("input time")
-print(input_alg_time$time)
+input_alg_time <- read.csv(snakemake@input$input_alg_time, header = TRUE, check.names = FALSE)
 
 total_time <- bhc_time + input_alg_time$time
-
-
-
-print("total time")
-print(total_time)
-print("bhc time")
-print(bhc_time)
-
 
 time <- data.frame(method = "bhc", 
                    time = bhc_time,

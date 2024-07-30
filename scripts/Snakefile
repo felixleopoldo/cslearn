@@ -39,7 +39,7 @@ pattern_st_param_est = "st_param_est/st_param_est_estimation_type={st_param_est_
 # Evaluation
 pattern_kl_div = "kl_div"
 
-container: "docker://bpimages/cslearn:1.3.0-arm64"
+container: "docker://bpimages/cslearn:1.3.0"
 
 def input_cvars(wildcards):
     """
@@ -704,33 +704,32 @@ rule time_plots_3a_csv:         # test
                         cslearn_alpha_tot=[1.0],
                         cslearn_param_prior=["BDeu"],
                         seed=seed_range),
-        # bos = expand(("time" +
-        #             "/true_cstree=/" + pattern_cstree +
-        #             "/true_cstree_params=/" + pattern_cstree_params +
-        #             "/data=/" + pattern_cstree_data +
-        #             "/alg=/" + pattern_bos +
-        #             "/time.csv"),
-        #         cstree_p=[5,7],#[5,7,10,15],
-        #         cstree_max_cvar=[2],
-        #         cstree_prob_cvar=[1],
-        #         cstree_params_alpha=[1.0],
-        #         cstree_data_n=[250, 1000],
-        #         alg_name="bos",
-        #         seed=seed_range),
-
-        # grasp_bhc = expand(("time" +
-        #                     "/true_cstree=/" + pattern_cstree +
-        #                     "/true_cstree_params=/" + pattern_cstree_params +
-        #                     "/data=/" + pattern_cstree_data +
-        #                     "/alg=/" + pattern_grasp_bhc +
-        #                     "/time.csv"),
-        #         cstree_p=[5,7,10,15],
-        #         cstree_max_cvar=[2],
-        #         cstree_prob_cvar=[1],
-        #         cstree_params_alpha=[1.0],
-        #         cstree_data_n=[250, 1000],
-        #         alg_name="bhc",
-        #         seed=seed_range),
+        bos = expand(("time" +
+                    "/true_cstree=/" + pattern_cstree +
+                    "/true_cstree_params=/" + pattern_cstree_params +
+                    "/data=/" + pattern_cstree_data +
+                    "/alg=/" + pattern_bos +
+                    "/time.csv"),
+                cstree_p=[5,7],#[5,7,10,15],
+                cstree_max_cvar=[2],
+                cstree_prob_cvar=[1],
+                cstree_params_alpha=[1.0],
+                cstree_data_n=[250, 1000],
+                alg_name="bos",
+                seed=seed_range),
+        grasp_bhc = expand(("time" +
+                            "/true_cstree=/" + pattern_cstree +
+                            "/true_cstree_params=/" + pattern_cstree_params +
+                            "/data=/" + pattern_cstree_data +
+                            "/alg=/" + pattern_grasp_bhc +
+                            "/time.csv"),
+                cstree_p=[5,7,10,15],
+                cstree_max_cvar=[2],
+                cstree_prob_cvar=[1],
+                cstree_params_alpha=[1.0],
+                cstree_data_n=[250, 1000],
+                alg_name="bhc",
+                seed=seed_range),
     output:
         "results/time_3a.csv"
     script:
