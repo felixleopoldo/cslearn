@@ -559,7 +559,7 @@ rule kl_plots_2b_csv:
     output:
         "results/kl_divergence_2b.csv"
     script:
-        "rule_scripts/join_kl.py" # this script will join the csv files
+        "rule_scripts/join_csvs.py" # this script will join the csv files
 
 """
 Plot (2c): Comparison of CSlearn with other methods:
@@ -656,7 +656,7 @@ rule kl_plots_2c_csv:
     output:
         "results/kl_divergence_2c.csv"
     script:
-        "rule_scripts/join_kl.py" # this script will join the csv files
+        "rule_scripts/join_csvs.py" # this script will join the csv files
 
 """
 Plot (3a): comparison of runtimes (total times only) for all algorithms on small graphs with multiple sample sizes:
