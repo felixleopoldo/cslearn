@@ -17,7 +17,7 @@ param_method = snakemake.wildcards["param_est"].split("/")[1].split("=")[1]
 true = pd.read_csv(true_path, index_col=[0])
 est = pd.read_csv(est_path, index_col=[0])
 
-kl_div = (true["prob"] * (true["log_prob"] - est["log_prob"])).sum()
+kl_div = (est["prob"] * (est["log_prob"] - true["log_prob"])).sum()
 
 kl_df = pd.DataFrame(
     {
