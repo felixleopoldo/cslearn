@@ -3,7 +3,7 @@
 # For dry run type:
 # snakemake all -n
 
-seed_range = range(1, 6)   # can replace with range(1, 11) after testing
+seed_range = range(1, 3)   # can replace with range(1, 11) after testing
 p_list = [5,7,10] # can replace with [5,7,10,15] after testing
 
 # CStree model
@@ -651,7 +651,7 @@ rule kl_plots_2c_csv:
                     "/alg=/" + pattern_bos +
                     "/param_est=/" + pattern_st_param_est +
                     "/kl_div.csv"),
-                cstree_p=p_list,
+                cstree_p=[5,7],
                 alg_name="bos",
                 cstree_max_cvar=[2],
                 cstree_prob_cvar=[0.5],
@@ -790,7 +790,7 @@ rule time_plots_3b_csv:
                             "/data=/" + pattern_cstree_data +
                             "/alg=/" + pattern_pc_cslearn +
                             "/time.csv"),
-                    cstree_p=[10, 25, 50, 100, 250, 500],
+                    cstree_p=[10, 25, 50, 100, 250], # [10, 25, 50, 100, 250, 500],
                     cstree_max_cvar=[2],
                     cstree_prob_cvar=[0.5],
                     cstree_params_alpha=[1.0],
