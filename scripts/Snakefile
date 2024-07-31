@@ -533,7 +533,7 @@ rule kl_plots_2b_csv:
                 cstree_params_alpha=[1.0],
                 cstree_data_n=[10000],
                 alg_name="grasp",
-                dag_param_est_alpha=[0.05],
+                dag_param_est_alpha=[0],
                 dag_param_est_estimation_type=["mle"],
                 seed=seed_range),
 
@@ -555,8 +555,8 @@ rule kl_plots_2b_csv:
                         cslearn_mcmc_iterations=[5000],
                         cslearn_alpha_tot=[1.0],
                         cslearn_param_prior=["BDeu"],
-                        cstree_param_est_alpha=[0.05], # this will be ignored for dag_param_est_type="mle"
-                        cstree_param_est_estimation_type=["mle", "map"],
+                        cstree_param_est_alpha=[0,1], # this will be ignored for dag_param_est_type="mle"
+                        cstree_param_est_estimation_type=["mle"] # might not need this, alpha=0 is mke#["mle", "map"],
                         seed=seed_range)
 
     output:
@@ -597,7 +597,7 @@ rule kl_plots_2c_csv:
                 cstree_params_alpha=[1.0],
                 cstree_data_n=[10000],
                 alg_name="grasp",
-                dag_param_est_alpha=[0.05],
+                dag_param_est_alpha=[0],
                 dag_param_est_estimation_type=["mle"],
                 seed=seed_range),
         cslearn_grasp = expand(("results/kl_div" +
@@ -618,7 +618,7 @@ rule kl_plots_2c_csv:
                         cslearn_mcmc_iterations=[5000],
                         cslearn_alpha_tot=[1.0],
                         cslearn_param_prior=["BDeu"],
-                        cstree_param_est_alpha=[0.05], # this will be ignored for dag_param_est_type="mle"
+                        cstree_param_est_alpha=[0], # this will be ignored for dag_param_est_type="mle"
                         cstree_param_est_estimation_type=["mle"],
                         seed=seed_range),
 
@@ -635,7 +635,7 @@ rule kl_plots_2c_csv:
                 cstree_prob_cvar=[0.5],
                 cstree_params_alpha=[1.0],
                 cstree_data_n=[1000],
-                st_param_est_alpha=[0.05],
+                st_param_est_alpha=[0],
                 st_param_est_estimation_type=["mle"],
                 seed=seed_range),
 
@@ -652,7 +652,7 @@ rule kl_plots_2c_csv:
                 cstree_prob_cvar=[0.5],
                 cstree_params_alpha=[1.0],
                 cstree_data_n=[1000, 10000],
-                st_param_est_alpha=[0.05],
+                st_param_est_alpha=[0],
                 st_param_est_estimation_type=["mle"],
                 seed=seed_range),
 

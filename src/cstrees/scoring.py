@@ -148,7 +148,7 @@ def _estimate_parameters(
     if method == "BD":  # This should be the Cooper-Herzkovits
         alpha_obs = alpha_tot
         alpha_stage = alpha_tot * cstree.cards[level]
-    elif method == "BDeu":
+    elif method == "BDeu": # if alpha_tot  == 0, we get MLE?
         # TODO: assert that all stages are colored.
         # level 0 has no stages. it has [] actually...
         alpha_stage = alpha_tot * cstree.stage_proportion(stage)
