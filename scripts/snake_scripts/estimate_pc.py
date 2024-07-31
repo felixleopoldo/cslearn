@@ -1,6 +1,8 @@
 from time import perf_counter as timer
 
 from causallearn.search.ConstraintBased.PC import pc
+import networkx as nx
+import numpy as np
 import pandas as pd
 
 import cstrees.learning as ctl
@@ -17,7 +19,13 @@ pc_graph = pc(data.values[1:], 0.05, "gsq", node_names=data.columns)
 end = timer()
 runtime = end - start
 
-dag_df = ctl.causallearn_graph_to_dag(pc_graph, labels=data.columns, alg="pc")
+cpdag = nx.DiGraph()
+cpdag.add_nodes_from(range(int(snakemake.wildcards["cstree_p"])))
+incoming = np.argwhere(pc_graph.G.graph == -1)
+cpdag.add_edges_from(incoming)
+
+cpdag_df = nx.to_pandas_adjacency(cpdag).astype(int)
+# dag_df = ctl.causallearn_graph_to_dag(pc_graph, labels=data.columns, alg="pc")
 time_df = pd.DataFrame(
     {
         "method": ["PC"],
@@ -29,5 +37,5 @@ time_df = pd.DataFrame(
 )
 
 # output
-dag_df.to_csv(snakemake.output["dag"], index=False, header=False)
+cpdag_df.to_csv(snakemake.output["dag"], index=False, header=False)
 time_df.to_csv(snakemake.output["time"], index=False)

@@ -3,6 +3,7 @@ import random
 import warnings
 
 from causallearn.search.PermutationBased.GRaSP import grasp
+import networkx as nx
 import pandas as pd
 
 import cstrees.learning as ctl
@@ -23,7 +24,13 @@ grasp_graph = grasp(data.values[1:], score_func="local_score_BDeu", maxP=10, dep
 end = timer()
 runtime = end - start
 
-dag_df = ctl.causallearn_graph_to_dag(grasp_graph, labels=data.columns, alg="grasp")
+cpdag = nx.DiGraph()
+cpdag.add_nodes_from(range(int(snakemake.wildcards["cstree_p"])))
+incoming = np.argwhere(grasp_graph.graph == -1)
+cpdag.add_edges_from(incoming)
+
+cpdag_df = nx.to_pandas_adjacency(cpdag).astype(int)
+# dag_df = ctl.causallearn_graph_to_dag(grasp_graph, labels=data.columns, alg="grasp")
 time_df = pd.DataFrame(
     {
         "method": ["GRaSP"],
@@ -36,5 +43,5 @@ time_df = pd.DataFrame(
 )
 
 # output
-dag_df.to_csv(snakemake.output["dag"], index=False, header=False)
+cpdag_df.to_csv(snakemake.output["dag"], index=False, header=False)
 time_df.to_csv(snakemake.output["time"], index=False)
