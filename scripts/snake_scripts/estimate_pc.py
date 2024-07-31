@@ -37,5 +37,5 @@ time_df = pd.DataFrame(
 )
 
 # output
-cpdag_df.to_csv(snakemake.output["dag"], index=False, header=False)
+cpdag_df.to_csv(snakemake.output["dag"], index=False)
 time_df.to_csv(snakemake.output["time"], index=False)
