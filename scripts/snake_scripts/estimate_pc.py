@@ -1,12 +1,10 @@
 from time import perf_counter as timer
 
 from causallearn.search.ConstraintBased.PC import pc
-import networkx as nx
-import numpy as np
 import pandas as pd
 
 import cstrees.learning as ctl
-
+import networkx as nx
 
 # input
 data_path = snakemake.input[0]

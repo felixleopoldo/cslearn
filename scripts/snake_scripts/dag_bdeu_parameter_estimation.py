@@ -16,9 +16,9 @@ data = pd.read_csv(snakemake.input[1])
 
 
 pgm = BayesianNetwork(dag)
-# print("fit pgmpy bn")
-# print(pgm)
-# print(pgm.edges)
+#print("fit pgmpy bn")
+#print(pgm)
+#print(pgm.edges)
 
 # using https://pgmpy.org/param_estimator/mle.html
 # https://pgmpy.org/models/bayesiannetwork.html#module-pgmpy.models.BayesianNetwork
