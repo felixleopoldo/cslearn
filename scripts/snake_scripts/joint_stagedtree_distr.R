@@ -1,7 +1,8 @@
+library("stagedtrees")
  # Generate all the outcomes in the order specified by the data labels
 
 datafile <- snakemake@input$data
-modelfile <- snakemake@input$model
+modelfile <- snakemake@input$st
 
 # read data from csv
 data <- read.csv(datafile, header = TRUE, check.names = FALSE)
@@ -12,6 +13,7 @@ cardinalities <- data[1, ]
 # read the model from the rds file
 model <- readRDS(modelfile)
 
+print(model)
 
 spaces <- list()
 i <- 1
@@ -26,4 +28,6 @@ prob <- prob(model, space)
 log_prob <- prob(model, space, log = TRUE)
 df <- cbind(space, prob = prob, log_prob = log_prob)
 
-write.csv(df, snakemake@output$joint_distribution, row.names = FALSE)
+print(df)
+
+write.csv(df, snakemake@output$full_distr, row.names = FALSE)
