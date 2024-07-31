@@ -22,7 +22,7 @@ if snakemake.wildcards["cstree_param_est_estimation_type"] == "mle":
 
 cstree.estimate_stage_parameters(data, method="BDeu", alpha_tot=alpha)
 
-cstree_df = cstree.to_df(write_probs=True)
+cstree_params_df = cstree.to_df(write_probs=True)
 
 # output
-cstree_df.to_csv(snakemake.output["param_est"])
+cstree_params_df.to_csv(snakemake.output["param_est"])

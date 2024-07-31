@@ -8,12 +8,12 @@ data_path = snakemake.input[1]
 
 # load data
 data = pd.read_csv(data_path)
-#print("data:")
-#print(data.head())
+# print("data:")
+# print(data.head())
 # load cstree and get joint distribution
 cstree_df = pd.read_csv(cstree_path, index_col=(0))
-#print("cstree_df:")
-#print(cstree_df)
+# print("cstree_df:")
+# print(cstree_df)
 cstree = df_to_cstree(cstree_df)
 
 

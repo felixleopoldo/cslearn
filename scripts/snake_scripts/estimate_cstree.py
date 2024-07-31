@@ -26,7 +26,7 @@ with open(poss_cvars_path, "r") as f:
 if poss_cvars == "":
     poss_cvars = None
 
-#print(poss_cvars)
+# print(poss_cvars)
 
 # estimate cstree
 start = timer()
