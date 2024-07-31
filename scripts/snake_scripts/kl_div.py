@@ -3,8 +3,12 @@ import pandas as pd
 # input
 true_path = snakemake.input[0]
 est_path = snakemake.input[1]
-alg = snakemake.wildcards["alg"]
-# print(alg)
+
+n = int(snakemake.wildcards["data"].split("/")[1].split("=")[1])
+alg = snakemake.wildcards["alg"].split("/")[0]
+if alg == "cslearn":
+    alg += "+" + snakemake.wildcards["alg"].split("/")[2].split("=")[1]
+param_method = snakemake.wildcards["param_est"].split("/")[1].split("=")[1]
 
 # comput kl-div
 # see https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.entropy.html#scipy.stats.entropy
@@ -17,11 +21,11 @@ kl_div = (true["prob"] * (true["log_prob"] - est["log_prob"])).sum()
 
 kl_df = pd.DataFrame(
     {
-        "method": ["test_method"],
+        "method": [f"{alg} ({param_method})"],
         "kl_div": [kl_div],
         "seed": [snakemake.wildcards["seed"]],
         "p": [snakemake.wildcards["cstree_p"]],
-        "n": ["test_n"],
+        "n": [n],
     }
 )
 
