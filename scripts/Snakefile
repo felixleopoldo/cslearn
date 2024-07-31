@@ -556,7 +556,7 @@ rule kl_plots_2b_csv:
                         cslearn_alpha_tot=[1.0],
                         cslearn_param_prior=["BDeu"],
                         cstree_param_est_alpha=[0,1], # this will be ignored for dag_param_est_type="mle"
-                        cstree_param_est_estimation_type=["mle"] # might not need this, alpha=0 is mke#["mle", "map"],
+                        cstree_param_est_estimation_type=["mle"], # might not need this, alpha=0 is mke#["mle", "map"],
                         seed=seed_range)
 
     output:
