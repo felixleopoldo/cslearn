@@ -16,19 +16,19 @@ data = pd.read_csv(snakemake.input[1])
 
 
 pgm = BayesianNetwork(dag)
-print("fit pgmpy bn")
-print(pgm)
-print(pgm.edges)
+# print("fit pgmpy bn")
+# print(pgm)
+# print(pgm.edges)
 
 # using https://pgmpy.org/param_estimator/mle.html
 # https://pgmpy.org/models/bayesiannetwork.html#module-pgmpy.models.BayesianNetwork
 
 state_names = {col: [0, 1] for col in data.columns}
-#estimator = MaximumLikelihoodEstimator(pgm, data[1:], state_names=state_names)
+# estimator = MaximumLikelihoodEstimator(pgm, data[1:], state_names=state_names)
 
 
-#estimator.estimate_cpd(0)
+# estimator.estimate_cpd(0)
 pgm.fit(data[1:])
-#print(pgm.get_cpds())
+# print(pgm.get_cpds())
 
 pgm.save(snakemake.output[0])
