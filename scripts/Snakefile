@@ -117,7 +117,7 @@ rule all:
 # as a JSON file.
 rule dag_to_poss_cvar:          # tested
     input:
-        "{whatever}/dag.csv" # dag.csv
+        "{whatever}/cpdag.csv" # dag.csv
     output:
         "{whatever}/poss_cvars.json"
     script:
@@ -280,6 +280,12 @@ rule pc:               # tested
                 "/alg=/" + pattern_pc +
                 "/dag.csv"),
                 # "/cg.csv"), # should be cg.csv
+        cpdag=("results/estimate" +
+                "/true_cstree=/" + pattern_cstree +
+                "/true_cstree_params=/" + pattern_cstree_params +
+                "/data=/" + pattern_cstree_data +
+                "/alg=/" + pattern_pc +
+                "/cpdag.csv"),
         time=("results/time" +
               "/true_cstree=/" + pattern_cstree +
               "/true_cstree_params=/" + pattern_cstree_params +

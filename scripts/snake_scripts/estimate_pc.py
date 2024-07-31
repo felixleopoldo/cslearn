@@ -24,8 +24,8 @@ cpdag.add_nodes_from(range(int(snakemake.wildcards["cstree_p"])))
 incoming = np.argwhere(pc_graph.G.graph == -1)
 cpdag.add_edges_from(incoming)
 
+dag_df = ctl.causallearn_graph_to_dag(pc_graph, labels=data.columns, alg="pc")
 cpdag_df = nx.to_pandas_adjacency(cpdag).astype(int)
-# dag_df = ctl.causallearn_graph_to_dag(pc_graph, labels=data.columns, alg="pc")
 time_df = pd.DataFrame(
     {
         "method": ["PC"],
@@ -37,5 +37,6 @@ time_df = pd.DataFrame(
 )
 
 # output
-cpdag_df.to_csv(snakemake.output["dag"], index=False)
+dag_df.to_csv(snakemake.output["dag"], index=False)
+cpdag_df.to_csv(snakemake.output["cpdag"], index=False)
 time_df.to_csv(snakemake.output["time"], index=False)

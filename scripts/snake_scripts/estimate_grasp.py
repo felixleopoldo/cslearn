@@ -30,7 +30,7 @@ incoming = np.argwhere(grasp_graph.graph == -1)
 cpdag.add_edges_from(incoming)
 
 cpdag_df = nx.to_pandas_adjacency(cpdag).astype(int)
-# dag_df = ctl.causallearn_graph_to_dag(grasp_graph, labels=data.columns, alg="grasp")
+dag_df = ctl.causallearn_graph_to_dag(grasp_graph, labels=data.columns, alg="grasp")
 time_df = pd.DataFrame(
     {
         "method": ["GRaSP"],
@@ -43,5 +43,6 @@ time_df = pd.DataFrame(
 )
 
 # output
-cpdag_df.to_csv(snakemake.output["dag"], index=False)
+dag_df.to_csv(snakemake.output["dag"], index=False)
+cpdag_df.to_csv(snakemake.output["cpdag"], index=False)
 time_df.to_csv(snakemake.output["time"], index=False)
