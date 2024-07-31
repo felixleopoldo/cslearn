@@ -4,7 +4,7 @@
 # snakemake all -n
 
 seed_range = range(1, 2)   # can replace with range(1, 11) after testing
-p_list = [5,7] # can replace with [5,7,10,15] after testing
+p_list = [5,7, 10] # can replace with [5,7,10,15] after testing
 
 # CStree model
 pattern_cstree = "cstree/cstree_p={cstree_p}/cstree_max_cvar={cstree_max_cvar}/cstree_prob_cvar={cstree_prob_cvar}/seed={seed}"
@@ -470,7 +470,7 @@ rule kl_plots_2a_csv:
                 cstree_data_n=[10000],
                 pc_alpha=0.05,
                 alg_name="pc",
-                dag_param_est_alpha=[0.05],
+                dag_param_est_alpha=[1],
                 dag_param_est_estimation_type=["mle"],
                 seed=seed_range),
 
@@ -493,8 +493,8 @@ rule kl_plots_2a_csv:
                     cslearn_alpha_tot=[1.0],
                     cslearn_param_prior=["BDeu"],
                     pc_alpha=0.05,
-                    cstree_param_est_alpha=[0.05], # this will be ignored for dag_param_est_type="mle"
-                    cstree_param_est_estimation_type=["mle", "map"],
+                    cstree_param_est_alpha=[1], # this will be ignored for dag_param_est_type="mle"
+                    cstree_param_est_estimation_type=["map", "mle"],
                     seed=seed_range)
     output:
         "results/kl_divergence_2a.csv"
