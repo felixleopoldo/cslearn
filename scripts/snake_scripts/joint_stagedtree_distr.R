@@ -13,8 +13,6 @@ cardinalities <- data[1, ]
 # read the model from the rds file
 model <- readRDS(modelfile)
 
-print(model)
-
 spaces <- list()
 i <- 1
 for (c in cardinalities) {
@@ -28,6 +26,6 @@ prob <- prob(model, space)
 log_prob <- prob(model, space, log = TRUE)
 df <- cbind(space, prob = prob, log_prob = log_prob)
 
-print(df)
+#print(df)
 
 write.csv(df, snakemake@output$full_distr, row.names = FALSE)
