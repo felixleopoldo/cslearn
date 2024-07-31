@@ -5,6 +5,7 @@ import warnings
 from causallearn.search.PermutationBased.GRaSP import grasp
 import networkx as nx
 import pandas as pd
+import numpy as np
 
 import cstrees.learning as ctl
 
