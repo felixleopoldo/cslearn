@@ -5,6 +5,10 @@ modelfile <- snakemake@input$model
 
 # read data from csv
 data <- read.csv(datafile, header = TRUE, check.names = FALSE)
+# the data is only needed for the cardinalities
+# we get it from the first row
+cardinalities <- data[1, ]
+
 # read the model from the rds file
 model <- readRDS(modelfile)
 
@@ -21,3 +25,5 @@ space <- rev(expand.grid(rev(spaces)))
 prob <- prob(model, space)
 log_prob <- prob(model, space, log = TRUE)
 df <- cbind(space, prob = prob, log_prob = log_prob)
+
+write.csv(df, snakemake@output$joint_distribution, row.names = FALSE)

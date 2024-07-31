@@ -497,7 +497,7 @@ rule kl_plots_2a_csv:
         "results/kl_divergence_2a.csv"
 
     script:
-        "rule_scripts/join_kl.py" # this script will join the csv files
+        "rule_scripts/join_csvs.py" # this script will join the csv files
 
 
 """
@@ -742,7 +742,7 @@ rule time_plots_3a_csv:         # test
     output:
         "results/time_3a.csv"
     script:
-        "rule_scripts/join_time.py" # this script will join the csv files
+        "rule_scripts/join_csvs.py" # this script will join the csv files
 
 """
 Plot (3b): comparison of performance of scalable methods (total times only... I don't think there is much benefit to including the phase breakdown... text me if you want to discuss it):
@@ -813,7 +813,7 @@ rule time_plots_3b_csv:
     output:
         "results/time_3b.csv"
     script:
-        "rule_scripts/join_time.py" # this script will join the csv files
+        "rule_scripts/join_csvs.py" # this script will join the csv files
 
 rule kl_plots_2a:
     input: "results/kl_divergence_2a.csv"
