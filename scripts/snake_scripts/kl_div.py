@@ -1,4 +1,6 @@
+import numpy as np
 import pandas as pd
+
 
 # input
 true_path = snakemake.input[0]
@@ -17,9 +19,13 @@ param_method = snakemake.wildcards["param_est"].split("/")[1].split("=")[1]
 true = pd.read_csv(true_path)
 est = pd.read_csv(est_path)
 
-unsummed_kl_div = est["prob"] * (est["log_prob"] - true["log_prob"])
-unsummed_kl_div[est["prob"] == 0] = 0
+est.loc[est["prob"] == 0, "log_prob"] = np.log(1e-5)
+
+unsummed_kl_div = true["prob"] * (true["log_prob"] - est["log_prob"])
+unsummed_kl_div[true["prob"] == 0] = 0
 kl_div = unsummed_kl_div.sum()
+if kl_div > 10:
+    print(true["prob"], est["prob"])
 
 kl_df = pd.DataFrame(
     {
