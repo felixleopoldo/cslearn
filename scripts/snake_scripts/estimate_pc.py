@@ -1,5 +1,6 @@
 from time import perf_counter as timer
 
+from causaldag import PDAG
 from causallearn.search.ConstraintBased.PC import pc
 import pandas as pd
 import numpy as np
@@ -23,7 +24,11 @@ cpdag.add_nodes_from(range(int(snakemake.wildcards["cstree_p"])))
 incoming = np.argwhere(pc_graph.G.graph == -1)
 cpdag.add_edges_from(incoming)
 
-dag_df = ctl.causallearn_graph_to_dag(pc_graph, labels=data.columns, alg="pc")
+cpdag_adj = nx.to_numpy_array(cpdag)
+nx_dag = PDAG.from_amat(cpdag_adj).to_dag().to_nx()
+nx_dag.add_nodes_from(range(int(snakemake.wildcards["cstree_p"])))
+
+dag_df = nx.to_pandas_adjacency(nx_dag).astype(int)
 cpdag_df = nx.to_pandas_adjacency(cpdag).astype(int)
 time_df = pd.DataFrame(
     {

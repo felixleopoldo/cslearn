@@ -5,9 +5,8 @@ from pgmpy.estimators import MaximumLikelihoodEstimator
 
 # input
 dag_df = pd.read_csv(snakemake.input[0], header=[0])
-dag = nx.from_numpy_array(dag_df.values, create_using=nx.DiGraph)
 
-print(f"\nis a DAG: {nx.is_directed_acyclic_graph(dag)}; has adj_mat:\n{dag_df}\n")
+dag = nx.from_numpy_array(dag_df.values, create_using=nx.DiGraph)
 
 # Relabel the nodes to strings (and the correct labels). Needed for pgmpy!
 dag = nx.relabel_nodes(

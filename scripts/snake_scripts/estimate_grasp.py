@@ -2,6 +2,7 @@ from time import perf_counter as timer
 import random
 import warnings
 
+from causaldag import PDAG
 from causallearn.search.PermutationBased.GRaSP import grasp
 import networkx as nx
 import pandas as pd
@@ -30,8 +31,12 @@ cpdag.add_nodes_from(range(int(snakemake.wildcards["cstree_p"])))
 incoming = np.argwhere(grasp_graph.graph == -1)
 cpdag.add_edges_from(incoming)
 
+cpdag_adj = nx.to_numpy_array(cpdag)
+nx_dag = PDAG.from_amat(cpdag_adj).to_dag().to_nx()
+nx_dag.add_nodes_from(range(int(snakemake.wildcards["cstree_p"])))
+
+dag_df = nx.to_pandas_adjacency(nx_dag).astype(int)
 cpdag_df = nx.to_pandas_adjacency(cpdag).astype(int)
-dag_df = ctl.causallearn_graph_to_dag(grasp_graph, labels=data.columns, alg="grasp")
 time_df = pd.DataFrame(
     {
         "method": ["GRaSP"],
