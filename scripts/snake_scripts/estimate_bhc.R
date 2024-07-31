@@ -26,7 +26,7 @@ data <- data[-1, ] ## remove first row
 start_time <- Sys.time()
 
 # read dag from file as csv
-dag_adjmat <- read.csv(snakemake@input$input_alg_dag, header = FALSE, check.names = FALSE)
+dag_adjmat <- read.csv(snakemake@input$input_alg_dag, header = TRUE, check.names = FALSE)
 
 dag_matrix <- as.matrix(dag_adjmat)
 
