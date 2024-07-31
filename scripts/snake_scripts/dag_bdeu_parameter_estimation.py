@@ -4,8 +4,7 @@ from pgmpy.models import BayesianNetwork
 from pgmpy.estimators import MaximumLikelihoodEstimator
 
 # input
-
-dag_adjmat = pd.read_csv(snakemake.input[0], header=None)
+dag_adjmat = pd.read_csv(snakemake.input[0], header=[0])
 dag = nx.from_numpy_array(dag_adjmat.values, create_using=nx.DiGraph)
 
 # Relabel the nodes to strings. Needed for pgmpy!
