@@ -3,7 +3,7 @@
 # For dry run type:
 # snakemake all -n
 
-seed_range = range(1, 3)   # can replace with range(1, 11) after testing
+seed_range = range(1, 11)   # can replace with range(1, 11) after testing
 p_list = [5,7,10] # can replace with [5,7,10,15] after testing
 
 # CStree model
