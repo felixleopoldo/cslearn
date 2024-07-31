@@ -16,4 +16,4 @@ cstree = df_to_cstree(df)
 dist_df = cstree.to_joint_distribution() 
 
 # output
-dist_df.to_csv(snakemake.output[0])
+dist_df.to_csv(snakemake.output[0], index=False)

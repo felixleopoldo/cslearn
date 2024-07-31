@@ -44,4 +44,4 @@ df = pd.concat([df_outcomes, df_pmf, df_pmf_log], axis=1)
 #print(df)
 
 # output
-df.to_csv(snakemake.output[0])
+df.to_csv(snakemake.output[0], index=False)

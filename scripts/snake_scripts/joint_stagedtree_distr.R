@@ -26,6 +26,7 @@ prob <- prob(model, space)
 log_prob <- prob(model, space, log = TRUE)
 df <- cbind(space, prob = prob, log_prob = log_prob)
 
-#print(df)
+print("Full distribution stagedtrees:")
+print(df)
 
 write.csv(df, snakemake@output$full_distr, row.names = FALSE)

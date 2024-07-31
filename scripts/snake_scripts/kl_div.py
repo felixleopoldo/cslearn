@@ -14,8 +14,13 @@ param_method = snakemake.wildcards["param_est"].split("/")[1].split("=")[1]
 # see https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.entropy.html#scipy.stats.entropy
 # this implementation is like the scipy one but directly uses the
 # recorded log probabalities
-true = pd.read_csv(true_path, index_col=[0])
-est = pd.read_csv(est_path, index_col=[0])
+true = pd.read_csv(true_path)
+est = pd.read_csv(est_path)
+
+print("true:")
+print(true)
+print("est distr:")
+print(est)
 
 kl_div = (est["prob"] * (est["log_prob"] - true["log_prob"])).sum()
 
