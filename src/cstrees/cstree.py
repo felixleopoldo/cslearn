@@ -414,11 +414,12 @@ class CStree:
         else:
             labs = self.labels
         df = pd.DataFrame(d, columns=labs)
-
+        dfstmp = []
         for l, stages in self.stages.items():
             for s in stages:
                 dftmp = s.to_df(labs, max_card=max_card, write_probs=write_probs)
-                df = pd.concat([df, dftmp])
+                dfstmp += [dftmp]
+        df = pd.concat([df] + dftmp)
         df.reset_index(drop=True, inplace=True)
 
         return df
