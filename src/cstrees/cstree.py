@@ -1023,6 +1023,7 @@ class CStree:
         prob = 1
         for i, val in enumerate(x):
             stage = self.get_stage(x[:i])
+            # print(f"stage of {x[:i]}: {stage}")
             # print(x[: i ])
             # print(val)
             # print(stage.probs[val])
@@ -1055,7 +1056,7 @@ class CStree:
 
         return log_prob
 
-    def to_joint_distribution(self, label_order=None):
+    def to_joint_distribution(self, label_order=None, with_outcomes=True):
         """Return the joint distribution of the CStree.
 
         Args:
@@ -1096,7 +1097,7 @@ class CStree:
         n_outcomes = np.prod(self.cards)
 
         # Create an empty dataframe with the correct column names
-        # df_outcomes = pd.DataFrame(columns=self.labels)
+    
         df_outcomes = pd.DataFrame(columns=label_order)
         # store all the outcomes and probabilities
         pmfs = [None] * np.prod(self.cards)
@@ -1105,14 +1106,18 @@ class CStree:
         for i, outcome in tqdm(
             enumerate(outcomes), total=n_outcomes, desc="Calculating joint distribution"
         ):
-            df_outcomes.loc[i] = outcome
+            if with_outcomes:
+                df_outcomes.loc[i] = outcome
             pmfs[i] = self.pmf(outcome, label_order)
             pmfs_log[i] = self.pmf_log(outcome, label_order)
 
         df_pmf = pd.DataFrame(pmfs, columns=["prob"])
         df_pmf_log = pd.DataFrame(pmfs_log, columns=["log_prob"])
         # join the two dataframes
-        df = pd.concat([df_outcomes, df_pmf, df_pmf_log], axis=1)
+        if with_outcomes:
+            df = pd.concat([df_outcomes, df_pmf, df_pmf_log], axis=1)
+        else:
+            df = pd.concat([df_pmf, df_pmf_log], axis=1)
 
         return df
 

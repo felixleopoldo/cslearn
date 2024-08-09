@@ -31,6 +31,12 @@ class Stage:
 
         self.level = len(stage_repr) - 1
         self.list_repr = stage_repr
+        self.context = {}
+        # The context and the level defines the stage.
+        # Find the context variables in stage_repr.
+        for i, el in enumerate(stage_repr):
+            if isinstance(el, int):
+                self.context[i] = el
 
         # Check if singleton, if so set color black
         if all([isinstance(i, int) for i in self.list_repr]):
@@ -60,12 +66,11 @@ class Stage:
         if len(node) == 0:
             if len(self.list_repr) == 0:
                 return True
-        for i, val in enumerate(self.list_repr):
-            # Must check if list
-            if (isinstance(val, list)) and (node[i] not in val):
-                return False
-            if (isinstance(val, int)) and (node[i] != val):
-                return False
+        
+        # Check so that context variables values are the same in the stage and the node.
+        for i, val in self.context.items():
+            if node[i] != val:
+                return False            
 
         return True
 
