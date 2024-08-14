@@ -42,8 +42,9 @@ pattern_kl_div = "kl_div"
 
 container: "docker://bpimages/cslearnbenchmarks:1.3.1-amd64"
 # export APPTAINER_TMPDIR=/home/alex/Downloads/tmp-snake/
-#envvars:
-#    "APPTAINER_TMPDIR"
+# envvars:
+#     "APPTAINER_TMPDIR",
+#     "TMPDIR"
 
 def input_cvars(wildcards):
     """
@@ -422,6 +423,7 @@ rule joint_dag_distribution:    # tested
 
 rule joint_cstree_distribution:
     # Estimate a distribution from data
+    container: None
     input:
         input_cstree = rules.cslearn_bdeu_parameter_estimation.output,
         data = rules.cstree_data.output

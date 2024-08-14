@@ -17,7 +17,9 @@ cstree_df = pd.read_csv(cstree_path, index_col=(0))
 cstree = df_to_cstree(cstree_df)
 
 
-dist_df = cstree.to_joint_distribution(label_order=list(data.columns))
+dist_df = cstree.to_joint_distribution(
+    label_order=list(data.columns), with_outcomes=False
+)
 
 # output
 dist_df.to_csv(snakemake.output[0], quoting=0, index=False)
