@@ -560,8 +560,8 @@ rule kl_plots_2b_csv:
                         cslearn_mcmc_iterations=[5000],
                         cslearn_alpha_tot=[1.0],
                         cslearn_param_prior=["BDeu"],
-                        cstree_param_est_alpha=[0,1], # this will be ignored for dag_param_est_type="mle"
-                        cstree_param_est_estimation_type=["mle"], # might not need this, alpha=0 is mke#["mle", "map"],
+                        cstree_param_est_alpha=[1], # this will be ignored for dag_param_est_type="mle"
+                        cstree_param_est_estimation_type=["mle", "map"], # might not need this, alpha=0 is mke#["mle", "map"],
                         seed=seed_range),
         grasp = expand(("results/kl_div" +
             "/true_cstree=/" + pattern_cstree +
@@ -745,7 +745,7 @@ rule time_plots_3a_csv:         # test
                     "/data=/" + pattern_cstree_data +
                     "/alg=/" + pattern_bos +
                     "/time.csv"),
-                cstree_p=[5,7,10,15,20],
+                cstree_p=[5,7,10], # 15, 20 scale up! (if possible)
                 cstree_max_cvar=[2],
                 cstree_prob_cvar=[0.5],
                 cstree_params_alpha=[1.0],
@@ -758,7 +758,7 @@ rule time_plots_3a_csv:         # test
                             "/data=/" + pattern_cstree_data +
                             "/alg=/" + pattern_grasp_bhc +
                             "/time.csv"),
-                cstree_p=[5,7,10,15],
+                cstree_p=[5,7,10],# 15, 20 scale up! (if possible)
                 cstree_max_cvar=[2],
                 cstree_prob_cvar=[0.5],
                 cstree_params_alpha=[1.0],
@@ -829,7 +829,7 @@ rule time_plots_3b_csv:
                             "/data=/" + pattern_cstree_data +
                             "/alg=/" + pattern_grasp_bhc +
                             "/time.csv"),
-                cstree_p=[10, 25, 50, 100, 250, 500],
+                cstree_p=[10], # , 25, 50, 100, 250, 500 scale up! if possible
                 cstree_max_cvar=[2],
                 cstree_prob_cvar=[1],
                 cstree_params_alpha=[1.0],
