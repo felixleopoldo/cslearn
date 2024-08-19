@@ -745,7 +745,7 @@ rule time_plots_3a_csv:         # test
                     "/data=/" + pattern_cstree_data +
                     "/alg=/" + pattern_bos +
                     "/time.csv"),
-                cstree_p=[5,7,10], # 15, 20 scale up! (if possible)
+                cstree_p=[5,7], # 10,15,20 scale up?
                 cstree_max_cvar=[2],
                 cstree_prob_cvar=[0.5],
                 cstree_params_alpha=[1.0],
@@ -758,7 +758,7 @@ rule time_plots_3a_csv:         # test
                             "/data=/" + pattern_cstree_data +
                             "/alg=/" + pattern_grasp_bhc +
                             "/time.csv"),
-                cstree_p=[5,7,10],# 15, 20 scale up! (if possible)
+                cstree_p=[5,7,10,15,20],
                 cstree_max_cvar=[2],
                 cstree_prob_cvar=[0.5],
                 cstree_params_alpha=[1.0],
@@ -829,7 +829,7 @@ rule time_plots_3b_csv:
                             "/data=/" + pattern_cstree_data +
                             "/alg=/" + pattern_grasp_bhc +
                             "/time.csv"),
-                cstree_p=[10], # , 25, 50, 100, 250, 500 scale up! if possible
+                cstree_p=[10,25], # can't scale up, it seems
                 cstree_max_cvar=[2],
                 cstree_prob_cvar=[1],
                 cstree_params_alpha=[1.0],
