@@ -48,8 +48,8 @@ cstree_df = opt_tree.to_df()
 time_df = pd.DataFrame(
     {
         "method": ["CSlearn+" + cvar_alg],
-        "time": [cvar_runtime],
-        "total_time": [runtime],
+        "time": [runtime],
+        "total_time": [total_runtime],
         "seed": [snakemake.wildcards["seed"]],
         "p": [snakemake.wildcards["cstree_p"]],
         "n": [data.shape[0]],
