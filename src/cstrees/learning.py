@@ -224,7 +224,7 @@ def _optimal_cstree_given_order(order, context_scores):
             ):
                 stage.color = "black"
             else:
-                stage.color = colors[i]
+                stage.color = colors[i % 15]
     tree.update_stages(stages)
 
     return tree

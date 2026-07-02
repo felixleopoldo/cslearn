@@ -1,4 +1,5 @@
 import operator
+import pickle
 from itertools import product, pairwise
 from functools import reduce
 import logging
@@ -9,7 +10,7 @@ from tqdm import tqdm
 import networkx as nx
 import numpy as np
 import pandas as pd
-from causallearn.search.ConstraintBased.PC import pc
+from causallearn.search.PermutationBased.GRaSP import grasp
 
 import cstrees.stage as st
 from cstrees import dependence
@@ -871,68 +872,96 @@ class CStree:
         agraph.layout("dot")
         return agraph
 
-    def predict(self, partial_observation, return_prob=False):
-        """
-        Predict most likely missing values of partial observation.
+    def predict(
+        self,
+        partial_observations: pd.DataFrame,
+        return_probs: bool = False,
+    ) -> pd.DataFrame:
+        """Predict the most likely completion of partially-observed rows.
+
+        Given a CStree over random variables :math:`X_{[p]}` and a DataFrame
+        of partial observations, returns the MAP completion of the unobserved
+        variables for each row.
 
         Args:
-            partial_observation (dict): {feature_idx: value} pairs
+            partial_observations: DataFrame whose columns are the labels of the
+                observed variables and whose rows are individual observations.
+                Pass a single-row DataFrame with no columns
+                (``pd.DataFrame(index=[0])``) to predict all variables
+                unconditionally.
+            return_probs: If ``True``, append a ``PROB`` column containing the
+                normalized conditional probability of the MAP completion.
 
-        Notes:
-            Given a CStree over RVs :math:`X_{[n]}` along with a
-        partial observation :math:`x_\\mathbf{p}` for
-        :math:`\\mathbf{p}\\subseteq [n]`, compute :math:`\\mathrm{arg\\,
-        max}_{x \\in X_{[n]\\setminus\\mathbf{p}}}
-        P(X_{[n]\\setminus\\mathbf{p}} = x \\mid X_\\mathbf{p} =
-        x_\\mathbf{p})`.
+        Returns:
+            DataFrame with one column per predicted variable (in label order).
+            If ``return_probs=True``, a ``PROB`` column is appended.
+
+        Example:
+
+            >>> import random
+            >>> import numpy as np
+            >>> import pandas as pd
+            >>> import cstrees.cstree as ct
+            >>> np.random.seed(22)
+            >>> random.seed(22)
+            >>> t = ct.sample_cstree([3, 2, 2, 3], max_cvars=2, prob_cvar=0.5, prop_nonsingleton=1)
+            >>> t.sample_stage_parameters(alpha=2)
+            >>> t.sample(100)
+            >>> t.predict(pd.DataFrame({0: [1]}))
+               1  2  3
+            0  0  1  1
         """
-        factorized_outcomes = (
-            (
-                range(card)
-                if idx not in partial_observation
-                else (partial_observation[idx],)
-            )
-            for idx, card in enumerate(self.cards)
+        partial_labels = list(partial_observations.columns)
+        to_predict_labels = [l for l in self.labels if l not in partial_labels]
+
+        # Corner case: all variables are observed — return observations unchanged.
+        if not to_predict_labels:
+            result = partial_observations[self.labels].copy()
+            if return_probs:
+                result["PROB"] = 1.0
+            return result
+
+        label_order = partial_labels + to_predict_labels
+        pmf = lambda outcome: self.pmf(outcome, label_order)
+        outcome_completions = list(product(
+            *(range(self.cards[self.labels.index(l)]) for l in to_predict_labels)
+        ))
+
+        num_preds = len(partial_observations)
+        preds = np.empty((num_preds, len(to_predict_labels)), int)
+        if return_probs:
+            probs = np.empty(num_preds, float)
+
+        obs_iter = (
+            partial_observations.values
+            if partial_labels
+            else [[] for _ in range(num_preds)]
         )
-        outcomes = product(*factorized_outcomes)
+        for idx, partial in enumerate(obs_iter):
+            outcomes = (list(partial) + list(c) for c in outcome_completions)
+            preds[idx] = max(outcomes, key=pmf)[-len(to_predict_labels):]
+            if return_probs:
+                outcomes = (list(partial) + list(c) for c in outcome_completions)
+                outcome_probs = list(map(pmf, outcomes))
+                probs[idx] = max(outcome_probs) / sum(outcome_probs)
 
-        def _prob_of_outcome(outcome):
-            nodes = (outcome[:idx] for idx in range(self.p + 1))
-            edges = pairwise(nodes)
-
-            def _probs_map(edge):
-                try:
-                    prob = self.tree[edge[0]][edge[1]]["cond_prob"]
-                except KeyError:
-                    stage = self.get_stage(edge[0])
-                    prob = stage.probs[edge[1][-1]]
-                return prob
-
-            probs = map(_probs_map, edges)
-            return reduce(operator.mul, probs)
-
-        if return_prob:
-            prob_dict = {outcome: _prob_of_outcome(outcome) for outcome in outcomes}
-            total_prob = sum(prob_dict.values())
-            cond_prob_dict = {
-                outcome: prob_dict[outcome] / total_prob for outcome in prob_dict
-            }
-            prediction = max(cond_prob_dict, key=cond_prob_dict.get)
-            return prediction, cond_prob_dict[prediction]
-        else:
-            prediction = max(outcomes, key=_prob_of_outcome)
-            return prediction
+        preds_df = pd.DataFrame(preds, columns=to_predict_labels)
+        if return_probs:
+            preds_df["PROB"] = probs
+        return preds_df
 
     def fit(
         self,
         data: pd.DataFrame,
-        gibbs_samples=5000,
+        gibbs_samples=10000,
         poss_cvars=None,
-        pc_alpha=0.05,
-        pc_method="gsq",
+        grasp_max_p=5,
+        grasp_depth=3,
+        grasp_score="local_score_BDeu",
         max_cvars=2,
         alpha_tot=1.0,
         method="BDeu",
+        save_as="",
     ):
         """High-level wrapper combining model selection and parameter estimation."""
         import cstrees.scoring as sc
@@ -940,10 +969,14 @@ class CStree:
 
         if poss_cvars is None:
             # estimate possible context variables and create score tables
-            graph = pc(data.values, pc_alpha, pc_method, node_names=data.columns)
+            graph = grasp(
+                data.values[1:],
+                score_func=grasp_score,
+                maxP=grasp_max_p,
+                depth=grasp_depth,
+            )
             poss_cvars = ctl.causallearn_graph_to_posscvars(
-                graph,
-                labels=data.columns,
+                graph, labels=data.columns, alg="grasp"
             )
 
         score_table, context_scores, _ = sc.order_score_tables(
@@ -958,8 +991,31 @@ class CStree:
         orders, scores = ctl.gibbs_order_sampler(gibbs_samples, score_table)
         map_order = orders[scores.index(max(scores))]
 
-        # estimate CStree
+        # estimate CStree and stage params
         opt_tree = ctl._optimal_cstree_given_order(map_order, context_scores)
+        opt_tree.estimate_stage_parameters(data, alpha_tot=2.0, method="BDeu")
+
+        if save_as != "":
+            to_saves = [
+                poss_cvars,
+                score_table,
+                context_scores,
+                orders,
+                scores,
+                opt_tree,
+            ]
+            names = [
+                "poss_cvars",
+                "score_table",
+                "context_scores",
+                "orders",
+                "scores",
+                "opt_tree",
+            ]
+            for to_save, name in zip(to_saves, names):
+                with open(f"{save_as}-{name}.pkl", "wb") as f:
+                    pickle.dump(to_save, f)
+
         old_labels = self.labels
         self.__dict__.update(opt_tree.__dict__)
         if len(old_labels):
@@ -1023,7 +1079,6 @@ class CStree:
         prob = 1
         for i, val in enumerate(x):
             stage = self.get_stage(x[:i])
-            # print(f"stage of {x[:i]}: {stage}")
             # print(x[: i ])
             # print(val)
             # print(stage.probs[val])
@@ -1097,7 +1152,6 @@ class CStree:
         n_outcomes = np.prod(self.cards)
 
         # Create an empty dataframe with the correct column names
-    
         df_outcomes = pd.DataFrame(columns=label_order)
         # store all the outcomes and probabilities
         pmfs = [None] * np.prod(self.cards)
@@ -1106,8 +1160,7 @@ class CStree:
         for i, outcome in tqdm(
             enumerate(outcomes), total=n_outcomes, desc="Calculating joint distribution"
         ):
-            if with_outcomes:
-                df_outcomes.loc[i] = outcome
+            df_outcomes.loc[i] = outcome
             pmfs[i] = self.pmf(outcome, label_order)
             pmfs_log[i] = self.pmf_log(outcome, label_order)
 
