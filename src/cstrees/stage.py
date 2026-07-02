@@ -47,6 +47,13 @@ class Stage:
         self.cards = cards
         self.csi = self.to_csi()
 
+    def __getattr__(self, name):
+        if name == "context":
+            ctx = {i: el for i, el in enumerate(self.list_repr) if isinstance(el, int)}
+            self.context = ctx
+            return ctx
+        raise AttributeError(f"'Stage' object has no attribute '{name}'")
+
     def __hash__(self) -> int:
         return hash(self.csi.context)
 
