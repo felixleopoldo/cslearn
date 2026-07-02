@@ -53,3 +53,5 @@ dist/**
 .vscode
 .Rhistory
 build
+/.devenv/
+/.direnv/
