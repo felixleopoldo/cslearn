@@ -13,7 +13,7 @@ def test_project_defines_author_and_version():
     assert hasattr(cstrees, "__version__")
 
 
-def test_predict_tree():
+def test_predict():
     np.random.seed(22)
     random.seed(22)
 
@@ -21,42 +21,46 @@ def test_predict_tree():
 
     t = ct.sample_cstree(cards, max_cvars=2, prob_cvar=0.5, prop_nonsingleton=1)
     t.sample_stage_parameters(alpha=2)
-
     t.sample(100)
 
-    # test empty
-    empty_observation = {}
-    assert t.predict(empty_observation) == (2, 0, 1, 1)
-    assert t.predict(empty_observation, True) == ((2, 0, 1, 1), 0.11590809641032397)
+    # empty partial observation — predict all variables unconditionally (1-row, no columns)
+    result = t.predict(pd.DataFrame(index=[0]))
+    assert result.values.tolist() == [[2, 0, 1, 1]]
+    result_p = t.predict(pd.DataFrame(index=[0]), return_probs=True)
+    assert result_p[t.labels].values.tolist() == [[2, 0, 1, 1]]
+    assert abs(result_p["PROB"].iloc[0] - 0.11590809641032397) < 1e-10
 
-    # test complete
-    complete_observation = {0: 2, 1: 0, 2: 1, 3: 1}
-    assert t.predict(complete_observation, True) == ((2, 0, 1, 1), 1.0)
+    # complete observation — return as-is with PROB=1
+    complete = pd.DataFrame({0: [2], 1: [0], 2: [1], 3: [1]})
+    result_c = t.predict(complete, return_probs=True)
+    assert result_c[t.labels].values.tolist() == [[2, 0, 1, 1]]
+    assert result_c["PROB"].iloc[0] == 1.0
 
-    # partials
-    partial_observation_1 = {0: 1}
-    t.predict(partial_observation_1, True)
-    assert t.predict(partial_observation_1, True) == ((1, 0, 1, 1), 0.26674411494959)
-    # poper
-    po = pd.DataFrame({0: [1]})
-    t.predict_proper(po, True)
+    # partial: one variable observed
+    po1 = pd.DataFrame({0: [1]})
+    result1 = t.predict(po1)
+    assert result1.values.tolist() == [[0, 1, 1]]
+    result1_p = t.predict(po1, return_probs=True)
+    assert result1_p[[1, 2, 3]].values.tolist() == [[0, 1, 1]]
+    assert abs(result1_p["PROB"].iloc[0] - 0.26674411494959) < 1e-10
 
-    partial_observation_2 = {0: 1, 3: 2}
-    assert t.predict(partial_observation_2, True) == ((1, 1, 1, 2), 0.3829026812192928)
-    # proper
-    po = pd.DataFrame({0: [1], 3: [2]})
-    t.predict_proper(po)
+    # partial: two variables observed (non-contiguous)
+    po2 = pd.DataFrame({0: [1], 3: [2]})
+    result2 = t.predict(po2)
+    assert result2.values.tolist() == [[1, 1]]
 
-    partial_observation_3 = {0: 1, 2: 0, 3: 2}
-    assert t.predict(partial_observation_3, True) == ((1, 0, 0, 2), 0.5913854582044948)
-    # proper
-    po = pd.DataFrame({0: [1], 2: [0], 3: [2]})
-    t.predict_proper(po)
+    # partial: three variables observed
+    po3 = pd.DataFrame({0: [1], 2: [0], 3: [2]})
+    result3 = t.predict(po3)
+    assert result3.values.tolist() == [[0]]
 
-    # test conditional probs exist from small sample
+    # multiple rows
+    po_multi = pd.DataFrame({0: [1, 2]})
+    result_multi = t.predict(po_multi)
+    assert len(result_multi) == 2
+
+    # sparse data — shouldn't raise KeyError
     s = ct.sample_cstree(cards, max_cvars=2, prob_cvar=0.5, prop_nonsingleton=1)
     s.sample_stage_parameters(alpha=2)
-
     s.sample(35)
-
-    s.predict({})  # shouldn't raise KeyError
+    s.predict(pd.DataFrame(columns=s.labels))

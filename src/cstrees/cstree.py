@@ -871,97 +871,83 @@ class CStree:
         agraph.layout("dot")
         return agraph
 
-    def predict_proper(self, partial_observations, return_probs=False):
+    def predict(
+        self,
+        partial_observations: pd.DataFrame,
+        return_probs: bool = False,
+    ) -> pd.DataFrame:
+        """Predict the most likely completion of partially-observed rows.
+
+        Given a CStree over random variables :math:`X_{[p]}` and a DataFrame
+        of partial observations, returns the MAP completion of the unobserved
+        variables for each row.
+
+        Args:
+            partial_observations: DataFrame whose columns are the labels of the
+                observed variables and whose rows are individual observations.
+                Pass a single-row DataFrame with no columns
+                (``pd.DataFrame(index=[0])``) to predict all variables
+                unconditionally.
+            return_probs: If ``True``, append a ``PROB`` column containing the
+                normalized conditional probability of the MAP completion.
+
+        Returns:
+            DataFrame with one column per predicted variable (in label order).
+            If ``return_probs=True``, a ``PROB`` column is appended.
+
+        Example:
+
+            >>> import random
+            >>> import numpy as np
+            >>> import pandas as pd
+            >>> import cstrees.cstree as ct
+            >>> np.random.seed(22)
+            >>> random.seed(22)
+            >>> t = ct.sample_cstree([3, 2, 2, 3], max_cvars=2, prob_cvar=0.5, prop_nonsingleton=1)
+            >>> t.sample_stage_parameters(alpha=2)
+            >>> t.sample(100)
+            >>> t.predict(pd.DataFrame({0: [1]}))
+               1  2  3
+            0  0  1  1
+        """
         partial_labels = list(partial_observations.columns)
         to_predict_labels = [l for l in self.labels if l not in partial_labels]
+
+        # Corner case: all variables are observed — return observations unchanged.
+        if not to_predict_labels:
+            result = partial_observations[self.labels].copy()
+            if return_probs:
+                result["PROB"] = 1.0
+            return result
+
         label_order = partial_labels + to_predict_labels
         pmf = lambda outcome: self.pmf(outcome, label_order)
-
-        factorized_outcome_completions = (
-            range(self.cards[self.labels.index(l)]) for l in to_predict_labels
-        )
-        outcome_completions = list(product(*factorized_outcome_completions))
+        outcome_completions = list(product(
+            *(range(self.cards[self.labels.index(l)]) for l in to_predict_labels)
+        ))
 
         num_preds = len(partial_observations)
-
         preds = np.empty((num_preds, len(to_predict_labels)), int)
         if return_probs:
             probs = np.empty(num_preds, float)
 
-        for idx, partial in enumerate(partial_observations.values):
-            outcomes = (
-                list(partial) + list(completion) for completion in outcome_completions
-            )
-            preds[idx] = max(outcomes, key=pmf)[-len(to_predict_labels) :]
+        obs_iter = (
+            partial_observations.values
+            if partial_labels
+            else [[] for _ in range(num_preds)]
+        )
+        for idx, partial in enumerate(obs_iter):
+            outcomes = (list(partial) + list(c) for c in outcome_completions)
+            preds[idx] = max(outcomes, key=pmf)[-len(to_predict_labels):]
             if return_probs:
-                outcomes = (
-                    list(partial) + list(completion)
-                    for completion in outcome_completions
-                )
+                outcomes = (list(partial) + list(c) for c in outcome_completions)
                 outcome_probs = list(map(pmf, outcomes))
                 probs[idx] = max(outcome_probs) / sum(outcome_probs)
 
-        """still TODO:
-           - handle corner cases when partial_observation is empty or complete
-           - figure out balance (num vars/cards) of when to recompute
-             generator outcome_completions each time vs keep as a list
-        """
         preds_df = pd.DataFrame(preds, columns=to_predict_labels)
         if return_probs:
             preds_df["PROB"] = probs
         return preds_df
-
-    def predict(self, partial_observation, return_prob=False):
-        """
-        Predict most likely missing values of partial observation.
-
-        Args:
-            partial_observation (dict): {feature_idx: value} pairs
-
-        Notes:
-            Given a CStree over RVs :math:`X_{[n]}` along with a
-        partial observation :math:`x_\\mathbf{p}` for
-        :math:`\\mathbf{p}\\subseteq [n]`, compute :math:`\\mathrm{arg\\,
-        max}_{x \\in X_{[n]\\setminus\\mathbf{p}}}
-        P(X_{[n]\\setminus\\mathbf{p}} = x \\mid X_\\mathbf{p} =
-        x_\\mathbf{p})`.
-        """
-        factorized_outcomes = (
-            (
-                range(card)
-                if idx not in partial_observation
-                else (partial_observation[idx],)
-            )
-            for idx, card in enumerate(self.cards)
-        )
-        outcomes = product(*factorized_outcomes)
-
-        def _prob_of_outcome(outcome):
-            nodes = (outcome[:idx] for idx in range(self.p + 1))
-            edges = pairwise(nodes)
-
-            def _probs_map(edge):
-                try:
-                    prob = self.tree[edge[0]][edge[1]]["cond_prob"]
-                except KeyError:
-                    stage = self.get_stage(edge[0])
-                    prob = stage.probs[edge[1][-1]]
-                return prob
-
-            probs = map(_probs_map, edges)
-            return reduce(operator.mul, probs)
-
-        if return_prob:
-            prob_dict = {outcome: _prob_of_outcome(outcome) for outcome in outcomes}
-            total_prob = sum(prob_dict.values())
-            cond_prob_dict = {
-                outcome: prob_dict[outcome] / total_prob for outcome in prob_dict
-            }
-            prediction = max(cond_prob_dict, key=cond_prob_dict.get)
-            return prediction, cond_prob_dict[prediction]
-        else:
-            prediction = max(outcomes, key=_prob_of_outcome)
-            return prediction
 
     def fit(
         self,
@@ -1008,7 +994,7 @@ class CStree:
         opt_tree = ctl._optimal_cstree_given_order(map_order, context_scores)
         opt_tree.estimate_stage_parameters(data, alpha_tot=2.0, method="BDeu")
 
-        if save_as is not "":
+        if save_as != "":
             to_saves = [
                 poss_cvars,
                 score_table,

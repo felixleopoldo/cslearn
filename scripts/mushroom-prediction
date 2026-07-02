@@ -102,7 +102,7 @@ with open("mushroom-opt_tree.pkl", "rb") as f:
 small_test = test
 predict_from = small_test.drop("poisonous", axis=1)
 true = small_test["poisonous"].values
-prediction = opt_tree.predict_proper(predict_from)
+prediction = opt_tree.predict(predict_from)
 acc = (prediction.values.flatten() == true).mean()
 conf_mat = confusion_matrix(true, prediction)
 
