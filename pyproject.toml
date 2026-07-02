@@ -33,6 +33,8 @@ expt = [
     "pgmpy",
     "causaldag",
     "p_tqdm",
+    "scikit-learn",
+    "ucimlrepo",
 ]
 
 [build-system]
