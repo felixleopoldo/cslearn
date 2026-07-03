@@ -4,6 +4,9 @@
     pkgs.graphviz
     pkgs.pkg-config
     pkgs.ninja
+    pkgs.snakemake
+    pkgs.apptainer
+    pkgs.python313Packages.packaging
   ];
 
   languages.python = {

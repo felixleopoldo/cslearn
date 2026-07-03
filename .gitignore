@@ -55,6 +55,11 @@ dist/**
 build
 src/expt/sim_results
 src/expt/results/
+!src/expt/results/kl_divergence_2a.csv
+!src/expt/results/kl_divergence_2b.csv
+!src/expt/results/kl_divergence_2c.csv
+!src/expt/results/time_3a.csv
+!src/expt/results/time_3b.csv
 src/expt/.snakemake/
 sim_results
 .RData
@@ -70,3 +75,5 @@ devenv.local.yaml
 
 # pre-commit
 .pre-commit-config.yaml
+/src/expt/.cache/
+*.sif
