@@ -11,7 +11,7 @@ plot_data["hue"] = plot_data["method"] + ", n=" + plot_data["n"].astype(str)
 sns.set(font_scale=1.25)
 sns.set_style("white")
 sns.set_style({"legend.frameon": False})
-g = sns.boxplot(data=plot_data, x="p", y="total_time", hue="method")
+g = sns.boxplot(data=plot_data, x="p", y="total_time", hue="hue")
 
 g.set(
     title=f"",

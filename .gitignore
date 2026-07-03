@@ -54,6 +54,8 @@ dist/**
 .Rhistory
 build
 src/expt/sim_results
+src/expt/results/
+src/expt/.snakemake/
 sim_results
 .RData
 devcontainer.json

@@ -5,6 +5,10 @@
 
 seed_range = range(1, 11)   # can replace with range(1, 11) after testing
 
+# Pre-computed results archive (CSVs + PDFs, 78 KB).
+# Update to Zenodo URL after deposit.
+RESULTS_ARCHIVE_URL = "https://cslearn-simulations.s3.eu-north-1.amazonaws.com/csv_and_pdf_files.tar.gz"
+
 # CStree model
 pattern_cstree = "cstree/cstree_p={cstree_p}/cstree_max_cvar={cstree_max_cvar}/cstree_prob_cvar={cstree_prob_cvar}/seed={seed}"
 pattern_cstree_params = "true_cstree_params/cstree_params_alpha={cstree_params_alpha}/seed={seed}"
@@ -865,3 +869,21 @@ rule time_plots_3b:
     input: "results/time_3b.csv"
     output: "results/time_3b.pdf"
     script: "scripts/plot_time.py"
+
+rule download_results:
+    """Download pre-computed CSVs and PDFs from the results archive.
+
+    Extracts files flat into results/ so the plot rules can run immediately
+    without recomputing the full pipeline. Not part of rule all.
+
+    Usage:
+        snakemake download_results
+        snakemake kl_plots_2a kl_plots_2b kl_plots_2c time_plots_3a time_plots_3b
+    """
+    container: None
+    params:
+        url = RESULTS_ARCHIVE_URL
+    output:
+        touch("results/.downloaded")
+    shell:
+        "mkdir -p results && curl -L {params.url} | tar xz -C results/"

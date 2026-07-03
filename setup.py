@@ -54,7 +54,7 @@ setup(
     # Packages and dependencies
     package_dir={"": "src"},
     packages=find_packages("src"),
-    install_requires=[requirements],
+    install_requires=requirements,
     extras_require={
         "dev": [
             "python-boilerplate[dev]",

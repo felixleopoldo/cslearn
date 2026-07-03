@@ -7,11 +7,10 @@ RUN pip install --upgrade pip
 
 RUN pip install cstrees==1.3.1
 
-# This would be the way to install the package from the source code:
+# To install from local source instead:
 #WORKDIR /cstrees
 #COPY . .
-#RUN pip install -r requirements.txt
-#RUN pip install -e .
+#RUN pip install -e ".[expt]"
 
 
 # For vscode, also install packages Python and Python Extension Pack.
