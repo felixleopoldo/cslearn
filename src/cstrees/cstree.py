@@ -420,7 +420,7 @@ class CStree:
             for s in stages:
                 dftmp = s.to_df(labs, max_card=max_card, write_probs=write_probs)
                 dfstmp += [dftmp]
-        df = pd.concat([df] + dftmp)
+        df = pd.concat([df] + dfstmp)
         df.reset_index(drop=True, inplace=True)
 
         return df
