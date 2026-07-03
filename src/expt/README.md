@@ -6,8 +6,7 @@ All commands should be run from this directory (`src/expt/`).
 ## Requirements
 
 - [Snakemake](https://snakemake.readthedocs.io/) ≥ 7.0
-- Docker (for full pipeline runs; not needed for plot-only reproduction)
-- `curl` (for downloading pre-computed results)
+- [Apptainer](https://apptainer.org/) (for container execution; includes `docker://` image support)
 
 ## Directory layout
 
@@ -20,33 +19,48 @@ src/expt/
 └── config/             # workflow configuration (to be populated)
 ```
 
-Output goes to `results/` (gitignored).
+Output goes to `results/` (gitignored, except the 5 aggregated CSVs below).
 
 ## Reproducing the paper figures
 
-### Option A — from pre-computed results (fast, no Docker)
-
-Download the aggregated CSVs and PDFs (78 KB) and regenerate figures:
+The five aggregated CSVs (`results/kl_divergence_2{a,b,c}.csv`,
+`results/time_3{a,b}.csv`) are committed to the repository. Regenerating
+the figures from them requires only Snakemake and Apptainer — no data
+downloads or recomputation:
 
 ```bash
-snakemake download_results
-snakemake kl_plots_2a kl_plots_2b kl_plots_2c time_plots_3a time_plots_3b
+snakemake kl_plots_2a kl_plots_2b kl_plots_2c time_plots_3a time_plots_3b \
+  --use-apptainer --cores 1 \
+  --allowed-rules kl_plots_2a kl_plots_2b kl_plots_2c time_plots_3a time_plots_3b
 ```
 
 PDFs appear in `results/`.
 
-### Option B — full recomputation (requires Docker, ~5.5 GB, hours of compute)
+(`--allowed-rules` prevents Snakemake from tracing the full upstream
+simulation DAG when only the aggregated CSVs are available locally.)
+
+## Full recomputation from scratch
+
+Requires Apptainer and approximately 5.5 GB of disk space for intermediate
+results. Recomputing from scratch takes hundreds of CPU-hours.
 
 ```bash
-snakemake all
+snakemake all --use-apptainer --cores N
 ```
-
-This generates all intermediate results from scratch inside Docker containers
-(`bpimages/cslearnbenchmarks:1.3.1-amd64` for Python rules,
-`bpimages/stagedtrees:2.3.0` for R/stagedtrees rules).
 
 Dry run to preview what would be computed:
 
 ```bash
-snakemake all -n
+snakemake all --use-apptainer -n
+```
+
+## Recomputation from saved intermediates
+
+The full set of intermediate results is archived (update URL in
+`workflow/Snakefile` after Zenodo deposit). Downloading restores all
+intermediate files so that `snakemake all` skips recomputation:
+
+```bash
+snakemake download_intermediates --cores 1
+snakemake all --use-apptainer --cores N
 ```

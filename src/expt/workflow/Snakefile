@@ -5,9 +5,9 @@
 
 seed_range = range(1, 11)   # can replace with range(1, 11) after testing
 
-# Pre-computed results archive (CSVs + PDFs, 78 KB).
+# Full intermediate results archive (~5.5 GB).
 # Update to Zenodo URL after deposit.
-RESULTS_ARCHIVE_URL = "https://cslearn-simulations.s3.eu-north-1.amazonaws.com/csv_and_pdf_files.tar.gz"
+INTERMEDIATES_ARCHIVE_URL = "https://cslearn-simulations.s3.eu-north-1.amazonaws.com/complete_directory.tar.gz"
 
 # CStree model
 pattern_cstree = "cstree/cstree_p={cstree_p}/cstree_max_cvar={cstree_max_cvar}/cstree_prob_cvar={cstree_prob_cvar}/seed={seed}"
@@ -43,7 +43,7 @@ pattern_st_param_est = "st_param_est/st_param_est_estimation_type={st_param_est_
 # Evaluation
 pattern_kl_div = "kl_div"
 
-container: "docker://bpimages/cslearnbenchmarks:1.3.1-amd64"
+container: "oras://docker.io/causaldev/cslearn-expt:1.3.2-amd64"
 # export APPTAINER_TMPDIR=/home/alex/Downloads/tmp-snake/
 # envvars:
 #     "APPTAINER_TMPDIR",
@@ -870,20 +870,21 @@ rule time_plots_3b:
     output: "results/time_3b.pdf"
     script: "scripts/plot_time.py"
 
-rule download_results:
-    """Download pre-computed CSVs and PDFs from the results archive.
+rule download_intermediates:
+    """Download the full intermediate results archive (~5.5 GB) from Zenodo.
 
-    Extracts files flat into results/ so the plot rules can run immediately
-    without recomputing the full pipeline. Not part of rule all.
+    Use this to restore all intermediate files so that snakemake all can
+    skip recomputation and proceed directly to aggregation/plotting.
+    Not part of rule all.
 
     Usage:
-        snakemake download_results
-        snakemake kl_plots_2a kl_plots_2b kl_plots_2c time_plots_3a time_plots_3b
+        snakemake download_intermediates
+        snakemake all
     """
     container: None
     params:
-        url = RESULTS_ARCHIVE_URL
+        url = INTERMEDIATES_ARCHIVE_URL
     output:
-        touch("results/.downloaded")
+        touch("results/.intermediates_downloaded")
     shell:
         "mkdir -p results && curl -L {params.url} | tar xz -C results/"
