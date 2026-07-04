@@ -1,5 +1,6 @@
 import pandas as pd
 import seaborn as sns
+from palette import PALETTE, HATCHES
 
 plot_data = pd.read_csv(snakemake.input[0])
 
@@ -25,21 +26,18 @@ hue_order = [h for h in hue_order if h in plot_data["hue"].unique()]
 sns.set(font_scale=1.25)
 sns.set_style("white")
 sns.set_style({"legend.frameon": False})
-g = sns.boxplot(data=plot_data, x="p", y="shd", hue="hue", hue_order=hue_order)
+g = sns.boxplot(data=plot_data, x="p", y="shd", hue="hue", hue_order=hue_order, palette=PALETTE)
 
-# Grayscale-safe: apply hatching so boxes are distinguishable without color.
-_hatches = ["", "///", "xxx", "...", "\\\\", "oo", "++", "**"]
+# Grayscale-safe hatching. Patches are ordered hue-first (all x-positions for
+# hue 0, then hue 1, ...), so hue index = i // n_x.
 _n = plot_data["hue"].nunique()
-for i, patch in enumerate(g.patches):
-    patch.set_hatch(_hatches[i % _n % len(_hatches)])
+_nx = plot_data["p"].nunique()
+for i, patch in enumerate(g.patches[:_n * _nx]):
+    patch.set_hatch(HATCHES[(i // _nx) % len(HATCHES)])
 for i, handle in enumerate(g.legend_.legend_handles):
-    handle.set_hatch(_hatches[i % len(_hatches)])
+    handle.set_hatch(HATCHES[i % len(HATCHES)])
 
-g.set(
-    title="",
-    xlabel="number of variables ($p$)",
-    ylabel="SHD (LDAG)",
-)
+g.set(title="", xlabel="number of variables ($p$)", ylabel="SHD (LDAG)")
 g.legend_.set_title("")
 g.legend_.set_frame_on(False)
 g.figure.tight_layout()
