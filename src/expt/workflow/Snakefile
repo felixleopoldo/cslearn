@@ -119,7 +119,8 @@ rule all:
         "results/shd_a.pdf",
         "results/shd_b.pdf",
         "results/shd_c.pdf",
-        "results/shd_scale.pdf"
+        "results/shd_scale.pdf",
+        "results/sensitivity.pdf"
 
 # Reads a DAG (adjacency matrix) and returns a list of possible cvars
 # as a JSON file.
@@ -1218,6 +1219,91 @@ rule shd_plots_scale:
     input: "results/shd_scale.csv"
     output: "results/shd_scale.pdf"
     script: "scripts/plot_shd.py"
+
+
+"""
+Sensitivity analysis: β-misspecification.
+
+Shows SHD (LDAG) when CSlearn+GRaSP (β_est=2) is applied to data from
+CStrees with β_true ∈ {1, 2, 3}:
+  β_true=1 → over-specified (CSlearn uses a richer model than needed)
+  β_true=2 → correctly specified
+  β_true=3 → under-specified (CSlearn cannot capture all context structures)
+
+p=5..20, n=250/1000, prob_cvar=0.5.
+"""
+rule sensitivity_csv:
+    input:
+        correct = expand(
+            ("results/shd"
+             + "/true_cstree=/" + pattern_cstree
+             + "/true_cstree_params=/" + pattern_cstree_params
+             + "/data=/" + pattern_cstree_data
+             + "/alg=/" + pattern_grasp_cslearn
+             + "/shd.csv"),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            seed=seed_range,
+        ),
+        under = expand(
+            ("results/shd"
+             + "/true_cstree=/" + pattern_cstree
+             + "/true_cstree_params=/" + pattern_cstree_params
+             + "/data=/" + pattern_cstree_data
+             + "/alg=/" + pattern_grasp_cslearn
+             + "/shd.csv"),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[3],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            seed=seed_range,
+        ),
+        over = expand(
+            ("results/shd"
+             + "/true_cstree=/" + pattern_cstree
+             + "/true_cstree_params=/" + pattern_cstree_params
+             + "/data=/" + pattern_cstree_data
+             + "/alg=/" + pattern_grasp_cslearn
+             + "/shd.csv"),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[1],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            seed=seed_range,
+        ),
+    output:
+        "results/sensitivity.csv"
+    script:
+        "scripts/join_sensitivity.py"
+
+
+rule sensitivity_plot:
+    input: "results/sensitivity.csv"
+    output: "results/sensitivity.pdf"
+    script: "scripts/plot_sensitivity.py"
 
 
 rule download_intermediates:
