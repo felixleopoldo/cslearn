@@ -32,9 +32,9 @@ def all_stagings(cards: list[int], level, max_cvars: int = 1, poss_cvars=None):
         >>> cards = [2]*3
         >>> stagings = ctl.all_stagings(cards, 1, max_cvars=2) # all stagings at level 1
         >>> for i, staging in enumerate(stagings):
-        >>>     print("staging {}:".format(i))
-        >>>     for stage in staging:
-        >>>         print(stage)
+        ...     print("staging {}:".format(i))
+        ...     for stage in staging:
+        ...         print(stage)
         staging 0:
         [{0, 1}, {0, 1}]
         staging 1:
@@ -368,25 +368,36 @@ def _move_node(
 
 
 def gibbs_order_sampler(iterations, score_table):
-    """Gibbs order sampler. This is a Markov chain Monte Carlo method for sampling from the posterior distribution of variable orders for CStrees.
+    """Gibbs order sampler for the posterior distribution over variable orderings.
+
+    At each iteration a random variable is selected and relocated to a new
+    position drawn from the conditional posterior given all other positions.
+
+    Args:
+        iterations (int): Number of Gibbs iterations.
+        score_table (dict): Pre-computed order score table from
+            :func:`cstrees.scoring.order_score_tables`. Must contain keys
+            ``"scores"`` and ``"poss_cvars"``.
+
+    Returns:
+        tuple: ``(orders, scores)`` — a list of sampled orderings (one per
+        iteration plus the initial state) and a list of their log-posterior
+        scores.
 
     Example:
 
         >>> import cstrees.learning as ctl
         >>> import cstrees.cstree as ct
+        >>> import cstrees.scoring as sc
         >>> import numpy as np
         >>> import random
         >>> np.random.seed(1)
         >>> random.seed(1)
-        >>>
         >>> tree = ct.sample_cstree([2,2,2,2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
         >>> tree.sample_stage_parameters(1.0)
         >>> df = tree.sample(500)
-        >>> score_table, context_scores, context_counts = sc.order_score_tables(df,
-        >>>                                                                     max_cvars=2,
-        >>>                                                                     alpha_tot=1.0,
-        >>>                                                                     method="BDeu",
-        >>>                                                                     poss_cvars=None)
+        >>> score_table, context_scores, _ = sc.order_score_tables(
+        ...     df, max_cvars=2, alpha_tot=1.0, method="BDeu", poss_cvars=None)
         >>> orders, scores = ctl.gibbs_order_sampler(5000, score_table)
 
     """
@@ -470,13 +481,22 @@ def _get_relocation_neighborhood(
 
 
 def find_optimal_cstree(data, max_cvars=1, alpha_tot=1, method="BDeu"):
-    """Find the optimal CStree for the data. It first finds the optimal order, then the optimal CStree given that order.
+    """Find the optimal CStree for the data by exhaustive order search.
+
+    Enumerates all p! variable orderings, scores each one, then finds the
+    optimal staging for the best ordering. Feasible only for small p (≤ ~7).
+    For larger p, use :meth:`cstrees.cstree.CStree.fit`, which replaces
+    exhaustive order search with Gibbs MCMC and optionally uses a GRaSP-derived
+    CPDAG to constrain the parent sets.
 
     Args:
-        data (pandas DataFrame): The data as a pandas DataFrame.
-        max_cvars (int, optional): Max context variables. Defaults to 1.
-        alpha_tot (float, optional): The Dirichlet hyper parameter total pseudo counts. Defaults to 1.
-        method (str, optional): Parameter prior type. Defaults to "BDeu".
+        data (pd.DataFrame): Training data.
+        max_cvars (int, optional): Maximum context-set size β. Defaults to 1.
+        alpha_tot (float, optional): Total BDeu pseudo-count. Defaults to 1.
+        method (str, optional): Scoring method. Defaults to ``"BDeu"``.
+
+    Returns:
+        CStree: The MAP CStree (structure only, no parameters estimated).
 
     Examples:
         >>> import cstrees.learning as ctl
@@ -485,7 +505,6 @@ def find_optimal_cstree(data, max_cvars=1, alpha_tot=1, method="BDeu"):
         >>> import random
         >>> np.random.seed(1)
         >>> random.seed(1)
-        >>>
         >>> tree = ct.sample_cstree([2,2,2,2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
         >>> tree.sample_stage_parameters(1.0)
         >>> df = tree.sample(500)
@@ -510,11 +529,16 @@ def causallearn_graph_to_posscvars(graph, labels, alg="pc"):
     These are used when calculating scores in :meth:`cstrees.scoring.order_score_tables()`.
 
     Args:
-        graph (causalearn graph): A graph in causal learn format.
-        labels (list): Labels of the variables.
+        graph: A graph object returned by a causallearn algorithm (PC, GRaSP,
+            or GES). The expected format depends on ``alg``.
+        labels (list): Variable labels in the same order as the graph nodes.
+        alg (str): Which algorithm produced ``graph``. One of ``"pc"``,
+            ``"grasp"``, or ``"ges"``. Defaults to ``"pc"``.
 
     Returns:
-        dict: Dictionary of possible context variables for each variable.
+        dict: Mapping from each variable label to a list of its possible
+        context variables (i.e. variables that could be parents or
+        undirected neighbours in the CPDAG).
 
     Examples:
         >>> import cstrees.learning as ctl
@@ -550,7 +574,24 @@ def causallearn_graph_to_posscvars(graph, labels, alg="pc"):
 
 
 def causallearn_graph_to_dag(graph, labels, alg="pc"):
-    """This function converts a graph estimated by causallearn to DAG adjacency matrix."""
+    """Convert a causallearn graph to a DAG adjacency matrix.
+
+    Handles both directed and undirected edges in the CPDAG returned by PC,
+    GRaSP, or GES: directed edges are kept as-is; undirected edges are
+    oriented via :class:`pgmpy.base.PDAG`.
+
+    Args:
+        graph: A graph object returned by a causallearn algorithm (PC, GRaSP,
+            or GES). The expected format depends on ``alg``.
+        labels (list): Variable labels in the same order as the graph nodes.
+        alg (str): Which algorithm produced ``graph``. One of ``"pc"``,
+            ``"grasp"``, or ``"ges"``. Defaults to ``"pc"``.
+
+    Returns:
+        pd.DataFrame: Adjacency matrix of the resulting DAG with variable
+        labels as both row and column names. Entry ``[i, j] == 1`` means
+        there is an edge from variable ``i`` to variable ``j``.
+    """
 
     if alg == "pc":
         adj = graph.G.graph

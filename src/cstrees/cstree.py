@@ -26,32 +26,15 @@ logging.basicConfig(stream=sys.stderr, level=logging.CRITICAL, format=FORMAT)
 
 
 def write_minimal_context_graphs_to_files(context_dags, prefix="mygraphs"):
-    """Write minimal context graphs to files. This is useful since it also writes the context of each graph in the figures.
-    The contexts are also part of the filenames.
+    """Write minimal context graphs to files.
+
+    Each context graph is written to a separate file; the context is included
+    in the filename and as a figure label.
 
     Args:
-        context_dags (dict): A dictionary of context graphs. The keys are the contexts, and the values are the graphs.
-        prefix (str, optional): The prefix of the files. Defaults to "mygraphs".
-
-    Example:
-        >>> # tree is the Figure 1 CStree
-        >>> gs = tree.to_minimal_context_graphs()
-        >>> ct.write_minimal_context_graphs_to_files(gs, prefix="mygraphs")
-    """
-
-    for key, val in context_dags.items():
-        agraph = nx.nx_agraph.to_agraph(val)
-        agraph.layout("dot")
-        agraph.draw(prefix + str(key) + ".png", args='-Glabel="' + str(key) + '"   ')
-
-
-def write_minimal_context_graphs_to_files(context_dags, prefix="mygraphs"):
-    """Write minimal context graphs to files. This is useful since it also writes the context of each graph in the figures.
-    The contexts are also part of the filenames.
-
-    Args:
-        context_dags (dict): A dictionary of context graphs. The keys are the contexts, and the values are the graphs.
-        prefix (str, optional): The prefix of the files. Defaults to "mygraphs".
+        context_dags (dict): A dictionary of context graphs. The keys are the
+            contexts, and the values are the graphs.
+        prefix (str, optional): Filename prefix. Defaults to "mygraphs".
 
     Example:
         >>> # tree is the Figure 1 CStree
@@ -66,21 +49,14 @@ def write_minimal_context_graphs_to_files(context_dags, prefix="mygraphs"):
 
 
 def plot(graph, layout="dot"):
-    """Plots a graph using graphviz. Essentially it creates a pygraphviz graph from a NetworkX graph.
+    """Plots a graph using graphviz. Creates a pygraphviz graph from a NetworkX graph.
 
     Args:
         graph (nx.Graph): The graph to plot.
-        layout (str, optional): The layout to use. Defaults to "dot".
+        layout (str, optional): Graphviz layout engine. Defaults to "dot".
 
     Returns:
         pygraphviz.agraph.AGraph: A pygraphviz graph.
-
-    Returns:
-        pygraphviz.agraph.AGraph: A pygraphviz graph.
-
-    Returns:
-        pygraphviz.agraph.AGraph: A pygraphviz graph.
-
     """
     agraph = nx.nx_agraph.to_agraph(graph)
     agraph.layout(layout)
@@ -102,16 +78,16 @@ class CStree:
         >>> import cstrees.stage as st
         >>> tree = ct.CStree([2, 2, 2, 2], labels=["X"+str(i) for i in range(1, 5)])
         >>> tree.update_stages({
-        >>>     0: [{"context": {0: 0}},
-        >>>         {"context": {0: 1}}],
-        >>>     1: [{"context": {1: 0}, "color": "green"},
-        >>>         {"context": {0: 0, 1: 1}},
-        >>>         {"context": {0: 1, 1: 1}}],
-        >>>     2: [{"context": {0: 0, 2: 0}, "color": "blue"},
-        >>>         {"context": {0: 0, 2: 1}, "color": "orange"},
-        >>>         {"context": {0: 1, 2: 0}, "color": "red"},
-        >>>         {"context": {0: 1, 1: 1, 2: 1}},
-        >>>         {"context": {0: 1, 1: 0, 2: 1}}]})
+        ...     0: [{"context": {0: 0}},
+        ...         {"context": {0: 1}}],
+        ...     1: [{"context": {1: 0}, "color": "green"},
+        ...         {"context": {0: 0, 1: 1}},
+        ...         {"context": {0: 1, 1: 1}}],
+        ...     2: [{"context": {0: 0, 2: 0}, "color": "blue"},
+        ...         {"context": {0: 0, 2: 1}, "color": "orange"},
+        ...         {"context": {0: 1, 2: 0}, "color": "red"},
+        ...         {"context": {0: 1, 1: 1, 2: 1}},
+        ...         {"context": {0: 1, 1: 0, 2: 1}}]})
         >>> tree.sample_stage_parameters()
     """
 
@@ -278,7 +254,7 @@ class CStree:
         """The proportion of the outcome space this stage represents.
 
         Args:
-            cards (list): A list of the cardinalities of the variables in the stage.
+            stage (st.Stage): A stage of this CStree.
 
         Returns:
             float: A number between 0 and 1.
@@ -304,17 +280,17 @@ class CStree:
 
         Example:
             >>> tree.update_stages({
-            >>>     0: [{"context": {0: 0}},
-            >>>         {"context": {0: 1}}],
-            >>>     1: [{"context": {1: 0}, "color": "green"},
-            >>>         {"context": {0: 0, 1: 1}},
-            >>>         {"context": {0: 1, 1: 1}}],
-            >>>     2: [{"context": {0: 0, 2: 0}, "color": "blue"},
-            >>>         {"context": {0: 0, 2: 1}, "color": "orange"},
-            >>>         {"context": {0: 1, 2: 0}, "color": "red"},
-            >>>         {"context": {0: 1, 1: 1, 2: 1}},
-            >>>         {"context": {0: 1, 1: 0, 2: 1}}]
-            >>>     })
+            ...     0: [{"context": {0: 0}},
+            ...         {"context": {0: 1}}],
+            ...     1: [{"context": {1: 0}, "color": "green"},
+            ...         {"context": {0: 0, 1: 1}},
+            ...         {"context": {0: 1, 1: 1}}],
+            ...     2: [{"context": {0: 0, 2: 0}, "color": "blue"},
+            ...         {"context": {0: 0, 2: 1}, "color": "orange"},
+            ...         {"context": {0: 1, 2: 0}, "color": "red"},
+            ...         {"context": {0: 1, 1: 1, 2: 1}},
+            ...         {"context": {0: 1, 1: 0, 2: 1}}]
+            ...     })
         """
 
         # This should be filled with Stage objects.
@@ -446,36 +422,27 @@ class CStree:
 
     def estimate_stage_parameters(self, data, method="BDeu", alpha_tot=1):
         """Estimate the parameters of the stages of the CStree under a Dirichlet model.
-        Note that this is not using precaclulated scores, just for legacy reasons. It should though.
 
         Args:
             data (pd.DataFrame): A pandas dataframe with the data.
-            method (str): The method to use for estimating the parameters. Currently only "BDeu" [2] is implemented.
-            alpha_tot (float): The total alpha value (to be splitted evenly in proportion to the stage sizes) to use for the Dirichlet model.
+            method (str): The estimation method. Currently only "BDeu" [2] is implemented.
+            alpha_tot (float): Total Dirichlet pseudo-count, split proportionally
+                across stages by their size.
+
         Reference:
-                [2] C. Hughes, P. Strong, and A. Shenvi. Score equivalence for staged trees, 2023, https://arxiv.org/abs/2206.15322
+            [2] C. Hughes, P. Strong, and A. Shenvi. Score equivalence for staged trees, 2023,
+            https://arxiv.org/abs/2206.15322
+
         Example:
             >>> t = ct.sample_cstree([2,2,2,2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
             >>> t.sample_stage_parameters()
             >>> df = t.sample(500)
             >>> t.estimate_stage_parameters(df, alpha_tot=1.0, method="BDeu")
             >>> for lev, stagings in t.stages.items():
-            >>>    print("Level {}".format(lev))
-            >>>    for stage in stagings:
-            >>>        print(stage)
-            >>>    print()
-            Level 0
-            [{0, 1}]; probs: [0.25, 0.75]; color: peru
-            Level 1
-            [{0, 1}, 0]; probs: [0.3, 0.7]; color: peru
-            [{0, 1}, 1]; probs: [0.64, 0.36]; color: blueviolet
-            Level 2
-            [{0, 1}, 0, {0, 1}]; probs: [0.41, 0.59]; color: peru
-            [{0, 1}, 1, {0, 1}]; probs: [0.71, 0.29]; color: blueviolet
-            Level 3
-            Level -1
-            []; probs: [0.92, 0.08]; color: black
-
+            ...    print("Level {}".format(lev))
+            ...    for stage in stagings:
+            ...        print(stage)
+            ...    print()
         """
         import cstrees.scoring as sc
 
@@ -582,7 +549,7 @@ class CStree:
             >>> # tree is the Figure 1 CStree
             >>> gs = tree.to_minimal_context_graphs()
             >>> for key, graph in gs.items():
-            >>>     print("{}: Edges {}".format(key, graph.edges()))
+            ...     print("{}: Edges {}".format(key, graph.edges()))
             X2=0: Edges [('X1', 'X4'), ('X3', 'X4')]
             X3=0: Edges [('X1', 'X2'), ('X1', 'X4')]
             X1=0: Edges [('X2', 'X3'), ('X3', 'X4')]
@@ -619,8 +586,8 @@ class CStree:
         Example:
             >>> minlcsis = tree.to_minimal_context_csis()
             >>> for key, csis in minlcsis.items():
-            >>>     for csi in csis:
-            >>>         print("{}: CSI {}".format(key, csi))
+            ...     for csi in csis:
+            ...         print("{}: CSI {}".format(key, csi))
             X2=0: CSI X1 ⊥ X3 | X2=0
             X3=0: CSI X2 ⊥ X4 | X1, X3=0
             X1=0: CSI X2 ⊥ X4 | X3, X1=0
@@ -688,12 +655,12 @@ class CStree:
             >>> rels = tree.csi_relations_per_level()
             >>> print("CSI relations per level")
             >>> for key, rel in rels.items():
-            >>>     print("level {}: ".format(key))
-            >>>     for r in rel:
-            >>>         if (len(r.ci.a) > 0) and (len(r.ci.b) > 0):
-            >>>             # avoiding the singletons
-            >>>             print("the CSI")
-            >>>             print(r)
+            ...     print("level {}: ".format(key))
+            ...     for r in rel:
+            ...         if (len(r.ci.a) > 0) and (len(r.ci.b) > 0):
+            ...             # avoiding the singletons
+            ...             print("the CSI")
+            ...             print(r)
             CSI relations per level
             level 0:
             level 1:
@@ -722,8 +689,8 @@ class CStree:
         Examples:
             >>> rels = tree.csi_relations()
             >>> for cont, rels in rels.items():
-            >>>     for rel in rels:
-            >>>         print(rel)
+            ...     for rel in rels:
+            ...         print(rel)
             X1 ⊥ X3 | X2=0
             X2 ⊥ X4 | X1=0, X3=0
             X2 ⊥ X4 | X1=0, X3=1
@@ -837,13 +804,17 @@ class CStree:
         """Plot the CStree.
 
         Args:
-            fill (bool): If True, the tree is filled with parameters, taken from the individual stages. It defaults to False, which means that only the nodes that are used when sampling data are created. This is to save space both when plotting an for representing the tree in memory.
+            full (bool): If True, the complete tree is drawn with all nodes.
+                Defaults to False, in which case only nodes visited during
+                sampling are shown (pass ``full=True`` for a fresh tree with
+                no sampling history).
+
         Returns:
             pygraphviz.agraph.AGraph: A pygraphviz graph.
 
         Examples:
             >>> tree.sample_stage_parameters()
-            >>> agraph = tree.plot()
+            >>> agraph = tree.plot(full=True)
             >>> agraph.draw("cstree.png")
         """
 
@@ -955,7 +926,6 @@ class CStree:
         data: pd.DataFrame,
         gibbs_samples=10000,
         poss_cvars=None,
-        grasp_max_p=5,
         grasp_depth=3,
         grasp_score="local_score_BDeu",
         max_cvars=2,
@@ -963,7 +933,43 @@ class CStree:
         method="BDeu",
         save_as="",
     ):
-        """High-level wrapper combining model selection and parameter estimation."""
+        """Learn a CStree from data using GRaSP + Gibbs order sampling (CSlearn).
+
+        Runs the three-phase CSlearn pipeline:
+        1. DAG pre-screening via GRaSP (or uses caller-supplied ``poss_cvars``).
+        2. Gibbs order MCMC to find the MAP variable ordering.
+        3. Exact staging search to find the optimal CStree for that ordering.
+
+        Updates ``self`` in place and returns it.
+
+        Args:
+            data (pd.DataFrame): Training data; first column may be cardinalities
+                (matching the format returned by :meth:`sample`).
+            gibbs_samples (int): Number of Gibbs iterations for order sampling.
+                Defaults to 10000.
+            poss_cvars (dict, optional): Pre-computed dict mapping each variable
+                label to its list of possible context variables. If ``None``
+                (default), GRaSP is run on ``data`` to produce this dict.
+            grasp_depth (int): GRaSP search depth. Defaults to 3.
+            grasp_score (str): Scoring function for GRaSP. Defaults to
+                ``"local_score_BDeu"``.
+            max_cvars (int): Maximum context-set size β. Defaults to 2.
+            alpha_tot (float): Total BDeu pseudo-count. Defaults to 1.0.
+            method (str): Scoring method, currently only ``"BDeu"`` is supported.
+            save_as (str): If non-empty, save intermediate results (``poss_cvars``,
+                score tables, learned tree, …) to ``{save_as}-<name>.pkl`` files.
+
+        Returns:
+            CStree: ``self``, updated with the learned structure and parameters.
+
+        Example:
+            >>> import pandas as pd
+            >>> import cstrees.cstree as ct
+            >>> tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5)
+            >>> tree.sample_stage_parameters()
+            >>> df = tree.sample(500)
+            >>> learned = ct.CStree(tree.cards).fit(df)
+        """
         import cstrees.scoring as sc
         import cstrees.learning as ctl
 
@@ -972,7 +978,6 @@ class CStree:
             graph = grasp(
                 data.values[1:],
                 score_func=grasp_score,
-                maxP=grasp_max_p,
                 depth=grasp_depth,
             )
             poss_cvars = ctl.causallearn_graph_to_posscvars(
@@ -1178,7 +1183,7 @@ class CStree:
 def sample_cstree(
     cards: list[int],
     max_cvars: int,
-    prob_cvar: int,
+    prob_cvar: float,
     prop_nonsingleton: float = 1.0,
     labels: list | None = None,
 ) -> CStree:
