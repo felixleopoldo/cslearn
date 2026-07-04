@@ -115,7 +115,11 @@ rule all:
         "results/kl_divergence_2b.pdf",
         "results/kl_divergence_2c.pdf",
         "results/time_3a.pdf",
-        "results/time_3b.pdf"
+        "results/time_3b.pdf",
+        "results/shd_a.pdf",
+        "results/shd_b.pdf",
+        "results/shd_c.pdf",
+        "results/shd_scale.pdf"
 
 # Reads a DAG (adjacency matrix) and returns a list of possible cvars
 # as a JSON file.
@@ -148,7 +152,7 @@ rule dag_to_poss_cvar:          # tested
 
 rule cstree:                    # tested
     output:
-        "true_cstree/"+ pattern_cstree + "/cstree.csv"
+        "results/true_cstree/"+ pattern_cstree + "/cstree.csv"
     script:
         "scripts/generate_cstree.py"
 
@@ -870,6 +874,352 @@ rule time_plots_3b:
     output: "results/time_3b.pdf"
     script: "scripts/plot_time.py"
 
+rule export_true_ldag:
+    input:
+        rules.cstree.output[0]
+    output:
+        "results/true_ldag/" + pattern_cstree + "/ldag_edges.csv"
+    script:
+        "scripts/export_true_ldag.py"
+
+
+rule shd_to_true_pc:
+    input:
+        true = rules.cstree.output[0],
+        est  = ("results/estimate"
+                + "/true_cstree=/" + pattern_cstree
+                + "/true_cstree_params=/" + pattern_cstree_params
+                + "/data=/" + pattern_cstree_data
+                + "/alg=/" + pattern_pc
+                + "/cpdag.csv"),
+    params:
+        method = "PC+DAG"
+    output:
+        ("results/shd"
+         + "/true_cstree=/" + pattern_cstree
+         + "/true_cstree_params=/" + pattern_cstree_params
+         + "/data=/" + pattern_cstree_data
+         + "/alg=/" + pattern_pc
+         + "/shd.csv")
+    script:
+        "scripts/shd_dag.py"
+
+
+rule shd_to_true_grasp:
+    input:
+        true = rules.cstree.output[0],
+        est  = ("results/estimate"
+                + "/true_cstree=/" + pattern_cstree
+                + "/true_cstree_params=/" + pattern_cstree_params
+                + "/data=/" + pattern_cstree_data
+                + "/alg=/" + pattern_grasp
+                + "/cpdag.csv"),
+    params:
+        method = "GRaSP+DAG"
+    output:
+        ("results/shd"
+         + "/true_cstree=/" + pattern_cstree
+         + "/true_cstree_params=/" + pattern_cstree_params
+         + "/data=/" + pattern_cstree_data
+         + "/alg=/" + pattern_grasp
+         + "/shd.csv")
+    script:
+        "scripts/shd_dag.py"
+
+
+rule shd_to_true_bos:
+    input:
+        true_ldag = rules.export_true_ldag.output[0],
+        est       = rules.bos.output["st"],
+    params:
+        method = "BOS"
+    output:
+        ("results/shd"
+         + "/true_cstree=/" + pattern_cstree
+         + "/true_cstree_params=/" + pattern_cstree_params
+         + "/data=/" + pattern_cstree_data
+         + "/alg=/" + pattern_bos
+         + "/shd.csv")
+    container: "docker://bpimages/stagedtrees:2.3.0"
+    script:
+        "scripts/shd_stagedtree.R"
+
+
+rule shd_to_true_grasp_bhc:
+    input:
+        true_ldag = rules.export_true_ldag.output[0],
+        est       = ("results/estimate"
+                     + "/true_cstree=/" + pattern_cstree
+                     + "/true_cstree_params=/" + pattern_cstree_params
+                     + "/data=/" + pattern_cstree_data
+                     + "/alg=/" + pattern_grasp_bhc
+                     + "/structure.rds"),
+    params:
+        method = "GRaSP+BHC"
+    output:
+        ("results/shd"
+         + "/true_cstree=/" + pattern_cstree
+         + "/true_cstree_params=/" + pattern_cstree_params
+         + "/data=/" + pattern_cstree_data
+         + "/alg=/" + pattern_grasp_bhc
+         + "/shd.csv")
+    container: "docker://bpimages/stagedtrees:2.3.0"
+    script:
+        "scripts/shd_stagedtree.R"
+
+
+rule shd_to_true:
+    input:
+        true = rules.cstree.output[0],
+        est  = rules.cslearn.output["cstree"],
+    output:
+        ("results/shd"
+         + "/true_cstree=/" + pattern_cstree
+         + "/true_cstree_params=/" + pattern_cstree_params
+         + "/data=/" + pattern_cstree_data
+         + "/alg=/" + pattern_cslearn
+         + "/shd.csv")
+    script:
+        "scripts/shd.py"
+
+
+"""
+Plot (4a): SHD — CSlearn+PC vs PC+DAG baseline (mirrors KL plot 2a).
+
+SHD (LDAG) on y-axis, x-axis: p = 5,7,10,15,20, n = 250/1000
+"""
+rule shd_plots_a_csv:
+    input:
+        cslearn_pc = expand(("results/shd"
+                             + "/true_cstree=/" + pattern_cstree
+                             + "/true_cstree_params=/" + pattern_cstree_params
+                             + "/data=/" + pattern_cstree_data
+                             + "/alg=/" + pattern_pc_cslearn
+                             + "/shd.csv"),
+                    cstree_p=[5, 7, 10, 15, 20],
+                    cstree_max_cvar=[2],
+                    cstree_prob_cvar=[0.5],
+                    cstree_params_alpha=[1.0],
+                    cstree_data_n=[250, 1000],
+                    alg_name="cslearn",
+                    cslearn_max_cvar=[2],
+                    cslearn_prob_cvar=[1],
+                    cslearn_mcmc_iterations=[5000],
+                    cslearn_alpha_tot=[1.0],
+                    cslearn_param_prior=["BDeu"],
+                    pc_alpha=0.05,
+                    seed=seed_range),
+        pc_dag = expand(("results/shd"
+                         + "/true_cstree=/" + pattern_cstree
+                         + "/true_cstree_params=/" + pattern_cstree_params
+                         + "/data=/" + pattern_cstree_data
+                         + "/alg=/" + pattern_pc
+                         + "/shd.csv"),
+                    cstree_p=[5, 7, 10, 15, 20],
+                    cstree_max_cvar=[2],
+                    cstree_prob_cvar=[0.5],
+                    cstree_params_alpha=[1.0],
+                    cstree_data_n=[250, 1000],
+                    alg_name="cslearn",
+                    pc_alpha=0.05,
+                    seed=seed_range),
+    output:
+        "results/shd_a.csv"
+    script:
+        "scripts/join_csvs.py"
+
+
+"""
+Plot (4b): SHD — CSlearn+GRaSP vs GRaSP+DAG baseline (mirrors KL plot 2b).
+
+SHD (LDAG) on y-axis, x-axis: p = 5,7,10,15,20, n = 250/1000
+"""
+rule shd_plots_b_csv:
+    input:
+        cslearn_grasp = expand(("results/shd"
+                                + "/true_cstree=/" + pattern_cstree
+                                + "/true_cstree_params=/" + pattern_cstree_params
+                                + "/data=/" + pattern_cstree_data
+                                + "/alg=/" + pattern_grasp_cslearn
+                                + "/shd.csv"),
+                    cstree_p=[5, 7, 10, 15, 20],
+                    cstree_max_cvar=[2],
+                    cstree_prob_cvar=[0.5],
+                    cstree_params_alpha=[1.0],
+                    cstree_data_n=[250, 1000],
+                    alg_name="cslearn",
+                    cslearn_max_cvar=[2],
+                    cslearn_prob_cvar=[1],
+                    cslearn_mcmc_iterations=[5000],
+                    cslearn_alpha_tot=[1.0],
+                    cslearn_param_prior=["BDeu"],
+                    seed=seed_range),
+        grasp_dag = expand(("results/shd"
+                            + "/true_cstree=/" + pattern_cstree
+                            + "/true_cstree_params=/" + pattern_cstree_params
+                            + "/data=/" + pattern_cstree_data
+                            + "/alg=/" + pattern_grasp
+                            + "/shd.csv"),
+                    cstree_p=[5, 7, 10, 15, 20],
+                    cstree_max_cvar=[2],
+                    cstree_prob_cvar=[0.5],
+                    cstree_params_alpha=[1.0],
+                    cstree_data_n=[250, 1000],
+                    alg_name="cslearn",
+                    seed=seed_range),
+    output:
+        "results/shd_b.csv"
+    script:
+        "scripts/join_csvs.py"
+
+
+"""
+Plot (4c): SHD — CSlearn+GRaSP vs BOS vs GRaSP+BHC (mirrors KL plot 2c).
+
+SHD (LDAG) on y-axis, x-axis: p = 5,7,10,15,20, n = 250/1000
+ - BOS: p = 5,7,10 only (slow at larger p)
+ - GRaSP+BHC: p = 5,7,10,15,20
+"""
+rule shd_plots_c_csv:
+    input:
+        cslearn_grasp = expand(("results/shd"
+                                + "/true_cstree=/" + pattern_cstree
+                                + "/true_cstree_params=/" + pattern_cstree_params
+                                + "/data=/" + pattern_cstree_data
+                                + "/alg=/" + pattern_grasp_cslearn
+                                + "/shd.csv"),
+                    cstree_p=[5, 7, 10, 15, 20],
+                    cstree_max_cvar=[2],
+                    cstree_prob_cvar=[0.5],
+                    cstree_params_alpha=[1.0],
+                    cstree_data_n=[250, 1000],
+                    alg_name="cslearn",
+                    cslearn_max_cvar=[2],
+                    cslearn_prob_cvar=[1],
+                    cslearn_mcmc_iterations=[5000],
+                    cslearn_alpha_tot=[1.0],
+                    cslearn_param_prior=["BDeu"],
+                    seed=seed_range),
+        bos = expand(("results/shd"
+                      + "/true_cstree=/" + pattern_cstree
+                      + "/true_cstree_params=/" + pattern_cstree_params
+                      + "/data=/" + pattern_cstree_data
+                      + "/alg=/" + pattern_bos
+                      + "/shd.csv"),
+                    cstree_p=[5, 7, 10],
+                    cstree_max_cvar=[2],
+                    cstree_prob_cvar=[0.5],
+                    cstree_params_alpha=[1.0],
+                    cstree_data_n=[250, 1000],
+                    alg_name="bos",
+                    seed=seed_range),
+        grasp_bhc = expand(("results/shd"
+                            + "/true_cstree=/" + pattern_cstree
+                            + "/true_cstree_params=/" + pattern_cstree_params
+                            + "/data=/" + pattern_cstree_data
+                            + "/alg=/" + pattern_grasp_bhc
+                            + "/shd.csv"),
+                    cstree_p=[5, 7, 10, 15, 20],
+                    cstree_max_cvar=[2],
+                    cstree_prob_cvar=[0.5],
+                    cstree_params_alpha=[1.0],
+                    cstree_data_n=[250, 1000],
+                    alg_name="bhc",
+                    seed=seed_range),
+    output:
+        "results/shd_c.csv"
+    script:
+        "scripts/join_csvs.py"
+
+
+"""
+Plot (4d): SHD at scale — mirrors time_3b methods and p range.
+
+Methods: CSlearn+PC, CSlearn+GRaSP (p=10-500, n=1000, prob_cvar=0.5)
+         GRaSP+BHC (p=10-25, n=1000, prob_cvar=1; can't scale further)
+"""
+rule shd_plots_scale_csv:
+    input:
+        cslearn_pc = expand(("results/shd"
+                             + "/true_cstree=/" + pattern_cstree
+                             + "/true_cstree_params=/" + pattern_cstree_params
+                             + "/data=/" + pattern_cstree_data
+                             + "/alg=/" + pattern_pc_cslearn
+                             + "/shd.csv"),
+                    cstree_p=[10, 25, 50, 100, 250, 500],
+                    cstree_max_cvar=[2],
+                    cstree_prob_cvar=[0.5],
+                    cstree_params_alpha=[1.0],
+                    cstree_data_n=[1000],
+                    alg_name="cslearn",
+                    cslearn_max_cvar=[2],
+                    cslearn_prob_cvar=[1],
+                    cslearn_mcmc_iterations=[5000],
+                    cslearn_alpha_tot=[1.0],
+                    cslearn_param_prior=["BDeu"],
+                    pc_alpha=0.05,
+                    seed=seed_range),
+        cslearn_grasp = expand(("results/shd"
+                                + "/true_cstree=/" + pattern_cstree
+                                + "/true_cstree_params=/" + pattern_cstree_params
+                                + "/data=/" + pattern_cstree_data
+                                + "/alg=/" + pattern_grasp_cslearn
+                                + "/shd.csv"),
+                    cstree_p=[10, 25, 50, 100, 250, 500],
+                    cstree_max_cvar=[2],
+                    cstree_prob_cvar=[0.5],
+                    cstree_params_alpha=[1.0],
+                    cstree_data_n=[1000],
+                    alg_name="cslearn",
+                    cslearn_max_cvar=[2],
+                    cslearn_prob_cvar=[1],
+                    cslearn_mcmc_iterations=[5000],
+                    cslearn_alpha_tot=[1.0],
+                    cslearn_param_prior=["BDeu"],
+                    seed=seed_range),
+        grasp_bhc = expand(("results/shd"
+                            + "/true_cstree=/" + pattern_cstree
+                            + "/true_cstree_params=/" + pattern_cstree_params
+                            + "/data=/" + pattern_cstree_data
+                            + "/alg=/" + pattern_grasp_bhc
+                            + "/shd.csv"),
+                    cstree_p=[10, 25],
+                    cstree_max_cvar=[2],
+                    cstree_prob_cvar=[1],
+                    cstree_params_alpha=[1.0],
+                    cstree_data_n=[1000],
+                    alg_name="bhc",
+                    seed=seed_range),
+    output:
+        "results/shd_scale.csv"
+    script:
+        "scripts/join_csvs.py"
+
+
+rule shd_plot_a:
+    input: "results/shd_a.csv"
+    output: "results/shd_a.pdf"
+    script: "scripts/plot_shd.py"
+
+
+rule shd_plot_b:
+    input: "results/shd_b.csv"
+    output: "results/shd_b.pdf"
+    script: "scripts/plot_shd.py"
+
+
+rule shd_plot_c:
+    input: "results/shd_c.csv"
+    output: "results/shd_c.pdf"
+    script: "scripts/plot_shd.py"
+
+
+rule shd_plots_scale:
+    input: "results/shd_scale.csv"
+    output: "results/shd_scale.pdf"
+    script: "scripts/plot_shd.py"
+
+
 rule download_intermediates:
     """Download the full intermediate results archive (~5.5 GB) from Zenodo.
 
@@ -887,4 +1237,4 @@ rule download_intermediates:
     output:
         touch("results/.intermediates_downloaded")
     shell:
-        "mkdir -p results && curl -L {params.url} | tar xz -C results/"
+        "curl -L {params.url} | tar xz --strip-components=1 -C ."
