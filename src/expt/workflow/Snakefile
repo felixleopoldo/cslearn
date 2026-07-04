@@ -5,9 +5,8 @@
 
 seed_range = range(1, 11)   # can replace with range(1, 11) after testing
 
-# Full intermediate results archive (~5.5 GB).
-# Update to Zenodo URL after deposit.
-INTERMEDIATES_ARCHIVE_URL = "https://cslearn-simulations.s3.eu-north-1.amazonaws.com/complete_directory.tar.gz"
+# Precomputed results archive (~5.9 GB). Zenodo: https://doi.org/10.5281/zenodo.21198084
+INTERMEDIATES_ARCHIVE_URL = "https://zenodo.org/records/21198085/files/intermediates.tar.gz"
 
 # CStree model
 pattern_cstree = "cstree/cstree_p={cstree_p}/cstree_max_cvar={cstree_max_cvar}/cstree_prob_cvar={cstree_prob_cvar}/seed={seed}"
@@ -1307,7 +1306,7 @@ rule sensitivity_plot:
 
 
 rule download_intermediates:
-    """Download the full intermediate results archive (~5.5 GB) from Zenodo.
+    """Download the full intermediate results archive from Zenodo.
 
     Use this to restore all intermediate files so that snakemake all can
     skip recomputation and proceed directly to aggregation/plotting.
@@ -1323,4 +1322,4 @@ rule download_intermediates:
     output:
         touch("results/.intermediates_downloaded")
     shell:
-        "curl -L {params.url} | tar xz --strip-components=1 -C ."
+        "curl -L {params.url} | tar xz -C ."

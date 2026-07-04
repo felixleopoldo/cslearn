@@ -19,19 +19,34 @@ src/expt/
 └── config/             # workflow configuration (to be populated)
 ```
 
-Output goes to `results/` (gitignored, except the 5 aggregated CSVs below).
+Output goes to `results/` (gitignored, except the aggregated CSVs listed below).
 
 ## Reproducing the paper figures
 
-The five aggregated CSVs (`results/kl_divergence_2{a,b,c}.csv`,
-`results/time_3{a,b}.csv`) are committed to the repository. Regenerating
-the figures from them requires only Snakemake and Apptainer — no data
+Ten aggregated CSVs are committed to the repository:
+
+| File | Content |
+|------|---------|
+| `results/kl_divergence_2a.csv` | KL divergence: CSlearn+PC vs PC+DAG baseline |
+| `results/kl_divergence_2b.csv` | KL divergence: CSlearn+GRaSP vs GRaSP+DAG baseline |
+| `results/kl_divergence_2c.csv` | KL divergence: CSlearn+GRaSP vs BOS vs GRaSP+BHC |
+| `results/time_3a.csv` | Runtime: all methods, p=5–20 |
+| `results/time_3b.csv` | Runtime: scalable methods, p=10–500 |
+| `results/shd_a.csv` | SHD: CSlearn+PC vs PC+DAG |
+| `results/shd_b.csv` | SHD: CSlearn+GRaSP vs GRaSP+DAG |
+| `results/shd_c.csv` | SHD: CSlearn+GRaSP vs BOS vs GRaSP+BHC |
+| `results/shd_scale.csv` | SHD: scalable methods, p=10–500 |
+| `results/sensitivity.csv` | Sensitivity to β misspecification |
+
+Regenerating all figures requires only Snakemake and Apptainer — no data
 downloads or recomputation:
 
 ```bash
 snakemake kl_plots_2a kl_plots_2b kl_plots_2c time_plots_3a time_plots_3b \
+  shd_plots_a shd_plots_b shd_plots_c shd_plots_scale sensitivity_plot \
   --use-apptainer --cores 1 \
-  --allowed-rules kl_plots_2a kl_plots_2b kl_plots_2c time_plots_3a time_plots_3b
+  --allowed-rules kl_plots_2a kl_plots_2b kl_plots_2c time_plots_3a time_plots_3b \
+    shd_plots_a shd_plots_b shd_plots_c shd_plots_scale sensitivity_plot
 ```
 
 PDFs appear in `results/`.
@@ -41,8 +56,7 @@ simulation DAG when only the aggregated CSVs are available locally.)
 
 ## Full recomputation from scratch
 
-Requires Apptainer and approximately 5.5 GB of disk space for intermediate
-results. Recomputing from scratch takes hundreds of CPU-hours.
+Requires Apptainer and hundreds of CPU-hours.
 
 ```bash
 snakemake all --use-apptainer --cores N
@@ -56,11 +70,16 @@ snakemake all --use-apptainer -n
 
 ## Recomputation from saved intermediates
 
-The full set of intermediate results is archived (update URL in
-`workflow/Snakefile` after Zenodo deposit). Downloading restores all
-intermediate files so that `snakemake all` skips recomputation:
+The full set of precomputed results (~5.9 GB) is archived on Zenodo:
+[https://doi.org/10.5281/zenodo.21198084](https://doi.org/10.5281/zenodo.21198084)
+
+Downloading restores all intermediate files so that `snakemake all` skips
+the expensive recomputation steps:
 
 ```bash
 snakemake download_intermediates --cores 1
 snakemake all --use-apptainer --cores N
 ```
+
+This allows the workflow to be reproduced starting at any point in the
+pipeline, without recomputing preceding steps.

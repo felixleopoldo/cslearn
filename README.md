@@ -21,6 +21,14 @@
   </p>
 </div>
 
+## Paper experiments
+
+The simulation experiments and figures from the accompanying paper are in
+`src/expt/`. Aggregated results (CSVs) are committed to the repository;
+precomputed intermediates (~5.9 GB) are on Zenodo at
+[https://doi.org/10.5281/zenodo.21198084](https://doi.org/10.5281/zenodo.21198084).
+See [`src/expt/README.md`](src/expt/README.md) for reproduction instructions.
+
 <!-- CONTRIBUTING -->
 ## Contributing
 See the [open issues](https://github.com/felixleopoldo/cstrees/issues?q=is%3Aopen+is%3Aissue) for a full list of proposed features (and known issues).
