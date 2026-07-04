@@ -7,6 +7,7 @@
     pkgs.snakemake
     pkgs.apptainer
     pkgs.python313Packages.packaging
+    pkgs.pandoc
   ];
 
   languages.python = {
