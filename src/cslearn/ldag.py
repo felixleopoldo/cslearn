@@ -156,6 +156,4 @@ def _getDAGmap(df):
         v_parents = _collectParents(v, df)
         for w in v_parents:
             adjmat[w, v] = 1
-    adjmat = np.matrix(adjmat)
-
     return adjmat
