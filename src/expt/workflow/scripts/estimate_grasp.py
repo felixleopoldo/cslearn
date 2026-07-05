@@ -22,7 +22,7 @@ random.seed(seed)
 data = pd.read_csv(data_path)
 
 start = timer()
-grasp_graph = grasp(data.values[1:], score_func="local_score_BDeu", maxP=10, depth=3)
+grasp_graph = grasp(data.values[1:], score_func="local_score_BDeu", depth=3)
 end = timer()
 runtime = end - start
 
