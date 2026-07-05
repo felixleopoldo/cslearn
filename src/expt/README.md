@@ -43,10 +43,10 @@ downloads or recomputation:
 
 ```bash
 snakemake kl_plots_2a kl_plots_2b kl_plots_2c time_plots_3a time_plots_3b \
-  shd_plots_a shd_plots_b shd_plots_c shd_plots_scale sensitivity_plot \
+  shd_plot_a shd_plot_b shd_plot_c shd_plots_scale sensitivity_plot \
   --use-apptainer --cores 1 \
   --allowed-rules kl_plots_2a kl_plots_2b kl_plots_2c time_plots_3a time_plots_3b \
-    shd_plots_a shd_plots_b shd_plots_c shd_plots_scale sensitivity_plot
+    shd_plot_a shd_plot_b shd_plot_c shd_plots_scale sensitivity_plot
 ```
 
 PDFs appear in `results/`.
