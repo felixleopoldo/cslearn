@@ -78,6 +78,24 @@ precomputed intermediates (~5.9 GB) are on Zenodo at
 [https://doi.org/10.5281/zenodo.21198084](https://doi.org/10.5281/zenodo.21198084).
 See [`src/expt/README.md`](src/expt/README.md) for reproduction instructions.
 
+## Reference
+
+If you use this package, please cite the accompanying paper:
+
+> Rios, F. L., Markham, A. & Solus, L. (2024). Scalable Structure Learning for Sparse Context-Specific Systems. [arXiv:2402.07762](https://arxiv.org/abs/2402.07762)
+
+```bibtex
+@misc{rios2024scalablestructurelearningsparse,
+      title={Scalable Structure Learning for Sparse Context-Specific Systems},
+      author={Felix Leopoldo Rios and Alex Markham and Liam Solus},
+      year={2024},
+      eprint={2402.07762},
+      archivePrefix={arXiv},
+      primaryClass={stat.ML},
+      url={https://arxiv.org/abs/2402.07762},
+}
+```
+
 ## Contributing
 
 Contributions are welcome. Please open an issue or pull request on
