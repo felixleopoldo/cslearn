@@ -1,7 +1,0 @@
-include INSTALL.rst
-include README.rst
-include LICENSE
-include VERSION
-include requirements.txt
-include tasks.py
-include src/cstrees/datasets/sachs_observational.csv
