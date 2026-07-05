@@ -4,13 +4,13 @@ import random
 import numpy as np
 import pandas as pd
 
-import cstrees
-from cstrees import cstree as ct
+import cslearn
+from cslearn import cstree as ct
 
 
 def test_project_defines_author_and_version():
-    assert hasattr(cstrees, "__author__")
-    assert hasattr(cstrees, "__version__")
+    assert hasattr(cslearn, "__author__")
+    assert hasattr(cslearn, "__version__")
 
 
 def test_predict():

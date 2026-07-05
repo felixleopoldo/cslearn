@@ -12,9 +12,9 @@ import numpy as np
 import pandas as pd
 from causallearn.search.PermutationBased.GRaSP import grasp
 
-import cstrees.stage as st
-from cstrees import dependence
-import cstrees.ldag as ldag
+import cslearn.stage as st
+from cslearn import dependence
+import cslearn.ldag as ldag
 
 
 reload(logging)
@@ -74,8 +74,8 @@ class CStree:
 
     Example:
         >>> # Figure 1. from (Duarte & Solus 2022)
-        >>> import cstrees.cstree as ct
-        >>> import cstrees.stage as st
+        >>> import cslearn.cstree as ct
+        >>> import cslearn.stage as st
         >>> tree = ct.CStree([2, 2, 2, 2], labels=["X"+str(i) for i in range(1, 5)])
         >>> tree.update_stages({
         ...     0: [{"context": {0: 0}},
@@ -444,7 +444,7 @@ class CStree:
             ...        print(stage)
             ...    print()
         """
-        import cstrees.scoring as sc
+        import cslearn.scoring as sc
 
         # Set stage probabilities
         for lev, stages in self.stages.items():
@@ -872,7 +872,7 @@ class CStree:
             >>> import random
             >>> import numpy as np
             >>> import pandas as pd
-            >>> import cstrees.cstree as ct
+            >>> import cslearn.cstree as ct
             >>> np.random.seed(22)
             >>> random.seed(22)
             >>> t = ct.sample_cstree([3, 2, 2, 3], max_cvars=2, prob_cvar=0.5, prop_nonsingleton=1)
@@ -964,14 +964,14 @@ class CStree:
 
         Example:
             >>> import pandas as pd
-            >>> import cstrees.cstree as ct
+            >>> import cslearn.cstree as ct
             >>> tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5)
             >>> tree.sample_stage_parameters()
             >>> df = tree.sample(500)
             >>> learned = ct.CStree(tree.cards).fit(df)
         """
-        import cstrees.scoring as sc
-        import cstrees.learning as ctl
+        import cslearn.scoring as sc
+        import cslearn.learning as ctl
 
         if poss_cvars is None:
             # estimate possible context variables and create score tables
@@ -1344,7 +1344,7 @@ def sample_cstree(
 def df_to_cstree(df, read_probs=True):
     """Convert a dataframe to a CStree. The dataframe should have the following format:
     The labels should be the level labels.
-    The first row should be the cardinalities, the second row should be the first stage, the third row the second stage etc. (see :meth:`cstrees.cstree.CStree.to_df()`).
+    The first row should be the cardinalities, the second row should be the first stage, the third row the second stage etc. (see :meth:`cslearn.cstree.CStree.to_df()`).
 
     Args:
         df (Pandas DataFrame): The dataframe to convert.

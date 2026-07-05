@@ -5,7 +5,7 @@ from causallearn.search.ConstraintBased.PC import pc
 import pandas as pd
 import numpy as np
 
-import cstrees.learning as ctl
+import cslearn.learning as ctl
 import networkx as nx
 
 # input

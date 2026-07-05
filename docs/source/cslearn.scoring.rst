@@ -1,7 +1,7 @@
-learning
+scoring
 =====================
 
-.. automodule:: cstrees.learning
+.. automodule:: cslearn.scoring
    :members:
    :undoc-members:
    :show-inheritance:

@@ -5,11 +5,11 @@ import os
 
 import pandas as pd
 import matplotlib.pyplot as plt
-import cstrees.cstree as ct
-import cstrees.scoring as sc
-import cstrees.stage as st
+import cslearn.cstree as ct
+import cslearn.scoring as sc
+import cslearn.stage as st
 
-import cstrees.learning as ctl
+import cslearn.learning as ctl
 import networkx as nx
 import numpy as np
 import pp

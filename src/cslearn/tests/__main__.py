@@ -1,7 +1,7 @@
 import os
 import argparse
 
-from cstrees import __version__
+from cslearn import __version__
 
 
 def get_parser():
@@ -16,7 +16,7 @@ def get_parser():
 
 def main(args=None):
     """
-    Called with ``python -m cstrees.tests``: run main test suite.
+    Called with ``python -m cslearn.tests``: run main test suite.
     """
 
     parser = get_parser()
@@ -33,7 +33,7 @@ def main(args=None):
         )
 
     # Get data from test_module
-    import cstrees.tests as test_module
+    import cslearn.tests as test_module
 
     test_path = os.path.abspath(os.path.dirname(test_module.__file__))
     pytest.main([test_path, "-m", "not documentation"])

@@ -6,7 +6,7 @@ from functools import reduce
 import numpy as np
 from scipy.special import rel_entr
 
-from cstrees.cstree import CStree
+from cslearn.cstree import CStree
 
 def KL_divergence(df_distr1, df_distr2):
     """Calculate the KL divergence between two distributions using scipy rel_entr.

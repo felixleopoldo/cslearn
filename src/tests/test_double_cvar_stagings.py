@@ -1,4 +1,4 @@
-import cstrees.double_cvar_stagings as dcs
+import cslearn.double_cvar_stagings as dcs
 
 
 def test_max2_cvars_stagings_binary():

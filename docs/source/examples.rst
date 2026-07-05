@@ -13,4 +13,4 @@ Notebooks
    mushroom_prediction
    sachs_ldag_repr
    alarm_ldag_repr
-..   cstrees.tests
+..   cslearn.tests

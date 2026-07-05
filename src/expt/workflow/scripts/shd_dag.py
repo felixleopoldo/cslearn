@@ -1,5 +1,5 @@
 import pandas as pd
-import cstrees.cstree as ct
+import cslearn.cstree as ct
 
 
 def shd_ldag(est_edges, true):

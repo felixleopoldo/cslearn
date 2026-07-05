@@ -1,6 +1,6 @@
 import pandas as pd
 
-from cstrees.cstree import df_to_cstree
+from cslearn.cstree import df_to_cstree
 
 # input
 cstree_path = snakemake.input[0]

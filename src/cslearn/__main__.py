@@ -1,6 +1,6 @@
 import argparse
-import cstrees
-from cstrees import __version__
+import cslearn
+from cslearn import __version__
 
 
 def get_parser():
@@ -27,7 +27,7 @@ def main(args=None):
     args = parser.parse_args(args)
 
     # Put your main script logic here
-    print("No action defined for cstrees module!")
+    print("No action defined for cslearn module!")
 
 
 if __name__ == "__main__":

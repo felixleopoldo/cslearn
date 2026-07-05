@@ -3,7 +3,7 @@ import random
 from numpy import random as nprandom
 from pandas import read_csv
 
-from cstrees import cstree as ct
+from cslearn import cstree as ct
 
 # input
 alpha = float(snakemake.wildcards["cstree_params_alpha"])

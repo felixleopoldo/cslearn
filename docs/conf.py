@@ -21,7 +21,7 @@ import os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 sys.path.append(os.path.abspath("../src"))
-sys.path.append(os.path.abspath("../src/cstrees"))
+sys.path.append(os.path.abspath("../src/cslearn"))
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -57,7 +57,7 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = "cstrees"
+project = "cslearn"
 project_title = project.title()
 author = "Felix Rios, Alex Markham, and Liam Solus"
 copyright = "2023, %s" % author

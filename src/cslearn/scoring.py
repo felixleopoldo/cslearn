@@ -5,10 +5,10 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-import cstrees.learning as learn
-import cstrees.cstree as ct
-import cstrees.stage as st
-import cstrees.dependence as csi_rel
+import cslearn.learning as learn
+import cslearn.cstree as ct
+import cslearn.stage as st
+import cslearn.dependence as csi_rel
 
 
 def _counts_at_level(cstree: ct.CStree, level: int, data):
@@ -26,8 +26,8 @@ def _counts_at_level(cstree: ct.CStree, level: int, data):
     Example:
         >>> import random
         >>> import numpy as np
-        >>> import cstrees.cstree as ct
-        >>> import cstrees.scoring as sc
+        >>> import cslearn.cstree as ct
+        >>> import cslearn.scoring as sc
         >>> np.random.seed(1)
         >>> random.seed(1)
         >>> tree = ct.sample_cstree([2,2,2,2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
@@ -201,8 +201,8 @@ def _context_score_tables(
     Example:
         >>> import random
         >>> import numpy as np
-        >>> import cstrees.cstree as ct
-        >>> import cstrees.scoring as sc
+        >>> import cslearn.cstree as ct
+        >>> import cslearn.scoring as sc
         >>> import pp
         >>> np.random.seed(1)
         >>> random.seed(1)
@@ -378,9 +378,9 @@ def order_score_tables(
 
     Example:
 
-        >>> import cstrees.learning as ctl
-        >>> import cstrees.cstree as ct
-        >>> import cstrees.scoring as sc
+        >>> import cslearn.learning as ctl
+        >>> import cslearn.cstree as ct
+        >>> import cslearn.scoring as sc
         >>> import pp
         >>> import numpy as np
         >>> import random
@@ -549,9 +549,9 @@ def score_order(order, order_scores):
 
     Example:
 
-        >>> import cstrees.learning as ctl
-        >>> import cstrees.cstree as ct
-        >>> import cstrees.scoring as sc
+        >>> import cslearn.learning as ctl
+        >>> import cslearn.cstree as ct
+        >>> import cslearn.scoring as sc
         >>> import pp
         >>> import numpy as np
         >>> import random

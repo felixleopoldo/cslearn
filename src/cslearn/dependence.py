@@ -30,7 +30,7 @@ class Context:
         labels (list, optional): A list of labels for the keys in the dict. Defaults to None.
     Examples:
 
-        >>> from cstrees.csi_relation import Context
+        >>> from cslearn.csi_relation import Context
         >>> c = Context({0:0, 3:1})
         >>> print(c)
         >>> c = Context({0:0, 3:1}, labels=["X"+str(i) for i in range(0, 4)])
@@ -89,7 +89,7 @@ class CI:
         sep (set): The set of variables that separate a and b.
 
     Examples:
-        >>> from cstrees.csi_relation import CI
+        >>> from cslearn.csi_relation import CI
         >>> ci = CI({1}, {2}, {4, 0}, labels=["X"+str(i) for i in range(1, 6)])
         >>> print(ci)
         X2 ⊥ X3 | X1, X5
@@ -140,7 +140,7 @@ class CSI:
         cards (list): The list of cardinalities of the variables.
 
     Examples:
-        >>> from cstrees.dependence import Context, CI, CSI
+        >>> from cslearn.dependence import Context, CI, CSI
         >>> labels = ["X"+str(i) for i in range(0, 7)]
         >>> c = Context({6:0, 3:1}, labels=labels)
         >>> ci = CI({1}, {2}, {4, 5}, labels=labels)
@@ -171,7 +171,7 @@ class CSI:
             list: List representation of the CSI. The indices in the list represents the levels. The None values encode the CI variables. The singleton sets encode the context variables values. The sets with full cardinalities encode the sep variables.
         Examples:
 
-            >>> from cstrees.dependence import Context, CI, CSI
+            >>> from cslearn.dependence import Context, CI, CSI
             >>> c = Context({0:0, 3:1})
             >>> ci = CI({1}, {2}, {4, 5})
             >>> csi = CSI(ci, c, cards=[2]*6)
@@ -244,7 +244,7 @@ def decomposition(ci: CI):
         list: List of pairwise CI relations.
 
     Examples:
-        >>> from cstrees.dependence import CI, decomposition
+        >>> from cslearn.dependence import CI, decomposition
         >>> ci = CI({1,2}, {3,4},{0})
         >>> print(ci)
         >>> dec = decomposition(ci)
@@ -294,7 +294,7 @@ def weak_union(ci: CI):
         list: List of pairwise CI relations.
 
     Examples:
-        >>> from cstrees import dependence
+        >>> from cslearn import dependence
         >>> ci = dependence.CI({1,2}, {3,4},{0})
         >>> print("Original CI:")
         >>> print(ci)
@@ -339,7 +339,7 @@ def pairwise_cis(ci: CI):
     Returns:
         list: List of pairwise CI relations.
     Examples:
-        >>> from cstrees.dependence import CI, pairwise_cis
+        >>> from cslearn.dependence import CI, pairwise_cis
         >>>
         >>> ci = CI({1,2}, {3,4},{0})
         >>> pw = pairwise_cis(ci)
@@ -373,7 +373,7 @@ def pairwise_csis(csi: CSI, cards=None):
         list: List of pairwise CSI relations.
 
     Examples:
-        >>> from cstrees.dependence import CI, pairwise_cis, Context, CSI, pairwise_csis
+        >>> from cslearn.dependence import CI, pairwise_cis, Context, CSI, pairwise_csis
         >>>
         >>> ci = CI({1,2}, {3,4},{0})
         >>> c = Context({5:0})
@@ -414,7 +414,7 @@ def mix(csilist_tuple, level, cards):
         list: A mixed CSI list.
 
     Example:
-        >>> from cstrees.dependence import mix
+        >>> from cslearn.dependence import mix
         >>> a = [0, None, None, {0,1}, {1}]
         >>> b = [1, None, None, {0}, {1}]
         >>> c = mix((a,b), 0, [2,2,2,2,2])
@@ -456,7 +456,7 @@ def partition_csis(csilist_list, level, cards):
         list: list of disjoint lists of pairwise CSI lists that can possibly be mixed.
 
     Example:
-        >>> from cstrees.dependence import CI, pairwise_cis, Context, CSI, pairwise_csis, partition_csis
+        >>> from cslearn.dependence import CI, pairwise_cis, Context, CSI, pairwise_csis, partition_csis
         >>> cards = [2]*5
         >>> csi1 = CSI(CI({1}, {3},{4}), Context({0:0, 2:0}), cards=cards)
         >>> csi2 = CSI(CI({1}, {3},{4}), Context({0:0, 2:1}), cards=cards)
@@ -554,8 +554,8 @@ def minimal_csis(paired_csis, cards):
         cards (list): Cardinalities of the levels.
     Example:
         >>> # Figure 1. from (Duarte & Solus 2022)
-        >>> import cstrees.cstree as ct
-        >>> import cstrees.stage as st
+        >>> import cslearn.cstree as ct
+        >>> import cslearn.stage as st
         >>> tree = ct.CStree([2, 2, 2, 2], labels=["X"+str(i) for i in range(1, 5)])
         >>> tree.update_stages({
         >>>     0: [{"context": {0: 0}},
@@ -820,9 +820,9 @@ def csi_relations_to_dags(csi_relations, p, labels=None):
         dict: A dictionary with contexts as keys and dags as values.
     Examples:
         >>> # Figure 1. from (Duarte & Solus 2022)
-        >>> import cstrees.cstree as ct
-        >>> import cstrees.stage as st
-        >>> from cstrees import dependence
+        >>> import cslearn.cstree as ct
+        >>> import cslearn.stage as st
+        >>> from cslearn import dependence
         >>> tree = ct.CStree([2, 2, 2, 2], labels=["X"+str(i) for i in range(1, 5)])
         >>> tree.update_stages({
         >>>     0: [{"context": {0: 0}},

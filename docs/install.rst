@@ -5,7 +5,7 @@ Installation
 System dependency
 -----------------
 
-``cstrees`` uses `pygraphviz <https://pygraphviz.github.io/>`_ for graph
+``cslearn`` uses `pygraphviz <https://pygraphviz.github.io/>`_ for graph
 visualisation, which requires graphviz to be installed on your system before
 installing the package.
 
@@ -23,9 +23,9 @@ it is on your ``PATH``.
 Package installation
 --------------------
 
-Install ``cstrees`` from PyPI::
+Install ``cslearn`` from PyPI::
 
-    $ pip install cstrees
+    $ pip install cslearn
 
 Development installation
 ------------------------

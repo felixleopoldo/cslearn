@@ -3,8 +3,8 @@ import random
 
 import numpy as np
 
-import cstrees.cstree as ct
-from cstrees import dependence
+import cslearn.cstree as ct
+from cslearn import dependence
 
 import logging
 import sys

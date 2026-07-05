@@ -1,7 +1,7 @@
-scoring
+cstree
 =====================
 
-.. automodule:: cstrees.scoring
+.. automodule:: cslearn.cstree
    :members:
    :undoc-members:
    :show-inheritance:

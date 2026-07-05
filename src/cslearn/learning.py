@@ -7,9 +7,9 @@ import pandas as pd
 from pgmpy.base import PDAG
 from tqdm import tqdm
 
-import cstrees.cstree as ct
-import cstrees.stage as stl
-import cstrees.scoring as sc
+import cslearn.cstree as ct
+import cslearn.stage as stl
+import cslearn.scoring as sc
 
 
 def all_stagings(cards: list[int], level, max_cvars: int = 1, poss_cvars=None):
@@ -28,7 +28,7 @@ def all_stagings(cards: list[int], level, max_cvars: int = 1, poss_cvars=None):
 
     Examples:
 
-        >>> import cstrees.learning as ctl
+        >>> import cslearn.learning as ctl
         >>> cards = [2]*3
         >>> stagings = ctl.all_stagings(cards, 1, max_cvars=2) # all stagings at level 1
         >>> for i, staging in enumerate(stagings):
@@ -70,7 +70,7 @@ def all_stagings(cards: list[int], level, max_cvars: int = 1, poss_cvars=None):
     assert level < len(cards)
 
     if max_cvars <= 2:
-        from cstrees.double_cvar_stagings import codim_max2_boxes
+        from cslearn.double_cvar_stagings import codim_max2_boxes
 
         if level == -1:  # This is an imaginary level -1, it has no stages.
             yield [stl.Stage([])]
@@ -102,7 +102,7 @@ def n_stagings(cards: list[int], level: int, max_cvars: int = 1):
         max_cvars (int, optional): The maximum number of context variables per variable. Defaults to 1.
 
     Examples:
-        >>> import cstrees.learning as ctl
+        >>> import cslearn.learning as ctl
         >>> cards = [2]*4
         >>> ctl.n_stagings(cards, 2, max_cvars=2)
         28
@@ -242,7 +242,7 @@ def _find_optimal_order(score_table):
         parameter total pseudo counts. Defaults to 1.
         method (str, optional): Parameter prior type. Defaults to "BDeu".
     Examples:
-        >>> import cstrees.learning as ctl
+        >>> import cslearn.learning as ctl
         >>> optord, score = ctl.find_optimal_order(
         >>> df, strategy="max", max_cvars=2, alpha_tot=1.0, method="BDeu")
         >>> print("optimal order: {}, score {}".format(optord, score))
@@ -376,7 +376,7 @@ def gibbs_order_sampler(iterations, score_table):
     Args:
         iterations (int): Number of Gibbs iterations.
         score_table (dict): Pre-computed order score table from
-            :func:`cstrees.scoring.order_score_tables`. Must contain keys
+            :func:`cslearn.scoring.order_score_tables`. Must contain keys
             ``"scores"`` and ``"poss_cvars"``.
 
     Returns:
@@ -386,9 +386,9 @@ def gibbs_order_sampler(iterations, score_table):
 
     Example:
 
-        >>> import cstrees.learning as ctl
-        >>> import cstrees.cstree as ct
-        >>> import cstrees.scoring as sc
+        >>> import cslearn.learning as ctl
+        >>> import cslearn.cstree as ct
+        >>> import cslearn.scoring as sc
         >>> import numpy as np
         >>> import random
         >>> np.random.seed(1)
@@ -485,7 +485,7 @@ def find_optimal_cstree(data, max_cvars=1, alpha_tot=1, method="BDeu"):
 
     Enumerates all p! variable orderings, scores each one, then finds the
     optimal staging for the best ordering. Feasible only for small p (≤ ~7).
-    For larger p, use :meth:`cstrees.cstree.CStree.fit`, which replaces
+    For larger p, use :meth:`cslearn.cstree.CStree.fit`, which replaces
     exhaustive order search with Gibbs MCMC and optionally uses a GRaSP-derived
     CPDAG to constrain the parent sets.
 
@@ -499,8 +499,8 @@ def find_optimal_cstree(data, max_cvars=1, alpha_tot=1, method="BDeu"):
         CStree: The MAP CStree (structure only, no parameters estimated).
 
     Examples:
-        >>> import cstrees.learning as ctl
-        >>> import cstrees.cstree as ct
+        >>> import cslearn.learning as ctl
+        >>> import cslearn.cstree as ct
         >>> import numpy as np
         >>> import random
         >>> np.random.seed(1)
@@ -526,7 +526,7 @@ def find_optimal_cstree(data, max_cvars=1, alpha_tot=1, method="BDeu"):
 def causallearn_graph_to_posscvars(graph, labels, alg="pc"):
     """This function merely converts a graph estimated by causallearn to a dictionary of possible context variables.
     The possible context variables are the parents of each node in the graph.
-    These are used when calculating scores in :meth:`cstrees.scoring.order_score_tables()`.
+    These are used when calculating scores in :meth:`cslearn.scoring.order_score_tables()`.
 
     Args:
         graph: A graph object returned by a causallearn algorithm (PC, GRaSP,
@@ -541,8 +541,8 @@ def causallearn_graph_to_posscvars(graph, labels, alg="pc"):
         undirected neighbours in the CPDAG).
 
     Examples:
-        >>> import cstrees.learning as ctl
-        >>> import cstrees.cstree as ct
+        >>> import cslearn.learning as ctl
+        >>> import cslearn.cstree as ct
         >>> from causallearn.search.ConstraintBased.PC import pc
         >>> import numpy as np
         >>> import random

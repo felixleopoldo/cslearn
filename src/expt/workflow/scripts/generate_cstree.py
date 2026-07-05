@@ -2,7 +2,7 @@ import random
 
 from numpy import random as nprandom
 
-from cstrees import cstree as ct
+from cslearn import cstree as ct
 
 # input
 p = int(snakemake.wildcards["cstree_p"])

@@ -4,8 +4,8 @@ import warnings
 
 import pandas as pd
 
-import cstrees.learning as ctl
-import cstrees.scoring as sc
+import cslearn.learning as ctl
+import cslearn.scoring as sc
 
 
 warnings.simplefilter(action="ignore", category=FutureWarning)

@@ -1,5 +1,5 @@
 .devcontainer/
-src/cstrees.egg-info/
+src/cslearn.egg-info/
 docs/_build/
 .DS_Store
 .huskyrc.json

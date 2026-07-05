@@ -1,23 +1,23 @@
 <div align="center">
-  <a href="https://cstrees.readthedocs.io">
+  <a href="https://cslearn.readthedocs.io">
     <img src="images/cstree.png" alt="CStree logo">
   </a>
   <img src="images/minl_cont_dag_X1=0.png" alt="Minimal context DAG X1=0" width="40">
   <img src="images/minl_cont_dag_X2=0.png" alt="Minimal context DAG X2=0" width="80">
   <img src="images/minl_cont_dag_X3=0.png" alt="Minimal context DAG X3=0" width="80">
 
-  <h3 align="center">CStrees</h3>
+  <h3 align="center">CSlearn</h3>
 
   <p align="center">
     A Python library for context-specific causal graphical models.
     <br />
-    <a href="https://cstrees.readthedocs.io"><strong>Docs »</strong></a>
+    <a href="https://cslearn.readthedocs.io"><strong>Docs »</strong></a>
   </p>
 </div>
 
 ## Overview
 
-`cstrees` is a Python package for **CStree models**—a family of graphical causal models for multivariate discrete data that encode context-specific independence (CSI). CStrees generalize DAG models while remaining tractable.
+`cslearn` is a Python package for **CStree models**—a family of graphical causal models for multivariate discrete data that encode context-specific independence (CSI). CStrees generalize DAG models while remaining tractable.
 
 The package implements **CSlearn**, a three-phase structure-learning algorithm:
 1. DAG pre-screening via PC or GRaSP to restrict candidate parent sets
@@ -26,7 +26,7 @@ The package implements **CSlearn**, a three-phase structure-learning algorithm:
 
 ## Installation
 
-`cstrees` requires [graphviz](https://graphviz.org/download/) to be installed on your system.
+`cslearn` requires [graphviz](https://graphviz.org/download/) to be installed on your system.
 
 On Debian/Ubuntu/Linux:
 
@@ -45,16 +45,16 @@ On Windows, install graphviz from https://graphviz.org/download/ and ensure it i
 Then install the package:
 
 ```bash
-pip install cstrees
+pip install cslearn
 ```
 
-See the [full installation instructions](https://cstrees.readthedocs.io/en/latest/install.html) for development setup.
+See the [full installation instructions](https://cslearn.readthedocs.io/en/latest/install.html) for development setup.
 
 ## Quick start
 
 ```python
 import pandas as pd
-from cstrees import CStree, sample_cstree
+from cslearn import CStree, sample_cstree
 
 # Sample a random CStree and simulate data
 tree = sample_cstree([2, 2, 3, 2], max_cvars=2, prob_cvar=0.5)
@@ -68,7 +68,7 @@ learned = CStree().fit(data)
 predictions = learned.predict(data.iloc[:5, :-1])
 ```
 
-See the [example notebooks](https://cstrees.readthedocs.io) for walkthroughs covering CStree construction and visualization, structure learning with exact and Gibbs-sampler search, LDAG representations on the alarm and Sachs datasets, and prediction.
+See the [example notebooks](https://cslearn.readthedocs.io) for walkthroughs covering CStree construction and visualization, structure learning with exact and Gibbs-sampler search, LDAG representations on the alarm and Sachs datasets, and prediction.
 
 ## Paper experiments
 
@@ -99,4 +99,4 @@ If you use this package, please cite the accompanying paper:
 ## Contributing
 
 Contributions are welcome. Please open an issue or pull request on
-[GitHub](https://github.com/felixleopoldo/cstrees/issues).
+[GitHub](https://github.com/felixleopoldo/cslearn/issues).
