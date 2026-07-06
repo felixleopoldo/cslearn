@@ -53,6 +53,12 @@ dev = [
     "sphinxcontrib-bibtex>=2.7.0",
 ]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "documentation: marks tests that run docstring examples via manuel",
+]
+
 [tool.ruff]
 line-length = 120
 
