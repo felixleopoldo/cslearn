@@ -153,7 +153,7 @@ class Stage:
         Returns:
             list[Stage]: Stages covering the complement of ``stage`` within ``self``.
         """
-        assert stage.cards is not None  # Shouldnt use assert here
+        assert stage.cards is not None
         assert self.cards is not None
 
         a = self
