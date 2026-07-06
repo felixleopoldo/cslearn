@@ -1,6 +1,6 @@
 import pandas as pd
 import seaborn as sns
-from palette import PALETTE, HATCHES
+from palette import HATCHES, PALETTE
 
 plot_data = pd.read_csv(snakemake.input[0])
 plot_data["hue"] = plot_data["method"] + ", n=" + plot_data["n"].astype(str)
@@ -14,7 +14,7 @@ g = sns.boxplot(data=plot_data, x="p", y="total_time", hue="hue", palette=PALETT
 # hue 0, then hue 1, ...), so hue index = i // n_x.
 _n = plot_data["hue"].nunique()
 _nx = plot_data["p"].nunique()
-for i, patch in enumerate(g.patches[:_n * _nx]):
+for i, patch in enumerate(g.patches[: _n * _nx]):
     patch.set_hatch(HATCHES[(i // _nx) % len(HATCHES)])
 for i, handle in enumerate(g.legend_.legend_handles):
     handle.set_hatch(HATCHES[i % len(HATCHES)])

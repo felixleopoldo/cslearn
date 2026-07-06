@@ -1,20 +1,9 @@
-import sys
-import os
-
 # sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))+"/src" ))
 
-import pandas as pd
-import matplotlib.pyplot as plt
-import cslearn.cstree as ct
-import cslearn.scoring as sc
-import cslearn.stage as st
-
-import cslearn.learning as ctl
-import networkx as nx
-import numpy as np
-import pp
-
 import unittest
+
+import cslearn.cstree as ct
+import cslearn.stage as st
 
 
 class TestingToMinimalCSIs(unittest.TestCase):

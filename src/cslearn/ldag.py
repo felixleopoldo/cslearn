@@ -1,15 +1,11 @@
 from string import ascii_letters
 
-from causallearn.search.ConstraintBased.PC import pc
-from causallearn.utils.cit import chisq
-import pandas as pd
 import networkx as nx
 import numpy as np
-import pp
+import pandas as pd
 
 
 class LDAG(nx.DiGraph):
-
     def plot_graphviz(self, prog="dot", args="", with_legend=False):
         if with_legend:
             strs = (letter for letter in ascii_letters)
@@ -71,7 +67,6 @@ def _getCSI(v, w, df):
 
 
 def _collectCSIs(v, df):
-    n = len(df)
     vars = list(df.columns)
     vidx = vars.index(v)
     prevvar = vars[vidx - 1]
@@ -97,7 +92,6 @@ def _collectVertexLabels(v, df):
     m = len(CSIs)
 
     parents = _collectParents(v, df)
-    p = len(parents)
     padict = dict.fromkeys(parents)
 
     for i in range(m):

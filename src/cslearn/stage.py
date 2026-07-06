@@ -1,14 +1,12 @@
 import itertools
+import logging
 import random
+import sys
+from importlib import reload  # Not needed in Python 2
 
 import numpy as np
 
-import cslearn.cstree as ct
 from cslearn import dependence
-
-import logging
-import sys
-from importlib import reload  # Not needed in Python 2
 
 reload(logging)
 FORMAT = "%(filename)s:%(funcName)s (%(lineno)d):  %(message)s"
@@ -73,11 +71,11 @@ class Stage:
         if len(node) == 0:
             if len(self.list_repr) == 0:
                 return True
-        
+
         # Check so that context variables values are the same in the stage and the node.
         for i, val in self.context.items():
             if node[i] != val:
-                return False            
+                return False
 
         return True
 
@@ -98,13 +96,21 @@ class Stage:
         return self.size() == 1
 
     def to_df(self, column_labels, max_card=None, write_probs=False):
-        """Write sthe stage to dataframe. columns is..?
+        """Serialize the stage to a single-row DataFrame.
+
+        Each position in ``list_repr`` becomes a column. Integer values are stored
+        as-is; set values (free coordinates) are written as ``"*"``; positions
+        beyond the stage level are written as ``"-"``.
 
         Args:
-            columns (_type_): _description_
+            column_labels (list): Variable names for the columns.
+            max_card (int, optional): Maximum cardinality; used to determine how
+                many probability columns to append when ``write_probs=True``.
+            write_probs (bool): If True, append ``PROB_0, PROB_1, ...`` columns
+                from ``self.probs``. Defaults to False.
 
         Returns:
-            _type_: _description_
+            pd.DataFrame: Single-row DataFrame representing the stage.
         """
         import pandas as pd
 
@@ -125,9 +131,7 @@ class Stage:
 
         if (self.probs is not None) and write_probs:
             df = pd.DataFrame(d, columns=column_labels[:-max_card])
-            df_prop = pd.DataFrame(
-                {"PROB_" + str(i): [prob] for i, prob in enumerate(self.probs)}
-            )
+            df_prop = pd.DataFrame({"PROB_" + str(i): [prob] for i, prob in enumerate(self.probs)})
             df = pd.concat([df, df_prop], axis=1)
         else:
             df = pd.DataFrame(d, columns=column_labels)
@@ -137,20 +141,23 @@ class Stage:
         self.probs = np.random.dirichlet([1] * cards[self.level])  # Need to fix this
 
     def __sub__(self, stage):
-        """b is typically a sample from the space self.
+        """Return the stages that cover ``self`` minus the sub-stage ``stage``.
+
+        ``stage`` must be contained in ``self`` (typically sampled from it). For
+        each context variable fixed by ``stage`` but free in ``self``, the
+        complement values are collected into new singleton stages.
 
         Args:
-            csi (CSI_rel): The CSI relation to subract.
+            stage (Stage): A sub-stage of ``self`` to subtract.
 
         Returns:
-            list: A list of CSI relations representing the new space.
+            list[Stage]: Stages covering the complement of ``stage`` within ``self``.
         """
         assert stage.cards is not None  # Shouldnt use assert here
         assert self.cards is not None
 
         a = self
         b = stage
-        p = self.level
 
         cards = self.cards
         # Keep all context vars from a. (this is already ok if b was sampled on a).
@@ -182,6 +189,18 @@ class Stage:
         return result
 
     def to_csi(self, labels=None):
+        """Convert the stage to a CSI relation.
+
+        Integer positions in ``list_repr`` become the context; set positions
+        (free coordinates) become the separation set A; the variable one level
+        up is separation set B.
+
+        Args:
+            labels (list, optional): Variable names. Defaults to integer indices.
+
+        Returns:
+            dependence.CSI: The context-specific independence relation for this stage.
+        """
         sepseta = set()
         cond_set = set()
         context = {}
@@ -225,17 +244,13 @@ class Stage:
 
     def __str__(self) -> str:
         if self.probs is not None:
-            return "{}; probs: {}; color: {}".format(
-                self.list_repr, [round(x, 2) for x in self.probs], self.color
-            )
+            return "{}; probs: {}; color: {}".format(self.list_repr, [round(x, 2) for x in self.probs], self.color)
 
         # str(self.list_repr) + "; probs: " + str(round(self.probs, 2)) + "; color: " + str(self.color)
         return str(self.list_repr)
 
 
-def sample_stage_restr_by_stage(
-    stage: Stage, max_cvars: int, cvar_prob: float, cards: list
-):
+def sample_stage_restr_by_stage(stage: Stage, max_cvars: int, cvar_prob: float, cards: list):
     """Samples a Stage on the space restricted by the argument stage. Not allow singleton stages.
 
     Args:
@@ -271,9 +286,7 @@ def sample_stage_restr_by_stage(
             csilist[ind] = s
             cont_var_counter += 1
         else:
-            if (
-                cont_var_counter < max_cvars - fixed_cvars
-            ):  # Make sure not too many context vars
+            if cont_var_counter < max_cvars - fixed_cvars:  # Make sure not too many context vars
                 # (i.e. a cond var), pick either one or all.
 
                 b = np.random.multinomial(1, [cvar_prob, 1 - cvar_prob], size=1)[0][0]
@@ -290,9 +303,7 @@ def sample_stage_restr_by_stage(
     return Stage(csilist, cards=stage.cards)
 
 
-def sample_random_stage(
-    cards: list, level: int, max_contextvars: int, prob: float
-) -> Stage:
+def sample_random_stage(cards: list, level: int, max_contextvars: int, prob: float) -> Stage:
     """Sample a random non-singleton stage.
 
     Args:

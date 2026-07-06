@@ -1,14 +1,14 @@
 from itertools import combinations
 
-from scipy.special import loggamma
 import numpy as np
 import pandas as pd
+from scipy.special import loggamma
 from tqdm import tqdm
 
-import cslearn.learning as learn
 import cslearn.cstree as ct
-import cslearn.stage as st
 import cslearn.dependence as csi_rel
+import cslearn.learning as learn
+import cslearn.stage as st
 
 
 def _counts_at_level(cstree: ct.CStree, level: int, data):
@@ -76,9 +76,7 @@ def _counts_at_level(cstree: ct.CStree, level: int, data):
     return stage_counts
 
 
-def _score_context(
-    var, context, context_vars, cards, counts, alpha_tot=1.0, method="BDeu"
-):
+def _score_context(var, context, context_vars, cards, counts, alpha_tot=1.0, method="BDeu"):
     """Building block for the CS-BDeu score as defined in C. Hughes et al., but here we calculate it for a specific variable and a context.
     These are then combined to get the CS-BDeu score.
 
@@ -121,9 +119,7 @@ def _score_context(
     return score
 
 
-def _estimate_parameters(
-    cstree: ct.CStree, stage, stage_counts, method="BDeu", alpha_tot=1.0
-):
+def _estimate_parameters(cstree: ct.CStree, stage, stage_counts, method="BDeu", alpha_tot=1.0):
     """Estimate the parameters for a stage.
         TODO: This should probably depend on the context counts instead of the stage counts.
         It is legacy code and only called from the CStree class atm so its works anyway.
@@ -148,7 +144,7 @@ def _estimate_parameters(
     if method == "BD":  # This should be the Cooper-Herzkovits
         alpha_obs = alpha_tot
         alpha_stage = alpha_tot * cstree.cards[level]
-    elif method == "BDeu": # if alpha_tot  == 0, we get MLE?
+    elif method == "BDeu":  # if alpha_tot  == 0, we get MLE?
         # TODO: assert that all stages are colored.
         # level 0 has no stages. it has [] actually...
         alpha_stage = alpha_tot * cstree.stage_proportion(stage)
@@ -171,9 +167,7 @@ def _estimate_parameters(
             else:
                 probs[i] = alpha_obs / alpha_stage
         else:  # posterior mean or posterior predictive probabilites.
-            probs[i] = (alpha_obs + stage_counts[stage][i]) / (
-                alpha_stage + stage_counts_total
-            )
+            probs[i] = (alpha_obs + stage_counts[stage][i]) / (alpha_stage + stage_counts_total)
     return probs
 
 
@@ -257,12 +251,9 @@ def _context_score_tables(
             labels = [l for l in data.columns if l != var]
 
             # Restricting to some possible context variables.
-            for context_variables in combinations(
-                [l for l in labels if l in poss_cvars[var]], csize
-            ):
+            for context_variables in combinations([l for l in labels if l in poss_cvars[var]], csize):
                 # get the active labels like A,B,C
                 active_labels = sorted([l for l in labels if l in context_variables])
-                tmp = {c: None for c in active_labels}
 
                 if len(active_labels) == 0:
                     test = data[1:][var].value_counts()
@@ -307,7 +298,12 @@ def _context_score_tables(
     return scores, counts
 
 
-def _list_to_score_key(labels: list):
+def _list_to_score_key(labels: list) -> str:
+    """Convert a list of variable labels to the string key used in score tables.
+
+    Sorts the labels and joins them with commas. An empty list returns ``"None"``,
+    which is the key for the no-context (marginal) score.
+    """
     subset = sorted(labels)
     subset_str = ",".join([str(v) for v in subset])
     if subset_str == "":
@@ -315,7 +311,12 @@ def _list_to_score_key(labels: list):
     return subset_str
 
 
-def _stage_to_context_key(stage: st.Stage, labels: list):
+def _stage_to_context_key(stage: st.Stage, labels: list) -> str:
+    """Convert a stage to the context string key used in score tables.
+
+    Produces a comma-separated ``"var=val"`` string sorted by variable name,
+    e.g. ``"X1=0,X3=1"``. Returns ``"None"`` for the singleton (no-context) stage.
+    """
     stage_context = ""
     if stage.to_csi().context.context == {}:
         stage_context = "None"
@@ -341,17 +342,13 @@ def _log_n_stagings_tables(labels, cards_dict, poss_cvars, max_cvars=2):
 
     for var in tqdm(labels, desc="Creating #stagings tables"):
         # all cards except the current one
-        cur_cards = [
-            cards_dict[l] for l in labels if (l != var) and (l in poss_cvars[var])
-        ]
+        cur_cards = [cards_dict[l] for l in labels if (l != var) and (l in poss_cvars[var])]
         for subset in csi_rel._powerset(cur_cards):
             staging_lev = len(subset) - 1
             subset_str = _list_to_score_key(list(subset))
 
             if subset_str not in n_stagings:
-                n_stagings[subset_str] = np.log(
-                    learn.n_stagings(list(subset), staging_lev, max_cvars=max_cvars)
-                )
+                n_stagings[subset_str] = np.log(learn.n_stagings(list(subset), staging_lev, max_cvars=max_cvars))
     return n_stagings
 
 
@@ -486,9 +483,7 @@ def order_score_tables(
 
     cards_dict = {var: data.loc[0, var] for var in data.columns}
 
-    log_n_stagings = _log_n_stagings_tables(
-        labels, cards_dict, poss_cvars, max_cvars=max_cvars
-    )
+    log_n_stagings = _log_n_stagings_tables(labels, cards_dict, poss_cvars, max_cvars=max_cvars)
 
     p = data.shape[1]
 
@@ -512,9 +507,7 @@ def order_score_tables(
             log_staging_prior = -log_n_stagings[cards_str]
             log_level_prior = -np.log(p - staging_level - 1)
 
-            for i, staging in enumerate(
-                learn.all_stagings(cards, staging_level, max_cvars=max_cvars)
-            ):
+            for i, staging in enumerate(learn.all_stagings(cards, staging_level, max_cvars=max_cvars)):
                 staging_unnorm_post = log_level_prior + log_staging_prior
                 # this is for the level -1
                 if staging == []:  # special case at level -1

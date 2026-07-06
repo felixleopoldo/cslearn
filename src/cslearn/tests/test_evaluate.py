@@ -57,7 +57,9 @@ def test_shd_ldag():
 
     # reversal counts as 1: manually patch to_LDAG on minimal trees
     import networkx as nx
+
     from cslearn.ldag import LDAG as LDAGClass
+
     t1 = ct.sample_cstree([2, 2], max_cvars=1, prob_cvar=0, prop_nonsingleton=1)
     t2 = ct.sample_cstree([2, 2], max_cvars=1, prob_cvar=0, prop_nonsingleton=1)
     t1.to_LDAG = lambda: LDAGClass(nx.DiGraph([(0, 1)]))

@@ -1,6 +1,6 @@
 import pandas as pd
 import seaborn as sns
-from palette import PALETTE, HATCHES
+from palette import HATCHES, PALETTE
 
 plot_data = pd.read_csv(snakemake.input[0])
 
@@ -9,18 +9,10 @@ label_map = {
     2: "correct ($\\beta_{\\mathrm{true}}$=2)",
     3: "under-spec ($\\beta_{\\mathrm{true}}$=3)",
 }
-plot_data["hue"] = (
-    plot_data["true_max_cvar"].map(label_map)
-    + ", n="
-    + plot_data["n"].astype(str)
-)
+plot_data["hue"] = plot_data["true_max_cvar"].map(label_map) + ", n=" + plot_data["n"].astype(str)
 
 # Order hues: over-spec < correct < under-spec, within each by n ascending.
-hue_order = [
-    f"{label_map[b]}, n={n}"
-    for b in [1, 2, 3]
-    for n in sorted(plot_data["n"].unique())
-]
+hue_order = [f"{label_map[b]}, n={n}" for b in [1, 2, 3] for n in sorted(plot_data["n"].unique())]
 hue_order = [h for h in hue_order if h in plot_data["hue"].unique()]
 
 sns.set(font_scale=1.25)
@@ -32,7 +24,7 @@ g = sns.boxplot(data=plot_data, x="p", y="shd", hue="hue", hue_order=hue_order, 
 # hue 0, then hue 1, ...), so hue index = i // n_x.
 _n = plot_data["hue"].nunique()
 _nx = plot_data["p"].nunique()
-for i, patch in enumerate(g.patches[:_n * _nx]):
+for i, patch in enumerate(g.patches[: _n * _nx]):
     patch.set_hatch(HATCHES[(i // _nx) % len(HATCHES)])
 for i, handle in enumerate(g.legend_.legend_handles):
     handle.set_hatch(HATCHES[i % len(HATCHES)])

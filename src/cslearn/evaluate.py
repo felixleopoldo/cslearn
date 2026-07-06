@@ -1,12 +1,13 @@
 """Evaluate estimated CStrees."""
 
-from itertools import product, pairwise
 from functools import reduce
+from itertools import pairwise, product
 
 import numpy as np
 from scipy.special import rel_entr
 
 from cslearn.cstree import CStree
+
 
 def KL_divergence(df_distr1, df_distr2):
     """Calculate the KL divergence between two distributions using scipy rel_entr.
@@ -15,12 +16,9 @@ def KL_divergence(df_distr1, df_distr2):
 
     distr1 = df_distr1["prob"].values
     distr2 = df_distr2["prob"].values
-    
-    log_distr1 = df_distr1["log_prob"].values
-    log_distr2 = df_distr2["log_prob"].values
-
 
     return np.sum(rel_entr(distr1, distr2))
+
 
 def shd_ldag(estimated: CStree, true: CStree) -> int:
     """Structural Hamming distance between two CStrees via their LDAG representations.
@@ -28,18 +26,23 @@ def shd_ldag(estimated: CStree, true: CStree) -> int:
     Counts missing edges, extra edges, and reversed edges between the LDAGs.
     A reversal counts as 1, not 2.
     """
-    est_edges  = set(estimated.to_LDAG().edges())
+    est_edges = set(estimated.to_LDAG().edges())
     true_edges = set(true.to_LDAG().edges())
-    reversals  = sum(1 for u, v in est_edges if (v, u) in true_edges)
+    reversals = sum(1 for u, v in est_edges if (v, u) in true_edges)
     return len(est_edges.symmetric_difference(true_edges)) - reversals
 
 
 def kl_divergence(estimated: CStree, true: CStree) -> float:
-    """Quantify how distribution of estimated CStree differs from that of true CStree.
+    """KL divergence D(estimated || true) between two CStree distributions.
 
-    Notes:
-    See the `KL divergence
-    <https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence>`_.
+    Args:
+        estimated: The estimated CStree. Its labels must be a permutation of
+            ``true.labels``.
+        true: The true CStree. Its labels must be sorted (``true.labels ==
+            sorted(true.labels)``); outcomes are enumerated in that order.
+
+    Returns:
+        float: KL divergence (non-negative; 0 iff distributions are identical).
     """
     factorized_outcomes = (range(card) for card in true.cards)
     outcomes = product(*factorized_outcomes)

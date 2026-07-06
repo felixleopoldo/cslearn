@@ -1,10 +1,10 @@
 import os
 
-import pytest
-import manuel.ignore
 import manuel.codeblock
 import manuel.doctest
+import manuel.ignore
 import manuel.testing
+import pytest
 
 
 def make_manuel_suite(ns):

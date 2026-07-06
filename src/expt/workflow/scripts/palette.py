@@ -12,4 +12,17 @@ PALETTE = [
 ]
 
 # 12 visually distinct hatch patterns — enough for the largest plots (9 hue groups).
-HATCHES = ["", "///", "\\\\", "xxx", "...", "|||", "---", "+++", "ooo", "**", "//", "\\"]
+HATCHES = [
+    "",
+    "///",
+    "\\\\",
+    "xxx",
+    "...",
+    "|||",
+    "---",
+    "+++",
+    "ooo",
+    "**",
+    "//",
+    "\\",
+]

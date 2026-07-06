@@ -2,7 +2,6 @@ import pandas as pd
 
 from cslearn.cstree import df_to_cstree
 
-
 # input
 data_path = snakemake.input[1]
 cstree_path = snakemake.input[0]

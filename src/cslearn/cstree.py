@@ -1,28 +1,23 @@
-import operator
-import pickle
-from itertools import product, pairwise
-from functools import reduce
 import logging
+import pickle
 import sys
-from importlib import reload  # Not needed in Python 2
+from importlib import reload
+from itertools import product
 
-from tqdm import tqdm
 import networkx as nx
 import numpy as np
 import pandas as pd
 from causallearn.search.PermutationBased.GRaSP import grasp
+from tqdm import tqdm
 
+import cslearn.ldag as ldag
 import cslearn.stage as st
 from cslearn import dependence
-import cslearn.ldag as ldag
-
 
 reload(logging)
 FORMAT = "%(filename)s:%(funcName)s (%(lineno)d):  %(message)s"
-# logging.basicConfig(stream=sys.stderr, level=logging.DEBUG, format=FORMAT)
+# Change level to logging.DEBUG for verbose output during development.
 logging.basicConfig(stream=sys.stderr, level=logging.CRITICAL, format=FORMAT)
-# logging.basicConfig(stream=sys.stderr, level=logging.ERROR)
-# logging.basicConfig(stream=sys.stderr, level=logging.CRITICAL)
 
 
 def write_minimal_context_graphs_to_files(context_dags, prefix="mygraphs"):
@@ -454,9 +449,7 @@ class CStree:
             stage_counts = sc._counts_at_level(self, lev + 1, data)
 
             for stage in stages:
-                probs = sc._estimate_parameters(
-                    self, stage, stage_counts, method, alpha_tot
-                )
+                probs = sc._estimate_parameters(self, stage, stage_counts, method, alpha_tot)
                 stage.probs = probs
 
     def _set_tree_probs(self, alpha=1):
@@ -556,9 +549,7 @@ class CStree:
 
         """
         minl_csis_by_context = self.to_minimal_context_csis()
-        cdags = dependence.csi_relations_to_dags(
-            minl_csis_by_context, self.p, labels=self.labels
-        )
+        cdags = dependence.csi_relations_to_dags(minl_csis_by_context, self.p, labels=self.labels)
 
         return cdags
 
@@ -611,9 +602,7 @@ class CStree:
                 logging.debug(r)
                 logging.debug("cards: {}".format(r.cards))
 
-        paired_csis = dependence._csis_by_levels_2_by_pairs(
-            rels, cards=self.cards
-        )  # this could still be per level?
+        paired_csis = dependence._csis_by_levels_2_by_pairs(rels, cards=self.cards)  # this could still be per level?
         logging.debug("\n###### Paired_csis")
         logging.debug(paired_csis)
 
@@ -621,9 +610,7 @@ class CStree:
         # The pairs may change during the process this is why we have by pairs.
         # However, the level part
         # should always remain the same actually, so may this is not be needed.
-        minl_csislists = dependence.minimal_csis(
-            paired_csis, self.cards
-        )  # this could be by level still?
+        minl_csislists = dependence.minimal_csis(paired_csis, self.cards)  # this could be by level still?
         logging.debug(minl_csislists)
 
         logging.debug("\n ############### get minl csis in list format")
@@ -677,11 +664,7 @@ class CStree:
 
         """
 
-        return {
-            l: [s.to_csi() for s in stages]
-            for l, stages in self.stages.items()
-            if l >= 0
-        }
+        return {l: [s.to_csi() for s in stages] for l, stages in self.stages.items() if l >= 0}
 
     def csi_relations(self, level="all"):
         """Returns the context specific indepencende (CSI) relations for the CStree.
@@ -748,9 +731,7 @@ class CStree:
                 # Create tree dynamically if isnt already crated.
                 if (node not in self.tree) or len(self.tree.out_edges(node)) == 0:
                     lev = len(node) - 1
-                    edges = [
-                        (node, node + (ind,)) for ind in range(self.cards[lev + 1])
-                    ]
+                    edges = [(node, node + (ind,)) for ind in range(self.cards[lev + 1])]
 
                     self.tree.add_edges_from(edges)
 
@@ -786,9 +767,6 @@ class CStree:
                 edges = list(self.tree.out_edges(node))
 
                 probabilities = [self.tree[e[0]][e[1]]["cond_prob"] for e in edges]
-
-                # ind is the index or the outcome of the set_d variable
-                vals = len(edges)
 
                 ind = np.random.choice(len(edges), 1, p=probabilities)[0]
                 node = edges[ind][1]  # This is a typle like (0,1,1,0)
@@ -893,24 +871,21 @@ class CStree:
             return result
 
         label_order = partial_labels + to_predict_labels
-        pmf = lambda outcome: self.pmf(outcome, label_order)
-        outcome_completions = list(product(
-            *(range(self.cards[self.labels.index(l)]) for l in to_predict_labels)
-        ))
+
+        def pmf(outcome):
+            return self.pmf(outcome, label_order)
+
+        outcome_completions = list(product(*(range(self.cards[self.labels.index(l)]) for l in to_predict_labels)))
 
         num_preds = len(partial_observations)
         preds = np.empty((num_preds, len(to_predict_labels)), int)
         if return_probs:
             probs = np.empty(num_preds, float)
 
-        obs_iter = (
-            partial_observations.values
-            if partial_labels
-            else [[] for _ in range(num_preds)]
-        )
+        obs_iter = partial_observations.values if partial_labels else [[] for _ in range(num_preds)]
         for idx, partial in enumerate(obs_iter):
             outcomes = (list(partial) + list(c) for c in outcome_completions)
-            preds[idx] = max(outcomes, key=pmf)[-len(to_predict_labels):]
+            preds[idx] = max(outcomes, key=pmf)[-len(to_predict_labels) :]
             if return_probs:
                 outcomes = (list(partial) + list(c) for c in outcome_completions)
                 outcome_probs = list(map(pmf, outcomes))
@@ -970,8 +945,8 @@ class CStree:
             >>> df = tree.sample(500)
             >>> learned = ct.CStree(tree.cards).fit(df)
         """
-        import cslearn.scoring as sc
         import cslearn.learning as ctl
+        import cslearn.scoring as sc
 
         if poss_cvars is None:
             # estimate possible context variables and create score tables
@@ -980,9 +955,7 @@ class CStree:
                 score_func=grasp_score,
                 depth=grasp_depth,
             )
-            poss_cvars = ctl.causallearn_graph_to_posscvars(
-                graph, labels=data.columns, alg="grasp"
-            )
+            poss_cvars = ctl.causallearn_graph_to_posscvars(graph, labels=data.columns, alg="grasp")
 
         score_table, context_scores, _ = sc.order_score_tables(
             data,
@@ -1028,14 +1001,11 @@ class CStree:
         return self
 
     def to_LDAG(self):
-        """Returns the LDAG representation of a CStree
-
-        Args:
-            cstree (CStree): A CStree object
-            varorder (CStree orded, optional): This might be redundant.
+        """Return the LDAG representation of the CStree.
 
         Returns:
-            Networkx graph: An LDAG representation of the CStree. It is a Networkx DAG with labels on the edges.
+            nx.DiGraph: A DAG whose edges carry CSI-relation labels. Node labels
+            match ``self.labels``.
         """
 
         df = self.to_df()
@@ -1069,7 +1039,10 @@ class CStree:
         """Calculate the probability mass function of a given outcome.
 
         Args:
-            x (list): A list of values representing the outcome.
+            x (list): Outcome values, one per variable. Order follows ``label_order``
+                if provided, otherwise ``self.labels``.
+            label_order (list, optional): Permutation of ``self.labels`` describing
+                the order of values in ``x``. Defaults to ``self.labels``.
 
         Returns:
             float: The probability mass of the outcome.
@@ -1077,16 +1050,11 @@ class CStree:
         if label_order is None:
             label_order = self.labels
 
-        # print(label_order)
         x = [x[label_order.index(l)] for l in self.labels]
-        # print(x)
 
         prob = 1
         for i, val in enumerate(x):
             stage = self.get_stage(x[:i])
-            # print(x[: i ])
-            # print(val)
-            # print(stage.probs[val])
             prob *= stage.probs[val]
 
         return prob
@@ -1108,7 +1076,6 @@ class CStree:
 
         log_prob = 0
         for i, val in enumerate(x):
-
             stage = self.get_stage(x[:i])
             if stage.probs[val] == 0:
                 return -np.inf
@@ -1162,9 +1129,7 @@ class CStree:
         pmfs = [None] * np.prod(self.cards)
         pmfs_log = [None] * np.prod(self.cards)
 
-        for i, outcome in tqdm(
-            enumerate(outcomes), total=n_outcomes, desc="Calculating joint distribution"
-        ):
+        for i, outcome in tqdm(enumerate(outcomes), total=n_outcomes, desc="Calculating joint distribution"):
             df_outcomes.loc[i] = outcome
             pmfs[i] = self.pmf(outcome, label_order)
             pmfs_log[i] = self.pmf_log(outcome, label_order)
@@ -1220,9 +1185,7 @@ def sample_cstree(
 
     stagings = {}
     for level, val in enumerate(cards[:-1]):  # not the last level
-        tmpstage = st.Stage(
-            [set(range(cards[l])) for l in range(level + 1)], cards=cards
-        )
+        tmpstage = st.Stage([set(range(cards[l])) for l in range(level + 1)], cards=cards)
 
         stage_space = [tmpstage]
 
@@ -1274,27 +1237,19 @@ def sample_cstree(
 
             space_int = np.random.randint(len(stage_space))
             stage_restr = stage_space.pop(space_int)
-            new_stage = st.sample_stage_restr_by_stage(
-                stage_restr, mc, prob_cvar, cards
-            )
+            new_stage = st.sample_stage_restr_by_stage(stage_restr, mc, prob_cvar, cards)
 
-            new_space = (
-                stage_restr - new_stage
-            )  # this is a list of substages after removal
+            new_space = stage_restr - new_stage  # this is a list of substages after removal
             stage_space += new_space  # adds a list of stages
             # subtract the size of the sampled stage
             singleton_space_size -= new_stage.size()
-            # Problem with level 0 since then the whole level is always filled.
-            new_stage_size = new_stage.size()
             colored_prop = 1 - singleton_space_size / full_stage_space_size
             # Check it its over full after adding the new space
             if colored_prop > prop_nonsingleton:
                 # Check if it would be possible to add the smallest stage.
                 # Restore the old space and maybe try again
 
-                if (
-                    minimal_stage_size + colored_size_old
-                ) / full_stage_space_size <= prop_nonsingleton:
+                if (minimal_stage_size + colored_size_old) / full_stage_space_size <= prop_nonsingleton:
                     stage_space = stage_space[: -len(new_space)]
                     stage_space += [stage_restr]
                     singleton_space_size += new_stage.size()
@@ -1329,9 +1284,7 @@ def sample_cstree(
 
     for level, staging in stagings.items():
         for i, stage in enumerate(staging):
-            if (level == -1) or (
-                (level > 0) and all([isinstance(i, int) for i in stage.list_repr])
-            ):
+            if (level == -1) or ((level > 0) and all([isinstance(i, int) for i in stage.list_repr])):
                 stage.color = "black"
             else:
                 stage.color = colors[i]

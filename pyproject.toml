@@ -52,3 +52,14 @@ dev = [
     "sphinx-rtd-theme>=3.1.0",
     "sphinxcontrib-bibtex>=2.7.0",
 ]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E741", "E501"]  # l/O/I conventional in scientific code; long docstrings/URLs are fine
+
+[tool.ruff.lint.per-file-ignores]
+# snakemake injects the `snakemake` object at runtime; F821 is a false positive
+"src/expt/workflow/scripts/*.py" = ["F821"]

@@ -1,7 +1,7 @@
 """Enumerate stagings with up to 2 context variables."""
 
-from typing import Generator, Iterable
 from itertools import combinations, product
+from typing import Generator, Iterable
 
 
 def num_stagings(lvl: int) -> int:
@@ -9,17 +9,19 @@ def num_stagings(lvl: int) -> int:
     return lvl**3 + 1 if lvl != 2 else 8
 
 
-def codim_max2_boxes(
-    cards: Iterable, splittable_coords: Iterable[int] = None, max1cvar=False
-) -> Generator:
-    """Enumerate ways of subdividing a given box; interpreted as stagings at given level of CStree.
+def codim_max2_boxes(cards: Iterable, splittable_coords: Iterable[int] = None, max1cvar=False) -> Generator:
+    """Enumerate ways of subdividing a given box; interpreted as stagings at a given level of a CStree.
 
     Args:
-        cards: Cardinality of the set of values each coordinate/random
-    variable may take
-        splittable_dims: Coordinates of box considered for splitting
-    when making subdivisions; interpreted as indices of possible
-    context variables.
+        cards: Cardinality of the value set for each coordinate (random variable).
+        splittable_coords: Coordinate indices eligible for splitting; corresponds to
+            the possible context variables for this level. ``None`` means all coordinates.
+        max1cvar: If True, restrict to subdivisions with at most 1 context variable
+            (codimension ≤ 1). Defaults to False (allow up to 2 context variables).
+
+    Yields:
+        list: Each yielded item is a staging — a list of sub-boxes (stages) that
+        partition the full outcome space at this level.
     """
 
     box = [set(range(card)) for card in cards]
@@ -39,12 +41,8 @@ def codim_max2_boxes(
     if not splittable_coords:
         return
     sub_split_len = len(splittable_coords) - 1
-    sub_splittable_coords = reversed(
-        tuple(combinations(splittable_coords, sub_split_len))
-    )
-    z_cd1_subdivs = zip(
-        sub_splittable_coords, codim_1_subdivs(codim_0_box, splittable_coords)
-    )
+    sub_splittable_coords = reversed(tuple(combinations(splittable_coords, sub_split_len)))
+    z_cd1_subdivs = zip(sub_splittable_coords, codim_1_subdivs(codim_0_box, splittable_coords))
     for poss_split_dims, cd1_subdiv in z_cd1_subdivs:
         yield cd1_subdiv
         if max1cvar:
@@ -64,18 +62,19 @@ def codim_max2_boxes(
             degen = True
 
 
-def codim_1_subdivs(
-    box: list, splittable_coords: Iterable[int], splittable_subboxes: list = []
-) -> Generator:
-    """Enumerate codimension-1 subdivisions of the given (subdivision of a) box.
+def codim_1_subdivs(box: list, splittable_coords: Iterable[int], splittable_subboxes: list = None) -> Generator:
+    """Enumerate codimension-1 subdivisions of a (possibly already subdivided) box.
 
     Args:
-        box: Box to be subdivided
-        splittable_dims: Coordinates of box considered for splitting when making subdivisions; interpreted as indices of possible context variables.
-        splittable_subboxes:
-    """
+        box: Current subdivision — a list of sub-boxes to further subdivide.
+        splittable_coords: Coordinate indices eligible for splitting.
+        splittable_subboxes: Indices into ``box`` of sub-boxes that may be split.
+            Defaults to all sub-boxes.
 
-    if len(splittable_subboxes) == 0:
+    Yields:
+        list: Each yielded item is a finer subdivision of ``box``.
+    """
+    if splittable_subboxes is None:
         splittable_subboxes = list(range(len(box)))
     for dims_to_split in product(*(splittable_coords for _ in splittable_subboxes)):
         cd1_subdiv = []

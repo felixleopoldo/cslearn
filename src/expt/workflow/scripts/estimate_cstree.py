@@ -1,12 +1,11 @@
-from time import perf_counter as timer
 import json
 import warnings
+from time import perf_counter as timer
 
 import pandas as pd
 
 import cslearn.learning as ctl
 import cslearn.scoring as sc
-
 
 warnings.simplefilter(action="ignore", category=FutureWarning)
 

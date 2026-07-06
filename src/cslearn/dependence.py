@@ -1,13 +1,11 @@
 import itertools
 import logging
+import sys
+from importlib import reload  # Not needed in Python 2
 from itertools import chain, combinations
 
 import networkx as nx
 import numpy as np
-
-import logging
-import sys
-from importlib import reload  # Not needed in Python 2
 
 reload(logging)
 FORMAT = "%(filename)s:%(funcName)s (%(lineno)d):  %(message)s"
@@ -95,9 +93,7 @@ class CI:
         X2 ⊥ X3 | X1, X5
     """
 
-    def __init__(
-        self, a: set, b: set, sep: set, labels: list[str] | None = None
-    ) -> None:
+    def __init__(self, a: set, b: set, sep: set, labels: list[str] | None = None) -> None:
         self.a = a
         self.b = b
         self.sep = sep
@@ -110,9 +106,7 @@ class CI:
             self.labels = labels
 
     def __eq__(self, o: object) -> bool:
-        return (
-            ((self.a == o.a) & (self.b == o.b)) | ((self.a == o.b) & (self.b == o.a))
-        ) & (self.sep == o.sep)
+        return (((self.a == o.a) & (self.b == o.b)) | ((self.a == o.b) & (self.b == o.a))) & (self.sep == o.sep)
 
     def __str__(self) -> str:
         s1 = ""
@@ -654,11 +648,7 @@ def minimal_csis(paired_csis, cards):
                                 logging.debug(csilist_tuple)
                                 logging.debug("mix result: ")
                                 logging.debug(mixed_csi)
-                                logging.debug(
-                                    "Adding {} as newly created ******".format(
-                                        mixed_csi
-                                    )
-                                )
+                                logging.debug("Adding {} as newly created ******".format(mixed_csi))
                                 fresh.append(mixed_csi)
                                 # Check if some csi of the oldies should be
                                 # removed. I.e. if some in csilist_tuple is a
@@ -667,17 +657,11 @@ def minimal_csis(paired_csis, cards):
                                     # print wher the csi is from, oldies, or
                                     # newbies.
                                     if _csilist_subset(csilist, mixed_csi):  # This sho
-                                        logging.debug(
-                                            "will later absorb {}".format(csilist)
-                                        )
+                                        logging.debug("will later absorb {}".format(csilist))
                                         csis_to_absorb.append(csilist)
-                logging.debug(
-                    "##### Iterated through all levels. Prepare for next round. ### \n "
-                )
+                logging.debug("##### Iterated through all levels. Prepare for next round. ### \n ")
                 # Update the lists
-                logging.debug(
-                    "Adding the following newbies (just used for mixing) to the oldies."
-                )
+                logging.debug("Adding the following newbies (just used for mixing) to the oldies.")
                 for nn in newbies:
                     logging.debug(nn)
                 oldies += newbies
@@ -689,9 +673,7 @@ def minimal_csis(paired_csis, cards):
                         res_list.append(item)
                 oldies = res_list
 
-                logging.debug(
-                    "CSI to absorb/remove after having been mixed (can be duplicates)"
-                )
+                logging.debug("CSI to absorb/remove after having been mixed (can be duplicates)")
                 for csi in csis_to_absorb:
                     # BUG: this is maybe not ok. Feels bad to alter here. Maybe
                     # an absorbtion step after instead.
@@ -721,9 +703,7 @@ def minimal_csis(paired_csis, cards):
                 newbies = []  # check that the newbies are not in oldies!
                 for csi in fresh:  # O( #tmp)
                     # logging.debug("REMOVING {}".format(csi))
-                    if (csi not in oldies) and (
-                        csi not in csis_to_absorb
-                    ):  # O(#oldies)
+                    if (csi not in oldies) and (csi not in csis_to_absorb):  # O(#oldies)
                         newbies.append(csi)
                     else:
                         newbies.append(csi)  # Add and then remove maybe :)

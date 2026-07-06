@@ -1,15 +1,14 @@
-from itertools import permutations
 import random
+from itertools import permutations
 
 import networkx as nx
 import numpy as np
-import pandas as pd
 from pgmpy.base import PDAG
 from tqdm import tqdm
 
 import cslearn.cstree as ct
-import cslearn.stage as stl
 import cslearn.scoring as sc
+import cslearn.stage as stl
 
 
 def all_stagings(cards: list[int], level, max_cvars: int = 1, poss_cvars=None):
@@ -219,9 +218,7 @@ def _optimal_cstree_given_order(order, context_scores):
 
     for level, staging in stages.items():
         for i, stage in enumerate(staging):
-            if (level == -1) or (
-                (level > 0) and all([isinstance(i, int) for i in stage.list_repr])
-            ):
+            if (level == -1) or ((level > 0) and all([isinstance(i, int) for i in stage.list_repr])):
                 stage.color = "black"
             else:
                 stage.color = colors[i % 15]
@@ -293,12 +290,8 @@ def _move_up(node_index, order, orderscore, node_scores, score_table):
 
     node1 = order[node_index]
     node2 = order[node_index + 1]
-    active_cvars1 = [
-        v for v in order[:node_index] if v in score_table["poss_cvars"][node1]
-    ]
-    active_cvars2 = [
-        v for v in order[: node_index + 1] if v in score_table["poss_cvars"][node2]
-    ]
+    active_cvars1 = [v for v in order[:node_index] if v in score_table["poss_cvars"][node1]]
+    active_cvars2 = [v for v in order[: node_index + 1] if v in score_table["poss_cvars"][node2]]
 
     pred1 = sc._list_to_score_key(active_cvars1)
     pred2 = sc._list_to_score_key(active_cvars2)
@@ -312,22 +305,13 @@ def _move_up(node_index, order, orderscore, node_scores, score_table):
 
 
 def _move_down(node_index, order, orderscore, node_scores, score_table):
-    # prev scores
+    """Move the node at ``node_index`` one position earlier in ``order``, updating scores in place."""
     tmp1 = node_scores[node_index]
     tmp2 = node_scores[node_index - 1]
-    # move the node
     order.insert(node_index - 1, order.pop(node_index))
 
-    active_cvars1 = [
-        v
-        for v in order[:node_index]
-        if v in score_table["poss_cvars"][order[node_index]]
-    ]
-    active_cvars2 = [
-        v
-        for v in order[: node_index - 1]
-        if v in score_table["poss_cvars"][order[node_index - 1]]
-    ]
+    active_cvars1 = [v for v in order[:node_index] if v in score_table["poss_cvars"][order[node_index]]]
+    active_cvars2 = [v for v in order[: node_index - 1] if v in score_table["poss_cvars"][order[node_index - 1]]]
 
     pred1 = sc._list_to_score_key(active_cvars1)
     pred2 = sc._list_to_score_key(active_cvars2)
@@ -340,9 +324,7 @@ def _move_down(node_index, order, orderscore, node_scores, score_table):
     return orderscore
 
 
-def _move_node(
-    node_index_from, node_index_to, order, orderscore, node_scores, score_table
-):
+def _move_node(node_index_from, node_index_to, order, orderscore, node_scores, score_table):
     """Move a node up in an order and update the node scores.
 
     Args:
@@ -416,9 +398,7 @@ def gibbs_order_sampler(iterations, score_table):
         # possible parents to string
         subset_str = sc._list_to_score_key(order[:i])
 
-        subset_str = sc._list_to_score_key(
-            list(set(order[:i]) & set(score_table["poss_cvars"][order[i]]))
-        )
+        subset_str = sc._list_to_score_key(list(set(order[:i]) & set(score_table["poss_cvars"][order[i]])))
         node_scores[i] = score_table["scores"][order[i]][subset_str]
 
     score = np.sum(node_scores)
@@ -429,7 +409,6 @@ def gibbs_order_sampler(iterations, score_table):
     for i in tqdm(range(1, iterations + 1), desc="Gibbs order sampler"):
         # pick a random node
         node_index = np.random.randint(0, p)
-        node = order_trajectory[i - 1][node_index]
         # calculate the neighborhood scores
         prop_probs = _get_relocation_neighborhood(
             order_trajectory[i - 1], node_index, scores[i - 1], node_scores, score_table
@@ -439,9 +418,7 @@ def gibbs_order_sampler(iterations, score_table):
         new_pos = np.random.choice(list(range(len(prop_probs))), p=prop_probs)
 
         neworder = order_trajectory[i - 1].copy()
-        orderscore = _move_node(
-            node_index, new_pos, neworder, scores[i - 1], node_scores, score_table
-        )
+        orderscore = _move_node(node_index, new_pos, neworder, scores[i - 1], node_scores, score_table)
 
         order_trajectory.append(neworder)
         scores.append(orderscore)  # O(p)
@@ -449,9 +426,7 @@ def gibbs_order_sampler(iterations, score_table):
     return order_trajectory, scores
 
 
-def _get_relocation_neighborhood(
-    order, node_index, orderscore, node_scores, score_table
-):
+def _get_relocation_neighborhood(order, node_index, orderscore, node_scores, score_table):
     # Move to the right
     # [1,2,3,i,4,5] => [1,2,3,4,i,5]
 

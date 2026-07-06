@@ -1,13 +1,10 @@
-from os import path
-from itertools import chain
-
 import pandas as pd
 
 # join results
 results = []
 for key, value in snakemake.input.items():
-        for path in value:
-            results.append(pd.read_csv(path))
+    for fpath in value:
+        results.append(pd.read_csv(fpath))
 
 times_df = pd.concat(results)
 

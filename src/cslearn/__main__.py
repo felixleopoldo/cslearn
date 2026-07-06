@@ -1,5 +1,5 @@
 import argparse
-import cslearn
+
 from cslearn import __version__
 
 

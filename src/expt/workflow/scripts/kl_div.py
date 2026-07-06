@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 
-
 # input
 true_path = snakemake.input[0]
 est_path = snakemake.input[1]
