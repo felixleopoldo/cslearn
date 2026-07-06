@@ -10,4 +10,6 @@ Reference
    cslearn.learning
    cslearn.dependence
    cslearn.scoring
+   cslearn.evaluate
+   cslearn.ldag
 
