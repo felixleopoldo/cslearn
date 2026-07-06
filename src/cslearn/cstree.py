@@ -1,7 +1,5 @@
 import logging
 import pickle
-import sys
-from importlib import reload
 from itertools import product
 
 import networkx as nx
@@ -14,10 +12,7 @@ import cslearn.ldag as ldag
 import cslearn.stage as st
 from cslearn import dependence
 
-reload(logging)
-FORMAT = "%(filename)s:%(funcName)s (%(lineno)d):  %(message)s"
-# Change level to logging.DEBUG for verbose output during development.
-logging.basicConfig(stream=sys.stderr, level=logging.CRITICAL, format=FORMAT)
+logger = logging.getLogger(__name__)
 
 
 def write_minimal_context_graphs_to_files(context_dags, prefix="mygraphs"):
@@ -585,49 +580,49 @@ class CStree:
 
         """
 
-        logging.debug("Stages")
+        logger.debug("Stages")
 
         for key, val in self.stages.items():
-            logging.debug("level {}".format(key))
+            logger.debug("level {}".format(key))
             for s in val:
-                logging.debug(s)
-        logging.debug("Getting csi rels per level")
+                logger.debug(s)
+        logger.debug("Getting csi rels per level")
         rels = self.csi_relations_per_level()
-        logging.debug("CSI relations per level")
+        logger.debug("CSI relations per level")
         for key, rel in rels.items():
-            logging.debug("level {}: ".format(key))
+            logger.debug("level {}: ".format(key))
 
             for r in rel:
-                logging.debug("the CSI")
-                logging.debug(r)
-                logging.debug("cards: {}".format(r.cards))
+                logger.debug("the CSI")
+                logger.debug(r)
+                logger.debug("cards: {}".format(r.cards))
 
         paired_csis = dependence._csis_by_levels_2_by_pairs(rels, cards=self.cards)  # this could still be per level?
-        logging.debug("\n###### Paired_csis")
-        logging.debug(paired_csis)
+        logger.debug("\n###### Paired_csis")
+        logger.debug(paired_csis)
 
-        logging.debug("\n ######### minl cslisist")
+        logger.debug("\n ######### minl cslisist")
         # The pairs may change during the process this is why we have by pairs.
         # However, the level part
         # should always remain the same actually, so may this is not be needed.
         minl_csislists = dependence.minimal_csis(paired_csis, self.cards)  # this could be by level still?
-        logging.debug(minl_csislists)
+        logger.debug(minl_csislists)
 
-        logging.debug("\n ############### get minl csis in list format")
+        logger.debug("\n ############### get minl csis in list format")
         minl_csis = dependence._csi_lists_to_csis_by_level(
             minl_csislists, self.p, labels=self.labels
         )  # this would not be needed
-        logging.debug(minl_csislists)
+        logger.debug(minl_csislists)
         for key in minl_csislists:
             for pair, val in key.items():
-                logging.debug("{}: {}".format(pair, val))
+                logger.debug("{}: {}".format(pair, val))
 
-        logging.debug("#### minimal csis")
+        logger.debug("#### minimal csis")
         minl_csis_by_context = dependence._rels_by_level_2_by_context(minl_csis)
-        logging.debug(minl_csis_by_context)
+        logger.debug(minl_csis_by_context)
         for pair, val in minl_csis_by_context.items():
             for csi in val:
-                logging.debug(csi)
+                logger.debug(csi)
 
         return minl_csis_by_context
 
@@ -1214,7 +1209,7 @@ def sample_cstree(
 
         # Allowing only non-singleton stages, this should never happen.
         if prop_nonsingleton < minimal_stage_size / full_stage_space_size:
-            logging.info(
+            logger.info(
                 "The size (proportion {}) of a minimal is larger than {}.".format(
                     minimal_stage_size / full_stage_space_size, prop_nonsingleton
                 )

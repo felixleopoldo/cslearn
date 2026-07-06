@@ -1,16 +1,11 @@
 import itertools
 import logging
-import sys
-from importlib import reload  # Not needed in Python 2
 from itertools import chain, combinations
 
 import networkx as nx
 import numpy as np
 
-reload(logging)
-FORMAT = "%(filename)s:%(funcName)s (%(lineno)d):  %(message)s"
-# logging.basicConfig(stream=sys.stderr, level=logging.DEBUG, format=FORMAT)
-logging.basicConfig(stream=sys.stderr, level=logging.ERROR, format=FORMAT)
+logger = logging.getLogger(__name__)
 
 
 def _mymax(s):
@@ -173,7 +168,7 @@ class CSI:
             [{0}, None, None, {1}, {0, 1}, {0, 1}]
         """
 
-        logging.debug("Pairwise CSI as a list ")
+        logger.debug("Pairwise CSI as a list ")
         assert self.cards is not None
 
         # Get the level as the max element-1
@@ -384,7 +379,7 @@ def pairwise_csis(csi: CSI, cards=None):
         2 ⊥ 3 | 0, 1, 4, 5=0
         2 ⊥ 4 | 0, 1, 3, 5=0
     """
-    logging.debug("Pairwise CSIs")
+    logger.debug("Pairwise CSIs")
     context = csi.context
     ci_pairs = pairwise_cis(csi.ci)
     csis = []
@@ -482,10 +477,10 @@ def partition_csis(csilist_list, level, cards):
         0: [[{0}, None, {0}, None, {0, 1}], [{0}, None, {1}, None, {0, 1}]]
         1: [[{1}, None, {0}, None, {0, 1}]]
     """
-    logging.debug("Partitioning CSIs")
-    logging.debug("level {}".format(level))
-    logging.debug("cards {}".format(cards))
-    logging.debug(csilist_list)
+    logger.debug("Partitioning CSIs")
+    logger.debug("level {}".format(level))
+    logger.debug("cards {}".format(cards))
+    logger.debug(csilist_list)
 
     csis_to_mix = [[] for _ in range(cards[level])]
     for csilist in csilist_list:
@@ -493,7 +488,7 @@ def partition_csis(csilist_list, level, cards):
             continue
         # just to get the single value from the set
         var_val = list(csilist[level])[0]
-        logging.debug("var_val {}".format(var_val))
+        logger.debug("var_val {}".format(var_val))
         csis_to_mix[var_val].append(csilist)
 
     return csis_to_mix
@@ -590,7 +585,7 @@ def minimal_csis(paired_csis, cards):
     #     CSIs.
     for level in range(p):
         # initiate newbies in the first run to be
-        logging.debug("\n#### Level {}".format(level))
+        logger.debug("\n#### Level {}".format(level))
         for pair, csilist_list in paired_csis[level].items():
             # print("\n#### CI pair {}".format(pair))
             oldies = []
@@ -600,7 +595,7 @@ def minimal_csis(paired_csis, cards):
 
             iteration = 1
             while len(newbies) > 0:
-                logging.debug("\n#### Iteration {}".format(iteration))
+                logger.debug("\n#### Iteration {}".format(iteration))
                 # print(pair) print("going through the levels for partitions")
                 # should join with csi_list the oldies?
 
@@ -608,13 +603,13 @@ def minimal_csis(paired_csis, cards):
                 csis_to_absorb = []  # remove from the old ones due to mixing
                 # Go through all levels, potentially many times.
                 for l in range(level + 1):  # Added +1 after refactorization
-                    logging.debug("level {}".format(l))
+                    logger.debug("level {}".format(l))
                     if l in pair:
                         continue
 
                     csis_to_mix = partition_csis(newbies + oldies, l, cards)
-                    # logging.debug("csis to mix")
-                    # logging.debug(csis_to_mix)
+                    # logger.debug("csis to mix")
+                    # logger.debug(csis_to_mix)
 
                     # Need to separate the newly created csis from the old
                     # ones. The old should not be re-mixed, i.e., the mixes
@@ -624,7 +619,7 @@ def minimal_csis(paired_csis, cards):
 
                     # E.g. combinations like {a, b, c} X {d, e} X ...
                     for csilist_tuple in itertools.product(*csis_to_mix):
-                        # logging.debug(csilist_tuple)
+                        # logger.debug(csilist_tuple)
                         # Check that at least one is a newbie
                         no_newbies = True
                         for csi in csilist_tuple:
@@ -644,11 +639,11 @@ def minimal_csis(paired_csis, cards):
                             # print(mix) assert(sum([len(el)==1 for el in mix
                             # if el is not None]) <= 3)
                             if mixed_csi not in (oldies + newbies):
-                                logging.debug("mixing")
-                                logging.debug(csilist_tuple)
-                                logging.debug("mix result: ")
-                                logging.debug(mixed_csi)
-                                logging.debug("Adding {} as newly created ******".format(mixed_csi))
+                                logger.debug("mixing")
+                                logger.debug(csilist_tuple)
+                                logger.debug("mix result: ")
+                                logger.debug(mixed_csi)
+                                logger.debug("Adding {} as newly created ******".format(mixed_csi))
                                 fresh.append(mixed_csi)
                                 # Check if some csi of the oldies should be
                                 # removed. I.e. if some in csilist_tuple is a
@@ -657,13 +652,13 @@ def minimal_csis(paired_csis, cards):
                                     # print wher the csi is from, oldies, or
                                     # newbies.
                                     if _csilist_subset(csilist, mixed_csi):  # This sho
-                                        logging.debug("will later absorb {}".format(csilist))
+                                        logger.debug("will later absorb {}".format(csilist))
                                         csis_to_absorb.append(csilist)
-                logging.debug("##### Iterated through all levels. Prepare for next round. ### \n ")
+                logger.debug("##### Iterated through all levels. Prepare for next round. ### \n ")
                 # Update the lists
-                logging.debug("Adding the following newbies (just used for mixing) to the oldies.")
+                logger.debug("Adding the following newbies (just used for mixing) to the oldies.")
                 for nn in newbies:
-                    logging.debug(nn)
+                    logger.debug(nn)
                 oldies += newbies
 
                 # remove duplicates
@@ -673,7 +668,7 @@ def minimal_csis(paired_csis, cards):
                         res_list.append(item)
                 oldies = res_list
 
-                logging.debug("CSI to absorb/remove after having been mixed (can be duplicates)")
+                logger.debug("CSI to absorb/remove after having been mixed (can be duplicates)")
                 for csi in csis_to_absorb:
                     # BUG: this is maybe not ok. Feels bad to alter here. Maybe
                     # an absorbtion step after instead.
@@ -681,7 +676,7 @@ def minimal_csis(paired_csis, cards):
                         csi in oldies
                     ):  # Shouldnt it be here? Or somewhere else maybe.. Shouldnt we remove it whereever it is?
                         # Maybe make this removal after appending the newbies?
-                        logging.debug(csi)
+                        logger.debug(csi)
                         oldies.remove(csi)
                     # Maybe remove from new mixes as well then.
 
@@ -691,37 +686,37 @@ def minimal_csis(paired_csis, cards):
                     if item not in res_list:
                         res_list.append(item)
                 fresh = res_list
-                logging.debug("New mix results:")
+                logger.debug("New mix results:")
                 for t in fresh:
-                    logging.debug(t)
+                    logger.debug(t)
 
                 # Added this to see if it fixes the bug..
-                # logging.debug("Updating newbies with the unique new mix results")
-                logging.debug(
+                # logger.debug("Updating newbies with the unique new mix results")
+                logger.debug(
                     "Updating mix results by removing if they already are in oldies, or a subset of an oldie."
                 )
                 newbies = []  # check that the newbies are not in oldies!
                 for csi in fresh:  # O( #tmp)
-                    # logging.debug("REMOVING {}".format(csi))
+                    # logger.debug("REMOVING {}".format(csi))
                     if (csi not in oldies) and (csi not in csis_to_absorb):  # O(#oldies)
                         newbies.append(csi)
                     else:
                         newbies.append(csi)  # Add and then remove maybe :)
                         for o in oldies:  # O(#oldies)
                             if _csilist_subset(csi, o):
-                                # logging.debug("FOUND A SUBSET OF AN OLDIE############")
-                                # logging.debug(csi)
-                                # logging.debug("is a subset of")
-                                # logging.debug(o)
+                                # logger.debug("FOUND A SUBSET OF AN OLDIE############")
+                                # logger.debug(csi)
+                                # logger.debug("is a subset of")
+                                # logger.debug(o)
                                 newbies.remove(csi)
                                 break
 
-                logging.debug("newbies (new mixes after the filtering):")
+                logger.debug("newbies (new mixes after the filtering):")
                 for nb in newbies:
-                    logging.debug(nb)
-                logging.debug("oldies")
+                    logger.debug(nb)
+                logger.debug("oldies")
                 for o in oldies:
-                    logging.debug(o)
+                    logger.debug(o)
                 # check the diplicates here somewhere.
                 fresh = []
                 iteration += 1

@@ -1,16 +1,12 @@
 import itertools
 import logging
 import random
-import sys
-from importlib import reload  # Not needed in Python 2
 
 import numpy as np
 
 from cslearn import dependence
 
-reload(logging)
-FORMAT = "%(filename)s:%(funcName)s (%(lineno)d):  %(message)s"
-logging.basicConfig(stream=sys.stderr, level=logging.DEBUG, format=FORMAT)
+logger = logging.getLogger(__name__)
 
 
 class Stage:
