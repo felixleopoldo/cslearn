@@ -2,7 +2,7 @@ from itertools import product
 
 import numpy as np
 import pandas as pd
-from pgmpy.models import BayesianNetwork
+from pgmpy.models import DiscreteBayesianNetwork as BayesianNetwork
 from tqdm import tqdm
 
 

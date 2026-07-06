@@ -1,6 +1,6 @@
 import networkx as nx
 import pandas as pd
-from pgmpy.models import BayesianNetwork
+from pgmpy.models import DiscreteBayesianNetwork as BayesianNetwork
 from pgmpy.estimators import MaximumLikelihoodEstimator
 
 # input
