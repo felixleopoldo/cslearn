@@ -20,16 +20,25 @@ def KL_divergence(df_distr1, df_distr2):
     return np.sum(rel_entr(distr1, distr2))
 
 
+def shd_edges(estimated_edges, true_edges) -> int:
+    """Structural Hamming distance between two directed edge sets.
+
+    Counts missing edges, extra edges, and reversed edges. A reversal counts
+    as 1, not 2.
+    """
+    est_edges = set(estimated_edges)
+    true_edges = set(true_edges)
+    reversals = sum(1 for u, v in est_edges if (v, u) in true_edges)
+    return len(est_edges.symmetric_difference(true_edges)) - reversals
+
+
 def shd_ldag(estimated: CStree, true: CStree) -> int:
     """Structural Hamming distance between two CStrees via their LDAG representations.
 
     Counts missing edges, extra edges, and reversed edges between the LDAGs.
     A reversal counts as 1, not 2.
     """
-    est_edges = set(estimated.to_LDAG().edges())
-    true_edges = set(true.to_LDAG().edges())
-    reversals = sum(1 for u, v in est_edges if (v, u) in true_edges)
-    return len(est_edges.symmetric_difference(true_edges)) - reversals
+    return shd_edges(estimated.to_LDAG().edges(), true.to_LDAG().edges())
 
 
 def kl_divergence(estimated: CStree, true: CStree) -> float:
