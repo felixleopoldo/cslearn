@@ -119,7 +119,8 @@ rule all:
         "results/shd_b.pdf",
         "results/shd_c.pdf",
         "results/shd_scale.pdf",
-        "results/sensitivity.pdf"
+        "results/sensitivity_shd.pdf",
+        "results/sensitivity_kl.pdf"
 
 # Reads a DAG (adjacency matrix) and returns a list of possible cvars
 # as a JSON file.
@@ -1224,13 +1225,14 @@ Sensitivity analysis: β-misspecification.
 
 Shows SHD (LDAG) when CSlearn+GRaSP (β_est=2) is applied to data from
 CStrees with β_true ∈ {1, 2, 3}:
-  β_true=1 → over-specified (CSlearn uses a richer model than needed)
-  β_true=2 → correctly specified
-  β_true=3 → under-specified (CSlearn cannot capture all context structures)
+  β_true=1: over-specified (CSlearn's hypothesis class is richer than needed)
+  β_true=2: correctly specified
+  β_true=3: under-specified (CSlearn's hypothesis class cannot capture all
+            context structures present in the data)
 
 p=5..20, n=250/1000, prob_cvar=0.5.
 """
-rule sensitivity_csv:
+rule sensitivity_shd_csv:
     input:
         correct = expand(
             ("results/shd"
@@ -1293,15 +1295,103 @@ rule sensitivity_csv:
             seed=seed_range,
         ),
     output:
-        "results/sensitivity.csv"
+        "results/sensitivity_shd.csv"
     script:
-        "scripts/join_sensitivity.py"
+        "scripts/join_sensitivity_shd.py"
 
 
-rule sensitivity_plot:
-    input: "results/sensitivity.csv"
-    output: "results/sensitivity.pdf"
-    script: "scripts/plot_sensitivity.py"
+rule sensitivity_shd_plot:
+    input: "results/sensitivity_shd.csv"
+    output: "results/sensitivity_shd.pdf"
+    script: "scripts/plot_sensitivity_shd.py"
+
+
+"""
+KL-divergence counterpart to sensitivity_shd_csv above: same experimental
+setup (β_true ∈ {1, 2, 3} vs CSlearn's fixed β_est=2), KL-divergence instead
+of SHD, MLE parameters only.
+"""
+rule sensitivity_kl_csv:
+    input:
+        correct = expand(
+            ("results/kl_div"
+             + "/true_cstree=/" + pattern_cstree
+             + "/true_cstree_params=/" + pattern_cstree_params
+             + "/data=/" + pattern_cstree_data
+             + "/alg=/" + pattern_grasp_cslearn
+             + "/param_est=/" + pattern_cstree_param_est
+             + "/kl_div.csv"),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            cstree_param_est_alpha=[1],
+            cstree_param_est_estimation_type=["mle"],
+            seed=seed_range,
+        ),
+        under = expand(
+            ("results/kl_div"
+             + "/true_cstree=/" + pattern_cstree
+             + "/true_cstree_params=/" + pattern_cstree_params
+             + "/data=/" + pattern_cstree_data
+             + "/alg=/" + pattern_grasp_cslearn
+             + "/param_est=/" + pattern_cstree_param_est
+             + "/kl_div.csv"),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[3],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            cstree_param_est_alpha=[1],
+            cstree_param_est_estimation_type=["mle"],
+            seed=seed_range,
+        ),
+        over = expand(
+            ("results/kl_div"
+             + "/true_cstree=/" + pattern_cstree
+             + "/true_cstree_params=/" + pattern_cstree_params
+             + "/data=/" + pattern_cstree_data
+             + "/alg=/" + pattern_grasp_cslearn
+             + "/param_est=/" + pattern_cstree_param_est
+             + "/kl_div.csv"),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[1],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            cstree_param_est_alpha=[1],
+            cstree_param_est_estimation_type=["mle"],
+            seed=seed_range,
+        ),
+    output:
+        "results/sensitivity_kl.csv"
+    script:
+        "scripts/join_sensitivity_kl.py"
+
+
+rule sensitivity_kl_plot:
+    input: "results/sensitivity_kl.csv"
+    output: "results/sensitivity_kl.pdf"
+    script: "scripts/plot_sensitivity_kl.py"
 
 
 rule download_intermediates:

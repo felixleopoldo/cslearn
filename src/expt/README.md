@@ -23,7 +23,7 @@ Output goes to `results/` (gitignored, except the aggregated CSVs listed below).
 
 ## Reproducing the paper figures
 
-Ten aggregated CSVs are committed to the repository:
+Eleven aggregated CSVs are committed to the repository:
 
 | File | Content |
 |------|---------|
@@ -36,17 +36,18 @@ Ten aggregated CSVs are committed to the repository:
 | `results/shd_b.csv` | SHD: CSlearn+GRaSP vs GRaSP+DAG |
 | `results/shd_c.csv` | SHD: CSlearn+GRaSP vs BOS vs GRaSP+BHC |
 | `results/shd_scale.csv` | SHD: scalable methods, p=10–500 |
-| `results/sensitivity.csv` | Sensitivity to β misspecification |
+| `results/sensitivity_shd.csv` | Sensitivity to β misspecification: SHD |
+| `results/sensitivity_kl.csv` | Sensitivity to β misspecification: KL divergence |
 
 Regenerating all figures requires only Snakemake and Apptainer — no data
 downloads or recomputation:
 
 ```bash
 snakemake kl_plots_2a kl_plots_2b kl_plots_2c time_plots_3a time_plots_3b \
-  shd_plot_a shd_plot_b shd_plot_c shd_plots_scale sensitivity_plot \
+  shd_plot_a shd_plot_b shd_plot_c shd_plots_scale sensitivity_shd_plot sensitivity_kl_plot \
   --use-apptainer --cores 1 \
   --allowed-rules kl_plots_2a kl_plots_2b kl_plots_2c time_plots_3a time_plots_3b \
-    shd_plot_a shd_plot_b shd_plot_c shd_plots_scale sensitivity_plot
+    shd_plot_a shd_plot_b shd_plot_c shd_plots_scale sensitivity_shd_plot sensitivity_kl_plot
 ```
 
 PDFs appear in `results/`.
