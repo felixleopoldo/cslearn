@@ -1,8 +1,10 @@
 import pandas as pd
 import seaborn as sns
+from labels import canonical_method_label
 from palette import HATCHES, PALETTE
 
 plot_data = pd.read_csv(snakemake.input[0])
+plot_data["method"] = plot_data["method"].map(canonical_method_label)
 plot_data["hue"] = plot_data["method"] + ", n=" + plot_data["n"].astype(str)
 
 sns.set(font_scale=1.25)
