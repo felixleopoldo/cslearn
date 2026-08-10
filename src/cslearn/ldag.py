@@ -1,8 +1,18 @@
+import warnings
 from string import ascii_letters
 
 import networkx as nx
 import numpy as np
 import pandas as pd
+
+# pygraphviz shells out to `dot`/`circo` both for AGraph.layout() and again,
+# separately, whenever Jupyter displays an AGraph (AGraph._repr_mimebundle_
+# calls draw() a second time to render SVG). Both invocations surface the
+# host's Fontconfig warnings as a RuntimeWarning; it reflects the font
+# config, not anything about the graph being drawn, so it's noise regardless
+# of which call triggers it -- hence a module-level filter rather than one
+# scoped to plot_graphviz alone.
+warnings.filterwarnings("ignore", category=RuntimeWarning, module="pygraphviz")
 
 
 class LDAG(nx.DiGraph):
@@ -18,7 +28,7 @@ class LDAG(nx.DiGraph):
                 attr["label"] = new_label
         agraph = nx.nx_agraph.to_agraph(self)
         agraph.layout(prog=prog, args=args)
-        return agraph, legend_dict if with_legend else agraph
+        return (agraph, legend_dict) if with_legend else agraph
 
 
 # Functions needed for generating LDAG representation from a dataframe representation of the staging
