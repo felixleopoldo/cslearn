@@ -34,7 +34,7 @@ time_df = pd.DataFrame(
         "time": [runtime],
         "seed": [snakemake.wildcards["seed"]],
         "p": [snakemake.wildcards["cstree_p"]],
-        "n": [data.shape[0]],
+        "n": [int(snakemake.wildcards["cstree_data_n"])],
     }
 )
 
