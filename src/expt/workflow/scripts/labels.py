@@ -24,6 +24,22 @@ _BASE_LABELS = {
 
 _SUFFIX_RE = re.compile(r"^(?P<base>.+?)\s*\((?P<suffix>mle|map)\)$", re.IGNORECASE)
 
+# Phase-1-only methods with no CSlearn context-specific refinement -- shown in
+# every figure as a fixed reference, never as "the paper's own method". A
+# property of the method itself, not of any one CSV, so plots label it as
+# "baseline" wherever it appears.
+BASELINE_METHODS = {"PC", "GRaSP"}
+
+
+def baseline_display_label(hue: str) -> str:
+    """Given a "<canonical method>, n=<n>" hue string, mark it as a baseline
+    if its method is Phase-1-only (see BASELINE_METHODS). Leaves non-baseline
+    hues unchanged."""
+    method, n = hue.rsplit(", n=", 1)
+    if method in BASELINE_METHODS:
+        return f"{method} baseline, n={n}"
+    return hue
+
 
 def canonical_method_label(raw: str) -> str:
     """Map a raw method string to its canonical legend label.

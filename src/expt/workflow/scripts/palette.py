@@ -1,10 +1,20 @@
-"""Shared color/hatch/sizing logic for the boxplot scripts.
+"""Shared color/sizing logic for the boxplot scripts.
 
-Colors are assigned per method (not per hue slot), so the same method always
-reads as the same color family across every figure it appears in. Within a
-method, n is encoded as a light-to-dark shade (more data = darker). Hatching
-is reserved for the one place it carries real meaning: MAP vs MLE parameter
-estimates in the KL plots.
+Grayscale printing only preserves lightness, so lightness is spent on the
+dimension that actually needs to survive print: method identity (the
+comparison every one of these figures makes). Each method has one fixed base
+color, chosen so its luma is well separated from every other method's, used
+everywhere that method appears across every figure.
+
+n is encoded as a shade of that same color: the method's base color is used
+unmodified for the *largest* n (most data = most saturated/confident), and
+lightens toward (not reaching) white as n shrinks. The lightening amount is
+capped per-method, per-figure, at the base luma of the next-lighter method
+that's actually present in that hue set (with a safety margin) -- so a
+method's shaded range never drifts into a neighboring method's territory and
+they stay distinguishable in true grayscale. The method with the lightest
+base color in a given figure has no lighter neighbor to avoid, so it's capped
+only by staying short of pure white (which would be invisible on paper).
 """
 
 import re
@@ -13,97 +23,125 @@ import matplotlib.colors as mcolors
 import seaborn as sns
 
 METHOD_COLORS = {
-    "CSlearn+PC": "#009E73",
-    "PC": "#D55E00",
-    "CSlearn+GRaSP": "#0072B2",
-    "GRaSP": "#E69F00",
-    "BOS": "#CC79A7",
-    "GRaSP+BHC": "#4D4D4D",
+    "CSlearn+PC": "#f4d36e",
+    "PC": "#ff7f40",
+    "CSlearn+GRaSP": "#32a588",
+    "GRaSP": "#8c3f72",
+    "BOS": "#193f65",
+    "GRaSP+BHC": "#190f22",
 }
 
 # Base colors for the sensitivity plots' beta-misspecification arms.
 BETA_COLORS = {
-    1: "#0072B2",  # over-spec
-    2: "#4D4D4D",  # correct
-    3: "#D55E00",  # under-spec
+    1: "#66b2ff",  # over-spec
+    2: "#737373",  # correct
+    3: "#50230c",  # under-spec
 }
 
-MAP_HATCH = "///"
+WHITE_LUMA_CAP = 0.93
+LUMA_MARGIN = 0.03
 
-_HUE_RE = re.compile(r"^(?P<method>.+?)(?: \((?P<suffix>MLE|MAP)\))?, n=(?P<n>\d+)$")
+_HUE_RE = re.compile(r"^(?P<method>.+?), n=(?P<n>\d+)$")
 
 
-def _shades(base_hex, count):
-    """`count` shades of base_hex, from a light tint (smallest group) to the
-    full base color (largest group)."""
+def _luma(hexcolor):
+    r, g, b = mcolors.to_rgb(hexcolor)
+    return 0.299 * r + 0.587 * g + 0.114 * b
+
+
+def _light_caps(present_colors):
+    """For each key in `present_colors` (method -> base hex), the max luma
+    its shades may lighten to: the next-lighter present color's base luma
+    (minus a margin), or WHITE_LUMA_CAP for the lightest one present."""
+    ordered = sorted(present_colors, key=lambda k: _luma(present_colors[k]))
+    caps = {}
+    for i, key in enumerate(ordered):
+        if i + 1 < len(ordered):
+            caps[key] = _luma(present_colors[ordered[i + 1]]) - LUMA_MARGIN
+        else:
+            caps[key] = WHITE_LUMA_CAP
+    return caps
+
+
+def _shades(base_hex, count, light_cap):
+    """`count` shades of base_hex, from the base color itself (darkest,
+    largest n) lightening toward `light_cap` (lightest, smallest n)."""
     base = mcolors.to_rgb(base_hex)
     white = (1.0, 1.0, 1.0)
-    if count == 1:
-        return [base]
-    min_t = 0.35
-    ts = [min_t + (1 - min_t) * i / (count - 1) for i in range(count)]
-    return [tuple((1 - t) * w + t * b for w, b in zip(white, base)) for t in ts]
+    base_luma = _luma(base_hex)
+    t_max = 0.0 if base_luma >= 1 else max(0.0, min(1.0, (light_cap - base_luma) / (1 - base_luma)))
+    shades = []
+    for i in range(count):
+        t = t_max * (count - 1 - i) / (count - 1) if count > 1 else 0.0
+        shades.append(tuple((1 - t) * b + t * w for b, w in zip(base, white)))
+    return shades
 
 
 def sorted_hues(hues):
-    """Sort hue labels by method (in METHOD_COLORS order), then n ascending,
-    then MLE before MAP."""
+    """Sort hue labels by method (in METHOD_COLORS order), then n ascending."""
 
     def key(h):
         m = _HUE_RE.match(h)
-        method, suffix, n = m["method"], m["suffix"] or "", int(m["n"])
+        method, n = m["method"], int(m["n"])
         method_rank = list(METHOD_COLORS).index(method) if method in METHOD_COLORS else len(METHOD_COLORS)
-        suffix_rank = {"": 0, "MLE": 0, "MAP": 1}[suffix]
-        return (method_rank, n, suffix_rank)
+        return (method_rank, n)
 
     return sorted(hues, key=key)
 
 
 def method_hue_style(hues):
-    """Palette + hatch dicts for hue labels of the form
-    "<method>[ (MLE|MAP)], n=<n>": color by method (shaded by n), hatch only
-    to mark MAP vs MLE.
-    """
+    """Palette dict for hue labels of the form "<method>, n=<n>": color by
+    method (fixed base), shaded by n-rank within the luma headroom actually
+    available among the methods present in `hues`."""
     parsed = {h: _HUE_RE.match(h).groupdict() for h in hues}
     ns_by_method = {}
     for p in parsed.values():
         ns_by_method.setdefault(p["method"], set()).add(int(p["n"]))
 
-    palette, hatches = {}, {}
+    present_colors = {m: METHOD_COLORS[m] for m in ns_by_method}
+    caps = _light_caps(present_colors)
+
+    palette = {}
     for method, ns in ns_by_method.items():
-        shade_map = dict(zip(sorted(ns), _shades(METHOD_COLORS[method], len(ns))))
+        n_rank = {n: i for i, n in enumerate(sorted(ns))}
+        shades = _shades(METHOD_COLORS[method], len(ns), caps[method])
         for h, p in parsed.items():
             if p["method"] != method:
                 continue
-            palette[h] = shade_map[int(p["n"])]
-            hatches[h] = MAP_HATCH if p["suffix"] == "MAP" else ""
-    return palette, hatches
+            palette[h] = shades[n_rank[int(p["n"])]]
+    return palette
 
 
 def beta_hue_style(label_map, ns):
     """Palette dict for the sensitivity plots' beta-misspecification hues:
-    color by beta arm (shaded by n); no hatching needed since color alone
-    already distinguishes the 3 arms."""
+    color by beta arm (fixed base), shaded by n-rank."""
+    caps = _light_caps(BETA_COLORS)
     palette = {}
     for beta, label in label_map.items():
-        shade_map = dict(zip(sorted(ns), _shades(BETA_COLORS[beta], len(ns))))
-        for n, color in shade_map.items():
-            palette[f"{label}, n={n}"] = color
+        shades = _shades(BETA_COLORS[beta], len(ns), caps[beta])
+        for i, n in enumerate(sorted(ns)):
+            palette[f"{label}, n={n}"] = shades[i]
     return palette
 
 
-def style_figure(g, n_x, n_hue):
-    """Common figure sizing/legend styling so boxes have room to breathe and
-    the legend doesn't crowd the plot area.
+def style_figure(g, width=2.9, height=None, ncol=1, n_hue=None):
+    """Common figure sizing/legend styling. Pins the axes close to the
+    manuscript's actual print width (~2.75in for a 0.475\\linewidth
+    two-up subfigure) rather than growing with hue count, since fonts are
+    fixed in points and don't rescale with the canvas: a wider source PDF
+    just gets shrunk more by LaTeX, making text smaller, not bigger.
 
-    Sizes the axes panel from n_x/n_hue alone; the legend is placed outside
-    the axes and its width is left to `savefig(..., bbox_inches="tight")`
-    (see the caller), since legend label length varies a lot between figures
-    (e.g. the sensitivity plots' beta labels) and a fixed guess either wastes
-    space or clips the legend.
+    The legend goes below the axes in a single column by default: multiple
+    columns made the legend wider than the (narrow) axes, which made
+    `bbox_inches="tight"` blow the whole saved PDF out past the intended
+    print width -- the opposite of the point of pinning `width` above. A
+    single column is guaranteed to stay within the axes width regardless of
+    label length, at the cost of a taller figure, which `height` accounts
+    for based on how many legend rows there'll be.
     """
-    axes_width = max(6.0, 0.28 * n_x * n_hue + 1.0)
-    g.figure.set_size_inches(axes_width, 5.5)
+    if height is None:
+        height = 2.3 + 0.16 * (n_hue or 1) * ncol
+    g.figure.set_size_inches(width, height)
     g.legend_.set_title("")
     g.legend_.set_frame_on(False)
-    sns.move_legend(g, "upper left", bbox_to_anchor=(1.02, 1))
+    sns.move_legend(g, "upper center", bbox_to_anchor=(0.5, -0.18), ncol=ncol)

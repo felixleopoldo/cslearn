@@ -16,11 +16,11 @@ hue_order = [f"{label_map[b]}, n={n}" for b in [1, 2, 3] for n in ns]
 hue_order = [h for h in hue_order if h in plot_data["hue"].unique()]
 palette = beta_hue_style(label_map, ns)
 
-sns.set(font_scale=1.6)
+sns.set(font_scale=0.9)
 sns.set_style("white")
 sns.set_style({"legend.frameon": False})
-g = sns.boxplot(data=plot_data, x="p", y="kl_div", hue="hue", hue_order=hue_order, palette=palette, linewidth=1.2)
+g = sns.boxplot(data=plot_data, x="p", y="kl_div", hue="hue", hue_order=hue_order, palette=palette, linewidth=1.0)
 
 g.set(title="", xlabel="number of variables ($p$)", ylabel="KL divergence")
-style_figure(g, n_x=plot_data["p"].nunique(), n_hue=len(hue_order))
+style_figure(g, n_hue=len(hue_order))
 g.figure.savefig(snakemake.output[0], bbox_inches="tight")
