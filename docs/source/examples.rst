@@ -10,6 +10,6 @@ Notebooks
    fig1_demo
    learn_demo
    learn_demo_gibbs
+   mushroom_prediction
    sachs_ldag_repr
    alarm_ldag_repr
-..   cstrees.tests

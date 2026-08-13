@@ -16,6 +16,10 @@ This is a Python package for CStree models :footcite:p:`duarte2021representation
 
 .. As not all staged tree models admit this property, CStrees are a subclass that provides a transparent, intuitive and compact representation of context-specific causal information.
 
+Paper experiments and precomputed results (~5.9 GB) are available on
+`Zenodo <https://doi.org/10.5281/zenodo.21198084>`_.
+See the `experiment README <https://github.com/felixleopoldo/cstrees/tree/dev/src/expt>`_
+for reproduction instructions.
 
 .. rubric:: References
 

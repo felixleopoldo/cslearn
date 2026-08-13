@@ -1,51 +1,102 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
-<a name="readme-top"></a>
-
-<!-- PROJECT LOGO -->
-<br />
 <div align="center">
-  <a href="https://cstrees.readthedocs.io">
-    <img src="images/cstree.png" alt="Logo">
+  <a href="https://cslearn.readthedocs.io">
+    <img src="images/cstree.png" alt="CStree logo">
   </a>
-      <img src="images/minl_cont_dag_X1=0.png" alt="Logo" width="40">
-      <img src="images/minl_cont_dag_X2=0.png" alt="Logo" width="80">
-      <img src="images/minl_cont_dag_X3=0.png" alt="Logo"width="80">
+  <img src="images/minl_cont_dag_X1=0.png" alt="Minimal context DAG X1=0" width="40">
+  <img src="images/minl_cont_dag_X2=0.png" alt="Minimal context DAG X2=0" width="80">
+  <img src="images/minl_cont_dag_X3=0.png" alt="Minimal context DAG X3=0" width="80">
 
-  <h3 align="center">CStrees</h3>
+  <h3 align="center">CSlearn</h3>
 
   <p align="center">
-    A Python library for CStrees.
+    A Python library for context-specific causal graphical models.
     <br />
-    <a href="https://cstrees.readthedocs.io"><strong>Explore the docs »</strong></a>
-    
+    <a href="https://cslearn.readthedocs.io"><strong>Docs »</strong></a>
   </p>
 </div>
 
-<!-- CONTRIBUTING -->
+## Overview
+
+`cslearn` is a Python package for **CStree models**—a family of graphical causal models for multivariate discrete data that encode context-specific independence (CSI). CStrees generalize DAG models while remaining tractable.
+
+The package implements **CSlearn**, a three-phase structure-learning algorithm:
+1. DAG pre-screening via PC or GRaSP to restrict candidate parent sets
+2. Order MCMC (Gibbs sampler) over topological orderings
+3. Exact staging search under a sparsity bound
+
+## Installation
+
+`cslearn` requires [graphviz](https://graphviz.org/download/) to be installed on your system.
+
+On Debian/Ubuntu/Linux:
+
+```bash
+sudo apt install graphviz libgraphviz-dev pkg-config
+```
+
+On macOS (Homebrew):
+
+```bash
+brew install graphviz
+```
+
+On Windows, install graphviz from https://graphviz.org/download/ and ensure it is on your `PATH`.
+
+Then install the package:
+
+```bash
+pip install cslearn
+```
+
+See the [full installation instructions](https://cslearn.readthedocs.io/en/latest/install.html) for development setup.
+
+## Quick start
+
+```python
+import pandas as pd
+from cslearn import CStree, sample_cstree
+
+# Sample a random CStree and simulate data
+tree = sample_cstree([2, 2, 3, 2], max_cvars=2, prob_cvar=0.5)
+tree.sample_stage_parameters(alpha=2.0)
+data = tree.sample(500)
+
+# Learn a CStree from data
+learned = CStree().fit(data)
+
+# Predict held-out observations
+predictions = learned.predict(data.iloc[:5, :-1])
+```
+
+See the [example notebooks](https://cslearn.readthedocs.io) for walkthroughs covering CStree construction and visualization, structure learning with exact and Gibbs-sampler search, LDAG representations on the alarm and Sachs datasets, and prediction.
+
+## Paper experiments
+
+The simulation experiments and figures from the accompanying paper are in
+`src/expt/`. Aggregated results (CSVs) are committed to the repository;
+precomputed intermediates (~5.9 GB) are on Zenodo at
+[https://doi.org/10.5281/zenodo.21198084](https://doi.org/10.5281/zenodo.21198084).
+See [`src/expt/README.md`](src/expt/README.md) for reproduction instructions.
+
+## Reference
+
+If you use this package, please cite the accompanying paper:
+
+> Rios, F. L., Markham, A. & Solus, L. (2024). Scalable Structure Learning for Sparse Context-Specific Systems. [arXiv:2402.07762](https://arxiv.org/abs/2402.07762)
+
+```bibtex
+@misc{rios2024scalablestructurelearningsparse,
+      title={Scalable Structure Learning for Sparse Context-Specific Systems},
+      author={Felix Leopoldo Rios and Alex Markham and Liam Solus},
+      year={2024},
+      eprint={2402.07762},
+      archivePrefix={arXiv},
+      primaryClass={stat.ML},
+      url={https://arxiv.org/abs/2402.07762},
+}
+```
+
 ## Contributing
-See the [open issues](https://github.com/felixleopoldo/cstrees/issues?q=is%3Aopen+is%3Aissue) for a full list of proposed features (and known issues).
 
-
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
-
-* [Choose an Open Source License](https://choosealicense.com)
-* [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
-search)
-
+Contributions are welcome. Please open an issue or pull request on
+[GitHub](https://github.com/felixleopoldo/cslearn/issues).

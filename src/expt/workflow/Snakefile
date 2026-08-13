@@ -1,0 +1,1906 @@
+# Run by typing:
+# snakemake all
+# For dry run type:
+# snakemake all -n
+
+seed_range = range(1, 11)
+
+# Precomputed results archive (~5.9 GB). Zenodo: https://doi.org/10.5281/zenodo.21198084
+INTERMEDIATES_ARCHIVE_URL = (
+    "https://zenodo.org/records/21198085/files/intermediates.tar.gz"
+)
+
+# CStree model
+pattern_cstree = "cstree/cstree_p={cstree_p}/cstree_max_cvar={cstree_max_cvar}/cstree_prob_cvar={cstree_prob_cvar}/seed={seed}"
+pattern_cstree_params = (
+    "true_cstree_params/cstree_params_alpha={cstree_params_alpha}/seed={seed}"
+)
+pattern_cstree_data = "data/cstree_data_n={cstree_data_n}/seed={seed}"
+
+# Structure learning
+pattern_cslearn = (
+    "cslearn/alg_name={alg_name}/cslearn_poss_cvars={cslearn_poss_cvars}/cslearn_mcmc_iterations={cslearn_mcmc_iterations}/"
+    "cslearn_alpha_tot={cslearn_alpha_tot}/cslearn_param_prior={cslearn_param_prior}/"
+    "cslearn_max_cvar={cslearn_max_cvar}/cslearn_prob_cvar={cslearn_prob_cvar}/seed={seed}"
+)
+pattern_grasp = "grasp/alg_name={alg_name}/seed={seed}"
+pattern_pc = "pc/alg_name={alg_name}/pc_alpha={pc_alpha}/seed={seed}"
+pattern_bos = "bos/alg_name={alg_name}/seed={seed}"
+pattern_bhc = "bhc/alg_name={alg_name}/bhc_start_alg={bhc_start_alg}/seed={seed}"
+
+# Structure learning with imposed start algorithm pattern
+pattern_grasp_bhc = (
+    "bhc/alg_name={alg_name}/bhc_start_alg=" + pattern_grasp + "/seed={seed}"
+)
+pattern_pc_bhc = "bhc/alg_name={alg_name}/bhc_start_alg=" + pattern_pc + "/seed={seed}"
+
+# With imposed poss_cvars
+pattern_pc_cslearn = (
+    "cslearn/alg_name={alg_name}/cslearn_poss_cvars="
+    + pattern_pc
+    + "/cslearn_mcmc_iterations={cslearn_mcmc_iterations}/"
+    "cslearn_alpha_tot={cslearn_alpha_tot}/cslearn_param_prior={cslearn_param_prior}/"
+    "cslearn_max_cvar={cslearn_max_cvar}/cslearn_prob_cvar={cslearn_prob_cvar}/seed={seed}"
+)
+pattern_grasp_cslearn = (
+    "cslearn/alg_name={alg_name}/cslearn_poss_cvars="
+    + pattern_grasp
+    + "/cslearn_mcmc_iterations={cslearn_mcmc_iterations}/"
+    "cslearn_alpha_tot={cslearn_alpha_tot}/cslearn_param_prior={cslearn_param_prior}/"
+    "cslearn_max_cvar={cslearn_max_cvar}/cslearn_prob_cvar={cslearn_prob_cvar}/seed={seed}"
+)
+
+# Parameter estimation
+pattern_dag_param_est = "dag_param_est/dag_param_est_estimation_type={dag_param_est_estimation_type}/dag_param_est_alpha={dag_param_est_alpha}/seed={seed}"  # type is bdeu or mle
+pattern_cstree_param_est = "cstree_param_est/cstree_param_est_estimation_type={cstree_param_est_estimation_type}/cstree_param_est_alpha={cstree_param_est_alpha}/seed={seed}"  # type is bdeu or mle
+pattern_st_param_est = "st_param_est/st_param_est_estimation_type={st_param_est_estimation_type}/st_param_est_alpha={st_param_est_alpha}/seed={seed}"  # type is bdeu or mle
+
+# Evaluation
+pattern_kl_div = "kl_div"
+
+
+container: "oras://docker.io/causaldev/cslearn-expt:1.3.3-amd64"
+
+
+def input_cvars(wildcards):
+    """
+    Input for the poss_cvars parameter of the cslearn algorithm
+    """
+
+    if wildcards.cslearn_poss_cvars == "None":
+        return []
+    else:
+        # the poss_cvars will be the pattern string of a DAG estimation algorithm
+        return (
+            "results/estimate"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + wildcards.cslearn_poss_cvars
+            + "/poss_cvars.json"
+        )
+
+
+def input_alg(wildcards):
+
+    if wildcards.bhc_start_alg == "None":
+        return []
+    else:
+        # the poss_cvars will be the pattern string of a DAG estimation algorithm
+        return (
+            "results/estimate"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + wildcards.bhc_start_alg
+            + "/dag.csv"
+        )  # dag.csv
+
+
+def input_time_bhc(wildcards):
+
+    if wildcards.bhc_start_alg == "None":
+        return []
+    else:
+        # the poss_cvars will be the pattern string of a DAG estimation algorithm
+        return (
+            "results/time"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + wildcards.bhc_start_alg
+            + "/time.csv"
+        )
+
+
+def input_time_cslearn(wildcards):
+
+    if wildcards.cslearn_poss_cvars == "None":
+        return []
+    else:
+        # the poss_cvars will be the pattern string of a DAG estimation algorithm
+        return (
+            "results/time"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + wildcards.cslearn_poss_cvars
+            + "/time.csv"
+        )
+
+
+rule test:
+    input:
+        #"results/kl_divergence_2c.pdf",
+        "results/time_3a.pdf",
+        "results/time_3b.pdf",
+
+
+rule all:
+    input:
+        "results/kl_divergence_2a.pdf",
+        "results/kl_divergence_2b.pdf",
+        "results/kl_divergence_2c.pdf",
+        "results/time_3a.pdf",
+        "results/time_3b.pdf",
+        "results/shd_a.pdf",
+        "results/shd_b.pdf",
+        "results/shd_c.pdf",
+        "results/shd_scale.pdf",
+        "results/sensitivity_shd.pdf",
+        "results/sensitivity_kl.pdf",
+
+
+# Reads a DAG (adjacency matrix) and returns a list of possible cvars
+# as a JSON file.
+rule dag_to_poss_cvar:
+    input:
+        "{whatever}/cpdag.csv",
+    output:
+        "{whatever}/poss_cvars.json",
+    script:
+        "scripts/dag_to_poss_cvar.py"
+
+
+rule cstree:
+    output:
+        "results/true_cstree/" + pattern_cstree + "/cstree.csv",
+    script:
+        "scripts/generate_cstree.py"
+
+
+rule cstree_params:
+    input:
+        cstree=rules.cstree.output,
+    output:
+        (
+            "results/true_cstree_params/"
+            + pattern_cstree_params
+            + "/true_cstree/"
+            + pattern_cstree
+            + "/cstree.csv"
+        ),
+    script:
+        "scripts/generate_cstree_params.py"
+
+
+rule full_true_cstree_distr:
+    input:
+        cstree_params=rules.cstree_params.output,
+    output:
+        (
+            "results/full_true_distr/"
+            + pattern_cstree
+            + "/true_cstree_params/"
+            + pattern_cstree_params
+            + "/distr.csv"
+        ),
+    script:
+        "scripts/full_true_cstree_distr.py"
+
+
+rule cstree_data:
+    input:
+        cstree=rules.cstree_params.output,
+    output:
+        (
+            "results/data"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/data.csv"
+        ),
+    script:
+        "scripts/simulate_data.py"
+
+
+rule bos:
+    # Use BOS to learn CPDAG from which poss_cvars and a Markov equiv DAG are selected
+    input:
+        data=rules.cstree_data.output,
+    output:
+        st=(
+            "results/estimate"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_bos
+            + "/structure.rds"
+        ),
+        time=(
+            "results/time"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_bos
+            + "/time.csv"
+        ),
+    container:
+        "docker://bpimages/stagedtrees:2.3.0"
+    script:
+        "scripts/estimate_bos.R"
+
+
+rule bhc:
+    # Use BHC to learn CPDAG from which poss_cvars and a Markov equiv DAG are selected
+    input:
+        data=rules.cstree_data.output,
+        input_alg_dag=input_alg,
+        input_alg_time=input_time_bhc,
+    output:
+        structure=(
+            "results/estimate"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_bhc
+            + "/structure.rds"
+        ),
+        time=(
+            "results/time"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_bhc
+            + "/time.csv"
+        ),
+    container:
+        "docker://bpimages/stagedtrees:2.3.0"
+    script:
+        "scripts/estimate_bhc.R"
+
+
+rule cslearn:
+    # cstree structure learning
+    input:
+        data=rules.cstree_data.output,
+        poss_cvars=input_cvars,  # will be empty if poss_cvars is None
+        input_time=input_time_cslearn,
+    output:
+        cstree=(
+            "results/estimate"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_cslearn
+            + "/structure.csv"
+        ),
+        time=(
+            "results/time"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_cslearn
+            + "/time.csv"
+        ),
+    script:
+        "scripts/estimate_cstree.py"
+
+
+rule grasp:
+    # Use GRaSP to learn CPDAG from which poss_cvars and a Markov equiv DAG are selected
+    input:
+        data=rules.cstree_data.output,
+    output:
+        cpdag=(
+            "results/estimate"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_grasp
+            + "/cpdag.csv"
+        ),
+        dag=(
+            "results/estimate"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_grasp
+            + "/dag.csv"
+        ),
+        time=(
+            "results/time"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_grasp
+            + "/time.csv"
+        ),
+    script:
+        "scripts/estimate_grasp.py"
+
+
+rule pc:
+    # Use PC to learn CPDAG from which poss_cvars and a Markov equiv DAG are selected
+    input:
+        rules.cstree_data.output,
+    output:
+        cpdag=(
+            "results/estimate"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_pc
+            + "/cpdag.csv"
+        ),
+        dag=(
+            "results/estimate"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_pc
+            + "/dag.csv"
+        ),
+        time=(
+            "results/time"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_pc
+            + "/time.csv"
+        ),
+    script:
+        "scripts/estimate_pc.py"
+
+
+# The parameters for the dag algorithms should be learned in separate rule,
+# as this is done in R for both grasp and pc.
+rule dag_bdeu_parameter_estimation:
+    input:
+        dag=(
+            "results/estimate"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/{alg}"
+            + "/dag.csv"
+        ),
+        data=rules.cstree_data.output,
+    output:
+        dag_param_est=(
+            "results/dag_param_est"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/{alg}"
+            + "/param_est=/"
+            + pattern_dag_param_est
+            + "/model.bif"
+        ),
+    script:
+        "scripts/dag_bdeu_parameter_estimation.py"
+
+
+# CS-BDeu
+rule cslearn_bdeu_parameter_estimation:
+    input:
+        cstree=rules.cslearn.output["cstree"],
+        data=rules.cstree_data.output,
+    output:
+        param_est=(
+            "results/cstree_param_est"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_cslearn
+            + "/param_est=/"
+            + pattern_cstree_param_est
+            + "/cstree.csv"
+        ),
+    script:
+        "scripts/cslearn_bdeu_parameter_estimation.py"
+
+
+rule stagedtree_ml_parameter_estimation:
+    input:
+        model=(
+            "results/estimate"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/{alg}"
+            + "/structure.rds"
+        ),
+        data=rules.cstree_data.output,
+    output:
+        param_est=(
+            "results/stagedtree_param_est"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/{alg}"
+            + "/param_est=/"
+            + pattern_st_param_est
+            + "/st.rds"
+        ),
+    container:
+        "docker://bpimages/stagedtrees:2.3.0"
+    script:
+        "scripts/stagedtree_ml_parameter_estimation.R"
+
+
+rule joint_stagedtree_distribution:
+    input:
+        st=(
+            "results/stagedtree_param_est"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/{alg_name}/{alg_parameters}"
+            + "/param_est=/{param_est}"
+            + "/st.rds"
+        ),
+        data=rules.cstree_data.output,
+    output:
+        full_distr=(
+            "results/full_distr"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/{alg_name}/{alg_parameters}"
+            + "/param_est=/{param_est}"
+            + "/distr.csv"
+        ),
+    wildcard_constraints:
+        alg_name="bos|bhc",
+    container:
+        "docker://bpimages/stagedtrees:2.3.0"
+    script:
+        "scripts/joint_stagedtree_distr.R"
+
+
+rule joint_dag_distribution:
+    # Estimate a distribution from data
+    input:
+        input_bn=(
+            "results/dag_param_est"
+            + "/true_cstree=/{true_cstree}"
+            + "/true_cstree_params=/{true_cstree_params}"
+            + "/data=/{data}"
+            + "/alg=/{alg_name}/{alg}"
+            + "/param_est=/{param_est}"
+            + "/model.bif"
+        ),
+    output:
+        full_distr=(
+            "results/full_distr"
+            + "/true_cstree=/{true_cstree}"
+            + "/true_cstree_params=/{true_cstree_params}"
+            + "/data=/{data}"
+            + "/alg=/{alg_name}/{alg}"
+            + "/param_est=/{param_est}"
+            + "/distr.csv"
+        ),
+    wildcard_constraints:
+        alg_name="grasp|pc",
+    script:
+        "scripts/joint_dag.py"
+
+
+rule joint_cstree_distribution:
+    # Estimate a distribution from data
+    input:
+        input_cstree=rules.cslearn_bdeu_parameter_estimation.output,
+        data=rules.cstree_data.output,
+    output:
+        full_distr=(
+            "results/full_distr"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_cslearn
+            + "/param_est=/"
+            + pattern_cstree_param_est
+            + "/distr.csv"
+        ),
+    script:
+        "scripts/joint_cstree.py"
+
+
+# Calculate KL divergence between estimated and true distribution
+rule kl_div_to_true:
+    input:
+        true=rules.full_true_cstree_distr.output,
+        est=(
+            "results/full_distr"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/{data}"
+            + "/alg=/{alg}"
+            + "/param_est=/{param_est}"
+            + "/distr.csv"
+        ),
+    output:
+        kl=(
+            "results/kl_div"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/{data}"
+            + "/alg=/{alg}"
+            + "/param_est=/{param_est}"
+            + "/kl_div.csv"
+        ),
+    script:
+        "scripts/kl_div.py"
+
+
+# Plot (2a): comparison of performance of parameter MAP estimate versus parameter MLE est with PC used in Phase 1:
+#
+# KL-divergence on y-axis
+# x-axis: number of nodes (p = 5, 7, 10, 15, 20)
+# algorithms:
+#
+#  - PC-estimated DAG (MLE) for n=10000
+#
+#  - CSlearn with PC (MLE) for n=250
+#  - CSlearn with PC (MLE) for n=500
+#  - CSlearn with PC (MLE) for n=1000
+#  - CSlearn with PC (MLE) for n=10000
+#
+#  - CSlearn with PC (MAP) for n=250
+#  - CSlearn with PC (MAP) for n=500
+#  - CSlearn with PC (MAP) for n=1000
+#  - CSlearn with PC (MAP) for n=10000
+rule kl_plots_2a_csv:
+    input:
+        cslearn_pc=expand(
+            (
+                "results/kl_div"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_pc_cslearn
+                + "/param_est=/"
+                + pattern_cstree_param_est
+                + "/kl_div.csv"
+            ),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[1],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 500, 1000, 10000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            pc_alpha=0.05,
+            cstree_param_est_alpha=[
+                1
+            ],  # this will be ignored for dag_param_est_type="mle"
+            cstree_param_est_estimation_type=["map", "mle"],
+            seed=seed_range,
+        ),
+        pc=expand(
+            (
+                "results/kl_div"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_pc
+                + "/param_est=/"
+                + pattern_dag_param_est
+                + "/kl_div.csv"
+            ),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[1],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[10000],
+            pc_alpha=0.05,
+            alg_name="pc",
+            dag_param_est_alpha=[1],
+            dag_param_est_estimation_type=["mle"],
+            seed=seed_range,
+        ),
+    output:
+        "results/kl_divergence_2a.csv",
+    script:
+        "scripts/join_csvs.py"
+
+
+# Plot (2b): comparison of performance of parameter MAP estimate versus parameter MLE est with GrASP used in Phase 1:
+# KL-divergence on y-axis
+# x-axis: number of nodes (p = 5,7,10,15,20)
+# algorithms:
+# - GrASP-estimated DAG (MLE) for n=10000
+# - CSlearn with GrASP (MAP) for n=250
+# - CSlearn with GrASP (MAP) for n=500
+# - CSlearn with GrASP (MAP) for n=1000
+# - CSlearn with GrASP (MAP) for n=10000
+# - CSlearn with GrASP (MLE) for n=250
+# - CSlearn with GrASP (MLE) for n=500
+# - CSlearn with GrASP (MLE) for n=1000
+# - CSlearn with GrASP (MLE) for n=10000
+rule kl_plots_2b_csv:
+    input:
+        cslearn_grasp=expand(
+            (
+                "results/kl_div"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp_cslearn
+                + "/param_est=/"
+                + pattern_cstree_param_est
+                + "/kl_div.csv"
+            ),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[1],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 500, 1000, 10000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            cstree_param_est_alpha=[
+                1
+            ],  # this will be ignored for dag_param_est_type="mle"
+            cstree_param_est_estimation_type=[
+                "mle",
+                "map",
+            ],  # might not need this, alpha=0 is mke#["mle", "map"],
+            seed=seed_range,
+        ),
+        grasp=expand(
+            (
+                "results/kl_div"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp
+                + "/param_est=/"
+                + pattern_dag_param_est
+                + "/kl_div.csv"
+            ),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[1],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[10000],
+            alg_name="grasp",
+            dag_param_est_alpha=[0],
+            dag_param_est_estimation_type=["mle"],
+            seed=seed_range,
+        ),
+    output:
+        "results/kl_divergence_2b.csv",
+    script:
+        "scripts/join_csvs.py"
+
+
+# Plot (2c): Comparison of CSlearn with other methods:
+#
+# KL-divergence on y-axis
+# x-axis: number of nodes (p = 5,7,10,15,20)
+# algorithms:
+#     - GrASP-estimated DAG (MLE) for n = 10000
+#     - CSlearn with GrASP for n = 1000
+#     - CSlearn with GrASP for n = 10000
+#     - bos (stagedtrees) with n = 1000
+#     - GrASP + bhc (stagedtrees) with n = 1000
+#     - GrASP + bhc (stagedtrees) with n = 10000
+# * notes:
+#     - best order search is only done for p = 5,7,10
+#     - GrASP + bhc is done for p = 5,7,10,15,20
+#     - bhc = backwards hill climbing
+#     - bos = best order search
+rule kl_plots_2c_csv:
+    input:
+        grasp=expand(
+            (
+                "results/kl_div"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp
+                + "/param_est=/"
+                + pattern_dag_param_est
+                + "/kl_div.csv"
+            ),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[10000],
+            alg_name="grasp",
+            dag_param_est_alpha=[0],
+            dag_param_est_estimation_type=["mle"],
+            seed=seed_range,
+        ),
+        cslearn_grasp=expand(
+            (
+                "results/kl_div"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp_cslearn
+                + "/param_est=/"
+                + pattern_cstree_param_est
+                + "/kl_div.csv"
+            ),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[1000, 10000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            cstree_param_est_alpha=[
+                0
+            ],  # this will be ignored for dag_param_est_type="mle"
+            cstree_param_est_estimation_type=["mle"],
+            seed=seed_range,
+        ),
+        bos=expand(
+            (
+                "results/kl_div"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_bos
+                + "/param_est=/"
+                + pattern_st_param_est
+                + "/kl_div.csv"
+            ),
+            cstree_p=[5, 7, 10],
+            alg_name="bos",
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[1000],
+            st_param_est_alpha=[0],
+            st_param_est_estimation_type=["mle"],
+            seed=seed_range,
+        ),
+        grasp_bhc=expand(
+            (
+                "results/kl_div"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp_bhc
+                + "/param_est=/"
+                + pattern_st_param_est
+                + "/kl_div.csv"
+            ),
+            cstree_p=[5, 7, 10, 15, 20],
+            alg_name="grasp",
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[1000, 10000],
+            st_param_est_alpha=[0],
+            st_param_est_estimation_type=["mle"],
+            seed=seed_range,
+        ),
+    output:
+        "results/kl_divergence_2c.csv",
+    script:
+        "scripts/join_csvs.py"
+
+
+# Plot (3a): comparison of runtimes (total times only) for all algorithms on small graphs with multiple sample sizes:
+#
+# Total Runtime on y-axis
+# x-axis: number of nodes (p = 5,7,10,15,20)
+# algorithms:
+#  - CSlearn with PC for n = 250
+#  - CSlearn with PC for n = 1000
+#  - CSlearn with GrASP for n = 250
+#  - CSlearn with GrASP for n = 1000
+#  - bos (stagedtrees) with n = 250
+#  - bos (stagedtrees) with n = 1000
+#  - GrASP + bhc (stagedtrees) with n = 250
+#  - GrASP + bhc (stagedtrees) with n = 1000
+rule time_plots_3a_csv:  # test
+    input:
+        cslearn_pc=expand(
+            (
+                "results/time"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_pc_cslearn
+                + "/time.csv"
+            ),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            pc_alpha=0.05,
+            seed=seed_range,
+        ),
+        cslearn_grasp=expand(
+            (
+                "results/time"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp_cslearn
+                + "/time.csv"
+            ),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            seed=seed_range,
+        ),
+        bos=expand(
+            (
+                "results/time"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_bos
+                + "/time.csv"
+            ),
+            cstree_p=[5, 7],  # 10,15,20 scale up?
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="bos",
+            seed=seed_range,
+        ),
+        grasp_bhc=expand(
+            (
+                "results/time"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp_bhc
+                + "/time.csv"
+            ),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="bhc",
+            seed=seed_range,
+        ),
+    output:
+        "results/time_3a.csv",
+    script:
+        "scripts/join_csvs.py"
+
+
+# Plot (3b): comparison of performance of scalable methods:
+#
+# Total Runtime on y-axis
+# x-axis: number of nodes (p = 10, 25, 50, 100, 250, 500)
+# algorithms:
+#  - CSlearn with PC
+#  - CSlearn with GrASP
+#  - GrASP + bhc (stagedtrees)
+# *notes:
+#  - number of samples n = 1000
+rule time_plots_3b_csv:
+    input:
+        cslearn_pc=expand(
+            (
+                "results/time"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_pc_cslearn
+                + "/time.csv"
+            ),
+            cstree_p=[10, 25, 50, 100, 250, 500],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[1000],
+            pc_alpha=0.05,
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            seed=seed_range,
+        ),
+        cslearn_grasp=expand(
+            (
+                "results/time"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp_cslearn
+                + "/time.csv"
+            ),
+            cstree_p=[10, 25, 50, 100, 250, 500],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            seed=seed_range,
+        ),
+        grasp_bhc=expand(
+            (
+                "results/time"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp_bhc
+                + "/time.csv"
+            ),
+            cstree_p=[10, 25],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[1],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[1000],
+            alg_name="bhc",
+            seed=seed_range,
+        ),
+    output:
+        "results/time_3b.csv",
+    script:
+        "scripts/join_csvs.py"
+
+
+rule kl_plots_2a:
+    input:
+        "results/kl_divergence_2a.csv",
+    output:
+        "results/kl_divergence_2a.pdf",
+    script:
+        "scripts/plot_kl.py"
+
+
+rule kl_plots_2b:
+    input:
+        "results/kl_divergence_2b.csv",
+    output:
+        "results/kl_divergence_2b.pdf",
+    script:
+        "scripts/plot_kl.py"
+
+
+rule kl_plots_2c:
+    input:
+        "results/kl_divergence_2c.csv",
+    output:
+        "results/kl_divergence_2c.pdf",
+    script:
+        "scripts/plot_kl.py"
+
+
+rule time_plots_3a:  # tested
+    input:
+        "results/time_3a.csv",
+    output:
+        "results/time_3a.pdf",
+    script:
+        "scripts/plot_time.py"
+
+
+rule time_plots_3b:
+    input:
+        "results/time_3b.csv",
+    output:
+        "results/time_3b.pdf",
+    script:
+        "scripts/plot_time.py"
+
+
+rule export_true_ldag:
+    input:
+        rules.cstree.output[0],
+    output:
+        "results/true_ldag/" + pattern_cstree + "/ldag_edges.csv",
+    script:
+        "scripts/export_true_ldag.py"
+
+
+rule shd_to_true_pc:
+    input:
+        true=rules.cstree.output[0],
+        est=(
+            "results/estimate"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_pc
+            + "/cpdag.csv"
+        ),
+    output:
+        (
+            "results/shd"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_pc
+            + "/shd.csv"
+        ),
+    params:
+        method="PC+DAG",
+    script:
+        "scripts/shd_dag.py"
+
+
+rule shd_to_true_grasp:
+    input:
+        true=rules.cstree.output[0],
+        est=(
+            "results/estimate"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_grasp
+            + "/cpdag.csv"
+        ),
+    output:
+        (
+            "results/shd"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_grasp
+            + "/shd.csv"
+        ),
+    params:
+        method="GRaSP+DAG",
+    script:
+        "scripts/shd_dag.py"
+
+
+rule shd_to_true_bos:
+    input:
+        true_ldag=rules.export_true_ldag.output[0],
+        est=rules.bos.output["st"],
+    output:
+        (
+            "results/shd"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_bos
+            + "/shd.csv"
+        ),
+    container:
+        "docker://bpimages/stagedtrees:2.3.0"
+    params:
+        method="BOS",
+    script:
+        "scripts/shd_stagedtree.R"
+
+
+rule shd_to_true_grasp_bhc:
+    input:
+        true_ldag=rules.export_true_ldag.output[0],
+        est=(
+            "results/estimate"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_grasp_bhc
+            + "/structure.rds"
+        ),
+    output:
+        (
+            "results/shd"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_grasp_bhc
+            + "/shd.csv"
+        ),
+    container:
+        "docker://bpimages/stagedtrees:2.3.0"
+    params:
+        method="GRaSP+BHC",
+    script:
+        "scripts/shd_stagedtree.R"
+
+
+rule shd_to_true:
+    input:
+        true=rules.cstree.output[0],
+        est=rules.cslearn.output["cstree"],
+    output:
+        (
+            "results/shd"
+            + "/true_cstree=/"
+            + pattern_cstree
+            + "/true_cstree_params=/"
+            + pattern_cstree_params
+            + "/data=/"
+            + pattern_cstree_data
+            + "/alg=/"
+            + pattern_cslearn
+            + "/shd.csv"
+        ),
+    script:
+        "scripts/shd.py"
+
+
+# Plot (4a): SHD — CSlearn+PC vs PC+DAG baseline (mirrors KL plot 2a).
+#
+# SHD (LDAG) on y-axis, x-axis: p = 5,7,10,15,20, n = 250/1000
+rule shd_plots_a_csv:
+    input:
+        cslearn_pc=expand(
+            (
+                "results/shd"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_pc_cslearn
+                + "/shd.csv"
+            ),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            pc_alpha=0.05,
+            seed=seed_range,
+        ),
+        pc_dag=expand(
+            (
+                "results/shd"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_pc
+                + "/shd.csv"
+            ),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            pc_alpha=0.05,
+            seed=seed_range,
+        ),
+    output:
+        "results/shd_a.csv",
+    script:
+        "scripts/join_csvs.py"
+
+
+# Plot (4b): SHD — CSlearn+GRaSP vs GRaSP+DAG baseline (mirrors KL plot 2b).
+#
+# SHD (LDAG) on y-axis, x-axis: p = 5,7,10,15,20, n = 250/1000
+rule shd_plots_b_csv:
+    input:
+        cslearn_grasp=expand(
+            (
+                "results/shd"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp_cslearn
+                + "/shd.csv"
+            ),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            seed=seed_range,
+        ),
+        grasp_dag=expand(
+            (
+                "results/shd"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp
+                + "/shd.csv"
+            ),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            seed=seed_range,
+        ),
+    output:
+        "results/shd_b.csv",
+    script:
+        "scripts/join_csvs.py"
+
+
+# Plot (4c): SHD — CSlearn+GRaSP vs BOS vs GRaSP+BHC (mirrors KL plot 2c).
+#
+# SHD (LDAG) on y-axis, x-axis: p = 5,7,10,15,20, n = 250/1000
+#  - BOS: p = 5,7,10 only (slow at larger p)
+#  - GRaSP+BHC: p = 5,7,10,15,20
+rule shd_plots_c_csv:
+    input:
+        cslearn_grasp=expand(
+            (
+                "results/shd"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp_cslearn
+                + "/shd.csv"
+            ),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            seed=seed_range,
+        ),
+        bos=expand(
+            (
+                "results/shd"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_bos
+                + "/shd.csv"
+            ),
+            cstree_p=[5, 7, 10],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="bos",
+            seed=seed_range,
+        ),
+        grasp_bhc=expand(
+            (
+                "results/shd"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp_bhc
+                + "/shd.csv"
+            ),
+            cstree_p=[5, 7, 10, 15, 20],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="bhc",
+            seed=seed_range,
+        ),
+    output:
+        "results/shd_c.csv",
+    script:
+        "scripts/join_csvs.py"
+
+
+# Plot (4d): SHD at scale — mirrors time_3b methods and p range.
+#
+# Methods: CSlearn+PC, CSlearn+GRaSP (p=10-500, n=1000, prob_cvar=0.5)
+#          GRaSP+BHC (p=10-25, n=1000, prob_cvar=1; can't scale further)
+rule shd_plots_scale_csv:
+    input:
+        cslearn_pc=expand(
+            (
+                "results/shd"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_pc_cslearn
+                + "/shd.csv"
+            ),
+            cstree_p=[10, 25, 50, 100, 250, 500],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            pc_alpha=0.05,
+            seed=seed_range,
+        ),
+        cslearn_grasp=expand(
+            (
+                "results/shd"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp_cslearn
+                + "/shd.csv"
+            ),
+            cstree_p=[10, 25, 50, 100, 250, 500],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            seed=seed_range,
+        ),
+        grasp_bhc=expand(
+            (
+                "results/shd"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp_bhc
+                + "/shd.csv"
+            ),
+            cstree_p=[10, 25],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[1],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[1000],
+            alg_name="bhc",
+            seed=seed_range,
+        ),
+    output:
+        "results/shd_scale.csv",
+    script:
+        "scripts/join_csvs.py"
+
+
+rule shd_plot_a:
+    input:
+        "results/shd_a.csv",
+    output:
+        "results/shd_a.pdf",
+    script:
+        "scripts/plot_shd.py"
+
+
+rule shd_plot_b:
+    input:
+        "results/shd_b.csv",
+    output:
+        "results/shd_b.pdf",
+    script:
+        "scripts/plot_shd.py"
+
+
+rule shd_plot_c:
+    input:
+        "results/shd_c.csv",
+    output:
+        "results/shd_c.pdf",
+    script:
+        "scripts/plot_shd.py"
+
+
+rule shd_plots_scale:
+    input:
+        "results/shd_scale.csv",
+    output:
+        "results/shd_scale.pdf",
+    script:
+        "scripts/plot_shd.py"
+
+
+# Sensitivity analysis: β-misspecification.
+#
+# Shows SHD (LDAG) when CSlearn+GRaSP (β_est=2) is applied to data from
+# CStrees with β_true ∈ {1, 2, 3}:
+#   β_true=1: over-specified (CSlearn's hypothesis class is richer than needed)
+#   β_true=2: correctly specified
+#   β_true=3: under-specified (CSlearn's hypothesis class cannot capture all
+#             context structures present in the data)
+#
+# p=5..15, n=250/1000, prob_cvar=0.5.
+rule sensitivity_shd_csv:
+    input:
+        correct=expand(
+            (
+                "results/shd"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp_cslearn
+                + "/shd.csv"
+            ),
+            cstree_p=[5, 7, 10, 15],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            seed=seed_range,
+        ),
+        under=expand(
+            (
+                "results/shd"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp_cslearn
+                + "/shd.csv"
+            ),
+            cstree_p=[5, 7, 10, 15],
+            cstree_max_cvar=[3],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            seed=seed_range,
+        ),
+        over=expand(
+            (
+                "results/shd"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp_cslearn
+                + "/shd.csv"
+            ),
+            cstree_p=[5, 7, 10, 15],
+            cstree_max_cvar=[1],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            seed=seed_range,
+        ),
+    output:
+        "results/sensitivity_shd.csv",
+    script:
+        "scripts/join_sensitivity_shd.py"
+
+
+rule sensitivity_shd_plot:
+    input:
+        "results/sensitivity_shd.csv",
+    output:
+        "results/sensitivity_shd.pdf",
+    script:
+        "scripts/plot_sensitivity_shd.py"
+
+
+# KL-divergence counterpart to sensitivity_shd_csv above: same experimental
+# setup (β_true ∈ {1, 2, 3} vs CSlearn's fixed β_est=2), KL-divergence instead
+# of SHD, MLE parameters only.
+rule sensitivity_kl_csv:
+    input:
+        correct=expand(
+            (
+                "results/kl_div"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp_cslearn
+                + "/param_est=/"
+                + pattern_cstree_param_est
+                + "/kl_div.csv"
+            ),
+            cstree_p=[5, 7, 10, 15],
+            cstree_max_cvar=[2],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            cstree_param_est_alpha=[1],
+            cstree_param_est_estimation_type=["mle"],
+            seed=seed_range,
+        ),
+        under=expand(
+            (
+                "results/kl_div"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp_cslearn
+                + "/param_est=/"
+                + pattern_cstree_param_est
+                + "/kl_div.csv"
+            ),
+            cstree_p=[5, 7, 10, 15],
+            cstree_max_cvar=[3],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            cstree_param_est_alpha=[1],
+            cstree_param_est_estimation_type=["mle"],
+            seed=seed_range,
+        ),
+        over=expand(
+            (
+                "results/kl_div"
+                + "/true_cstree=/"
+                + pattern_cstree
+                + "/true_cstree_params=/"
+                + pattern_cstree_params
+                + "/data=/"
+                + pattern_cstree_data
+                + "/alg=/"
+                + pattern_grasp_cslearn
+                + "/param_est=/"
+                + pattern_cstree_param_est
+                + "/kl_div.csv"
+            ),
+            cstree_p=[5, 7, 10, 15],
+            cstree_max_cvar=[1],
+            cstree_prob_cvar=[0.5],
+            cstree_params_alpha=[1.0],
+            cstree_data_n=[250, 1000],
+            alg_name="cslearn",
+            cslearn_max_cvar=[2],
+            cslearn_prob_cvar=[1],
+            cslearn_mcmc_iterations=[5000],
+            cslearn_alpha_tot=[1.0],
+            cslearn_param_prior=["BDeu"],
+            cstree_param_est_alpha=[1],
+            cstree_param_est_estimation_type=["mle"],
+            seed=seed_range,
+        ),
+    output:
+        "results/sensitivity_kl.csv",
+    script:
+        "scripts/join_sensitivity_kl.py"
+
+
+rule sensitivity_kl_plot:
+    input:
+        "results/sensitivity_kl.csv",
+    output:
+        "results/sensitivity_kl.pdf",
+    script:
+        "scripts/plot_sensitivity_kl.py"
+
+
+rule download_intermediates:
+    """Download the full intermediate results archive from Zenodo.
+
+    Use this to restore all intermediate files so that snakemake all can
+    skip recomputation and proceed directly to aggregation/plotting.
+    Not part of rule all.
+
+    Usage:
+        snakemake download_intermediates
+        snakemake all
+    """
+    output:
+        touch("results/.intermediates_downloaded"),
+    container:
+        None
+    params:
+        url=INTERMEDIATES_ARCHIVE_URL,
+    shell:
+        "curl -L {params.url} | tar xz -C ."

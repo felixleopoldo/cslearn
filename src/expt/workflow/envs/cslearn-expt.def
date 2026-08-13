@@ -1,0 +1,8 @@
+Bootstrap: docker
+From: python:3.12.4-bullseye
+
+%post
+    apt-get update -y
+    apt-get install -y python-dev-is-python3 graphviz libgraphviz-dev pkg-config
+    pip install --upgrade pip
+    pip install "cslearn[expt] @ git+https://github.com/felixleopoldo/cslearn.git@dd008df"

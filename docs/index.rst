@@ -1,5 +1,5 @@
 ================================================================================
-CStrees
+CSlearn
 ================================================================================
 
 .. include:: ../README.rst
@@ -11,7 +11,7 @@ CStrees
    :caption: Getting started
 
    Installation <install.rst>
-   Reference <source/cstrees.rst>
+   Reference <source/cslearn.rst>
    Example notebooks <source/examples.rst>
    
 .. toctree::

@@ -20,8 +20,9 @@ import os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # for no_parallel extension
 sys.path.append(os.path.abspath("../src"))
-sys.path.append(os.path.abspath("../src/cstrees"))
+sys.path.append(os.path.abspath("../src/cslearn"))
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -31,6 +32,7 @@ needs_sphinx = "4.3"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "no_parallel",
     "nbsphinx",
     "sphinx.ext.autodoc",
     "sphinx.ext.doctest",
@@ -57,7 +59,7 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = "cstrees"
+project = "cslearn"
 project_title = project.title()
 author = "Felix Rios, Alex Markham, and Liam Solus"
 copyright = "2023, %s" % author
