@@ -6,8 +6,14 @@
 seed_range = range(1, 11)
 
 # Precomputed results archive (~5.9 GB). Zenodo: https://doi.org/10.5281/zenodo.21198084
+# (concept DOI, resolves to latest version). Version 1.0.1 (record 22118137)
+# corrects a time/total_time column swap present in v1.0's CSlearn+PC/GRaSP
+# timing intermediates -- see the "fix: correct time/total_time swap in
+# stale CSlearn intermediates" commit. This URL is version-specific (Zenodo
+# direct file links don't follow the concept DOI to latest), so it must be
+# bumped by hand on any future re-upload.
 INTERMEDIATES_ARCHIVE_URL = (
-    "https://zenodo.org/records/21198085/files/intermediates.tar.gz"
+    "https://zenodo.org/records/22118137/files/intermediates.tar.gz"
 )
 
 # CStree model
