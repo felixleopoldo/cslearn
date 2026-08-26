@@ -1,0 +1,46 @@
+import pandas as pd
+from labels import canonical_method_label
+from palette import (
+    METHOD_COLORS,
+    METHOD_MARKERS,
+    _split_suffix,
+    add_shared_legend,
+    draw_lines,
+    grow_to_fit,
+    linestyles_for,
+    reserve_legend_margin,
+    set_plot_style,
+    sorted_methods,
+    square_grid,
+)
+
+plot_data = pd.read_csv(snakemake.input[0])
+plot_data["method"] = plot_data["method"].map(canonical_method_label).map(_split_suffix)
+plot_data["n"] = plot_data["n"].astype(int)
+
+methods = sorted_methods(plot_data["method"].unique())
+ns = sorted(plot_data["n"].unique())
+linestyle_map = linestyles_for(ns)
+
+set_plot_style()
+fig, axes = square_grid(1, 1, panel_size=2.1)
+ax = axes[0]
+
+draw_lines(ax, plot_data, "p", "kl_div", "method", "n", METHOD_COLORS, METHOD_MARKERS, linestyle_map)
+ax.set_yscale("log")
+
+fig.supxlabel("number of variables ($p$)")
+ax.set_ylabel("KL-divergence")
+
+# See plot_time.py's comment: growing height only (grow_to_fit) doesn't
+# affect a "beside" legend's width-fraction, so frac doesn't need
+# recomputing after growth here.
+grow_to_fit(fig, ax)
+FRAC = 0.42
+reserve_legend_margin(fig, "beside", FRAC)
+
+hue_entries = [(m, METHOD_COLORS[m], METHOD_MARKERS[m]) for m in methods]
+style_entries = [(f"n={n}", linestyle_map[n]) for n in ns]
+add_shared_legend(fig, hue_entries, style_entries, loc="beside", frac=FRAC, hue_ncol=1)
+
+fig.savefig(snakemake.output[0])

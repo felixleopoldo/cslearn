@@ -1,13 +1,25 @@
 import re
 
-import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
-from labels import BASELINE_METHODS, canonical_method_label
-from palette import method_hue_style, sorted_hues
+from labels import canonical_method_label
+from palette import (
+    METHOD_COLORS,
+    METHOD_MARKERS,
+    add_shared_legend,
+    draw_lines,
+    grow_to_fit,
+    legend_height_in,
+    linestyles_for,
+    reserve_legend_margin,
+    set_plot_style,
+    sorted_methods,
+    square_grid,
+)
 
-plot_data = pd.read_csv(snakemake.input[0])
-plot_data["method"] = plot_data["method"].map(canonical_method_label)
+PANEL_SIZE = 1.59  # 4 panels x 1.59in = 6.36in vs. \textwidth's exact 6.396431in (verified via
+# a scratch `\the\textwidth` compile, not the earlier approximation) -- 0.036in/2.6pt margin,
+# close to the practical ceiling a 1x4 row can use at this page width; see CLAUDE.md's sizing note.
+HUE_NCOL = 4
 
 _SUFFIX_RE = re.compile(r"^(?P<base>.+) \((?P<suffix>MLE|MAP)\)$")
 
@@ -17,83 +29,66 @@ def split_suffix(label):
     return (m["base"], m["suffix"]) if m else (label, None)
 
 
-plot_data["_base_method"], plot_data["_param"] = zip(*plot_data["method"].map(split_suffix))
-plot_data["hue"] = plot_data["_base_method"] + ", n=" + plot_data["n"].astype(str)
+sources = [("PC", snakemake.input.a), ("GRaSP", snakemake.input.b)]
 
-hue_order = sorted_hues(plot_data["hue"].unique())
-palette = method_hue_style(hue_order)
+# One panel per (phase-1 method, estimator) combination -- 1x4, not a 2x2 of
+# phase-1-method columns x estimator rows, for consistency with figure 5's
+# "one row of square panels sharing a metric" shape. Methods with no MAP
+# variant (the plain PC/GRaSP baselines, only ever estimated via MLE) act as
+# a fixed reference and appear in both the MLE and MAP panel of their
+# column, not siloed into just the MLE one.
+panels = []
+all_methods, all_ns = set(), set()
+for phase1, path in sources:
+    df = pd.read_csv(path)
+    df["method"] = df["method"].map(canonical_method_label)
+    df["n"] = df["n"].astype(int)
+    df["_base_method"], df["_param"] = zip(*df["method"].map(split_suffix))
+    all_methods.update(df["_base_method"].unique())
+    all_ns.update(df["n"].unique())
 
-# Facet MLE/MAP into stacked rows (each gets the full print width) instead of
-# cramming a 3rd dimension (method x n x MLE/MAP) into one panel via
-# color+hatch, per palette.py's rationale. Falls back to a single panel when
-# a CSV has no MAP data (e.g. kl_divergence_2c).
-param_order = [p for p in ["MLE", "MAP"] if p in plot_data["_param"].unique()] or [None]
+    methods_with_map = set(df.loc[df["_param"] == "MAP", "_base_method"].unique())
+    for param in ["MLE", "MAP"]:
+        subset = df[(df["_param"] == param) | (~df["_base_method"].isin(methods_with_map))]
+        panels.append((f"{phase1}, {param}", subset))
 
-sns.set(font_scale=0.9)
-sns.set_style("white")
-sns.set_style({"legend.frameon": False})
+linestyle_map = linestyles_for(all_ns)
+hue_entries = [(m, METHOD_COLORS[m], METHOD_MARKERS[m]) for m in sorted_methods(all_methods)]
+style_entries = [(f"n={n}", linestyle_map[n]) for n in sorted(all_ns)]
 
-legend_height = 0.16 * len(hue_order) + 0.15
-fig, axes = plt.subplots(
-    len(param_order), 1, figsize=(2.9, 1.9 * len(param_order) + legend_height), sharex=True, sharey=True
-)
-axes = [axes] if len(param_order) == 1 else list(axes)
+set_plot_style()
+fig, axes = square_grid(1, 4, panel_size=PANEL_SIZE)
 
-# Only meaningful when the CSV actually has a real MLE-vs-MAP split for some
-# method (kl_divergence_2a/2b): methods with no MAP variant (the plain
-# PC/GRaSP baselines, only ever estimated via MLE) act as a fixed reference
-# and should show up in every row, not get siloed into the MLE facet. When
-# nothing in the CSV has a MAP variant at all (kl_divergence_2c -- every row
-# is "(MLE)", but that's not an MLE-vs-MAP comparison, just a flat
-# method-vs-method one, like time_3a/shd_c), there's only one row and this
-# doesn't apply.
-has_map_facet = "MAP" in plot_data["_param"].unique()
-methods_with_map = set(plot_data.loc[plot_data["_param"] == "MAP", "_base_method"].unique()) if has_map_facet else set()
+# Letter each panel (a-d): with no more per-panel LaTeX subfigure, this is
+# now the only way the manuscript prose can point at one specific panel
+# ("Figure~\ref{fig:kl-div}(a)" instead of the old separate fig:kl-div-2a
+# label a subfigure environment used to provide).
+for letter, ax, (title, subset) in zip("abcd", axes.flat, panels):
+    draw_lines(ax, subset, "p", "kl_div", "_base_method", "n", METHOD_COLORS, METHOD_MARKERS, linestyle_map)
+    ax.set_yscale("log")
+    ax.set_title(f"({letter}) {title}")
 
-# The row title names the CSlearn method whose estimator the row's title
-# actually describes -- the baseline (no MAP variant) isn't "MAP" just
-# because it's shown in that row too; see its own legend label below.
-cslearn_method = "/".join(sorted(methods_with_map))
+fig.supxlabel("number of variables ($p$)")
+# set_ylabel on just the leftmost panel, not fig.supylabel: matplotlib
+# centers a per-axes ylabel on that axes' own box natively, whereas
+# supylabel centers on the whole figure canvas -- with a legend margin
+# reserved above, those aren't the same point, so supylabel read as
+# vertically offset from the actual panels.
+axes[0].set_ylabel("KL-divergence")
 
-for ax, param in zip(axes, param_order):
-    if param is None:
-        subset = plot_data
-    else:
-        subset = plot_data[(plot_data["_param"] == param) | (~plot_data["_base_method"].isin(methods_with_map))]
-    sns.boxplot(data=subset, x="p", y="kl_div", hue="hue", hue_order=hue_order, palette=palette, linewidth=1.0, ax=ax)
-    ax.get_legend().remove()
-    ax.set(xlabel="", ylabel="KL-divergence")
-    if has_map_facet:
-        ax.set_title(f"{cslearn_method} ({param})", loc="left", fontsize="small")
+# Let the panels grow into whatever horizontal space square_grid's box
+# height starvation was leaving unused (see grow_to_fit) before reserving
+# room for the legend -- reserving the legend margin first, against the
+# too-small starved row, was locking in the waste instead of recovering it.
+grow_to_fit(fig, axes[0])
 
-axes[-1].set_xlabel("number of variables ($p$)")
+# Margin sized from the legend's actual content (row counts) and the row's
+# now-final (post-growth) height, not a guess -- an earlier guessed
+# fraction left the legend overlapping the panels.
+legend_h = legend_height_in(len(hue_entries), HUE_NCOL, len(style_entries))
+frac = legend_h / (fig.get_figheight() + legend_h)
+reserve_legend_margin(fig, "above", frac)
 
+add_shared_legend(fig, hue_entries, style_entries, loc="above", frac=frac, hue_ncol=HUE_NCOL)
 
-def display_label(hue):
-    """"Baseline" (PC/GRaSP, no CSlearn refinement) is a property of the
-    method itself -- see BASELINE_METHODS -- so it's labeled consistently
-    here and in every other figure that shows it (plot_time.py, plot_shd.py),
-    regardless of whether this particular CSV has a real MLE-vs-MAP split.
-    When it does (kl_divergence_2a/2b), the baseline is shown unchanged in
-    every row, so its label also states its estimator explicitly -- otherwise
-    it reads as "we also computed a MAP version of the baseline", which is
-    false."""
-    method, n = hue.rsplit(", n=", 1)
-    if method not in BASELINE_METHODS:
-        return hue
-    suffix = " (MLE)" if has_map_facet else ""
-    return f"{method} baseline{suffix}, n={n}"
-
-
-handles = [plt.Rectangle((0, 0), 1, 1, facecolor=palette[h], edgecolor="black") for h in hue_order]
-fig.legend(
-    handles,
-    [display_label(h) for h in hue_order],
-    loc="upper center",
-    bbox_to_anchor=(0.5, -0.22),
-    bbox_transform=axes[-1].transAxes,
-    ncol=1,
-    frameon=False,
-)
-
-fig.savefig(snakemake.output[0], bbox_inches="tight")
+fig.savefig(snakemake.output[0])

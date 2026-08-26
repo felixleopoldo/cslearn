@@ -25,20 +25,28 @@ _BASE_LABELS = {
 _SUFFIX_RE = re.compile(r"^(?P<base>.+?)\s*\((?P<suffix>mle|map)\)$", re.IGNORECASE)
 
 # Phase-1-only methods with no CSlearn context-specific refinement -- shown in
-# every figure as a fixed reference, never as "the paper's own method". A
-# property of the method itself, not of any one CSV, so plots label it as
-# "baseline" wherever it appears.
+# every figure as a fixed reference, never as "the paper's own method". Not
+# distinguished by a "baseline" word in the label (that cost legend width
+# every figure needed back once legends moved beside/within narrower
+# columns); the distinction is carried by the method name itself plus the
+# surrounding prose.
 BASELINE_METHODS = {"PC", "GRaSP"}
 
 
-def baseline_display_label(hue: str) -> str:
-    """Given a "<canonical method>, n=<n>" hue string, mark it as a baseline
-    if its method is Phase-1-only (see BASELINE_METHODS). Leaves non-baseline
-    hues unchanged."""
-    method, n = hue.rsplit(", n=", 1)
+def baseline_method_label(method: str, mle_suffix: bool = False) -> str:
+    """Canonical legend label for a bare method name.
+
+    `mle_suffix` states a baseline's estimator explicitly (" (MLE)") --
+    only meaningful when the figure/legend also shows a real MLE-vs-MAP split
+    for some other method (kl_divergence_2a/2b), where the baseline appears
+    unchanged in both, so it must say which estimator that unchanging value
+    actually is; otherwise it reads as "we also computed a MAP version of the
+    baseline", which is false.
+    """
     if method in BASELINE_METHODS:
-        return f"{method} baseline, n={n}"
-    return hue
+        suffix = " (MLE)" if mle_suffix else ""
+        return f"{method}{suffix}"
+    return method
 
 
 def canonical_method_label(raw: str) -> str:

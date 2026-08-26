@@ -147,24 +147,16 @@ def input_time_cslearn(wildcards):
 
 rule test:
     input:
-        #"results/kl_divergence_2c.pdf",
-        "results/time_3a.pdf",
-        "results/time_3b.pdf",
+        "results/time.pdf",
 
 
 rule all:
     input:
-        "results/kl_divergence_2a.pdf",
-        "results/kl_divergence_2b.pdf",
-        "results/kl_divergence_2c.pdf",
-        "results/time_3a.pdf",
-        "results/time_3b.pdf",
-        "results/shd_a.pdf",
-        "results/shd_b.pdf",
-        "results/shd_c.pdf",
-        "results/shd_scale.pdf",
-        "results/sensitivity_shd.pdf",
-        "results/sensitivity_kl.pdf",
+        "results/kl_divergence_dagbaselines.pdf",
+        "results/kl_divergence_stagedtrees.pdf",
+        "results/time.pdf",
+        "results/shd.pdf",
+        "results/sensitivity.pdf",
 
 
 # Reads a DAG (adjacency matrix) and returns a list of possible cvars
@@ -1145,47 +1137,52 @@ rule time_plots_3b_csv:
         "scripts/join_csvs.py"
 
 
-rule kl_plots_2a:
+# Figure 2 (kl-div 2a+2b): one Python-assembled 1x4 grid (PC/MLE, PC/MAP,
+# GRaSP/MLE, GRaSP/MAP), sharing one legend above instead of each of the
+# former 2a/2b panels drawing an identical n/linestyle legend row
+# independently -- see plot_kl.py and palette.py's square_grid/
+# add_shared_legend. One script, one PDF, included in the manuscript at
+# native size (no \includegraphics width= -- see CLAUDE.md). Named for what
+# it compares against (plain DAG-learning baselines: PC, GRaSP), paired
+# with figure 3's kl_divergence_stagedtrees.pdf (staged-tree baselines) --
+# not by figure number, which is a vestige that goes stale if the
+# manuscript's figure order ever shifts (see kl_plot_stagedtrees's comment,
+# the same reasoning that renamed that one away from "2c").
+rule kl_plot_dagbaselines:
     input:
-        "results/kl_divergence_2a.csv",
+        a="results/kl_divergence_2a.csv",
+        b="results/kl_divergence_2b.csv",
     output:
-        "results/kl_divergence_2a.pdf",
+        "results/kl_divergence_dagbaselines.pdf",
     script:
         "scripts/plot_kl.py"
 
 
-rule kl_plots_2b:
-    input:
-        "results/kl_divergence_2b.csv",
-    output:
-        "results/kl_divergence_2b.pdf",
-    script:
-        "scripts/plot_kl.py"
-
-
-rule kl_plots_2c:
+# Figure 3: CSlearn (GRaSP) vs. staged-tree baselines (BOS, Backwards Hill
+# Climbing). Single panel + its own legend, assembled together in one script
+# instead of two separately-generated PDFs. Named for content, not for the
+# input CSV's "2c" suffix -- that naming was a vestige of an older draft
+# where this was one panel of a three-panel figure alongside kl_divergence_2a/2b;
+# it's its own figure now, and "2c" describes nothing about the current
+# structure. (The CSV itself, kl_divergence_2c.csv, keeps its existing name --
+# that's the aggregation pipeline's naming, out of scope here.)
+rule kl_plot_stagedtrees:
     input:
         "results/kl_divergence_2c.csv",
     output:
-        "results/kl_divergence_2c.pdf",
+        "results/kl_divergence_stagedtrees.pdf",
     script:
-        "scripts/plot_kl.py"
+        "scripts/plot_kl_stagedtrees.py"
 
 
-rule time_plots_3a:  # tested
+# Figure 4 (runtime): one Python-assembled 1x2 grid (3a, 3b) with one shared
+# legend beside -- see plot_time.py.
+rule time_plot:
     input:
-        "results/time_3a.csv",
+        a="results/time_3a.csv",
+        b="results/time_3b.csv",
     output:
-        "results/time_3a.pdf",
-    script:
-        "scripts/plot_time.py"
-
-
-rule time_plots_3b:
-    input:
-        "results/time_3b.csv",
-    output:
-        "results/time_3b.pdf",
+        "results/time.pdf",
     script:
         "scripts/plot_time.py"
 
@@ -1634,38 +1631,24 @@ rule shd_plots_scale_csv:
         "scripts/join_csvs.py"
 
 
-rule shd_plot_a:
+# Figure 5 (SHD): all 4 panels assembled in one Python-generated 1x4 grid
+# (square_grid/add_shared_legend, see palette.py) instead of 4 separately
+# generated panel PDFs + a separate legend PDF stitched together in LaTeX --
+# that split-file design was what made an earlier "4 panels in one row"
+# attempt illegible (each panel authored at 2.9in but LaTeX-displayed at a
+# narrower 0.24\textwidth, shrinking the embedded fonts with it) and, this
+# round, produced cropped x-axis labels (each narrow panel had to fit its
+# own full label set with no shared margin). One script, one PDF, included
+# in the manuscript at native size (no \includegraphics width= -- see
+# CLAUDE.md's "authored width must equal display width" note).
+rule shd_plot:
     input:
-        "results/shd_a.csv",
+        a="results/shd_a.csv",
+        b="results/shd_b.csv",
+        c="results/shd_c.csv",
+        scale="results/shd_scale.csv",
     output:
-        "results/shd_a.pdf",
-    script:
-        "scripts/plot_shd.py"
-
-
-rule shd_plot_b:
-    input:
-        "results/shd_b.csv",
-    output:
-        "results/shd_b.pdf",
-    script:
-        "scripts/plot_shd.py"
-
-
-rule shd_plot_c:
-    input:
-        "results/shd_c.csv",
-    output:
-        "results/shd_c.pdf",
-    script:
-        "scripts/plot_shd.py"
-
-
-rule shd_plots_scale:
-    input:
-        "results/shd_scale.csv",
-    output:
-        "results/shd_scale.pdf",
+        "results/shd.pdf",
     script:
         "scripts/plot_shd.py"
 
@@ -1764,15 +1747,6 @@ rule sensitivity_shd_csv:
         "results/sensitivity_shd.csv",
     script:
         "scripts/join_sensitivity_shd.py"
-
-
-rule sensitivity_shd_plot:
-    input:
-        "results/sensitivity_shd.csv",
-    output:
-        "results/sensitivity_shd.pdf",
-    script:
-        "scripts/plot_sensitivity_shd.py"
 
 
 # KL-divergence counterpart to sensitivity_shd_csv above: same experimental
@@ -1876,13 +1850,18 @@ rule sensitivity_kl_csv:
         "scripts/join_sensitivity_kl.py"
 
 
-rule sensitivity_kl_plot:
+# Figure 6 (sensitivity): one Python-assembled 1x2 grid (KL divergence, SHD)
+# with one shared legend beside -- see plot_sensitivity.py. Unlike every
+# other combined figure, the two panels don't share a y-axis (different
+# metrics), so square_grid is called with sharey=False there.
+rule sensitivity_plot:
     input:
-        "results/sensitivity_kl.csv",
+        kl="results/sensitivity_kl.csv",
+        shd="results/sensitivity_shd.csv",
     output:
-        "results/sensitivity_kl.pdf",
+        "results/sensitivity.pdf",
     script:
-        "scripts/plot_sensitivity_kl.py"
+        "scripts/plot_sensitivity.py"
 
 
 rule download_intermediates:
