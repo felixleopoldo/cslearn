@@ -157,6 +157,7 @@ rule all:
         "results/time.pdf",
         "results/shd.pdf",
         "results/sensitivity.pdf",
+        "results/runtime_phases.pdf",
 
 
 # Reads a DAG (adjacency matrix) and returns a list of possible cvars
@@ -1185,6 +1186,23 @@ rule time_plot:
         "results/time.pdf",
     script:
         "scripts/plot_time.py"
+
+
+# Supplement figure: CSlearn+PC's own runtime split into its two phases
+# (the constraint-based PC step vs. the Gibbs sampler + exact search step,
+# see estimate_cstree.py) at n=1000, p up to 500. Reads time_3b.csv
+# directly -- both components (the CSlearn-only "time" column and the
+# "total_time" it's a part of) are already in that CSV, no separate
+# aggregation rule needed. Replaces an old (Feb 2024, pre-Snakemake)
+# hand-generated PDF that was never reproducible from committed data and
+# used a different plotting style; see CLAUDE.md.
+rule runtime_phases_plot:
+    input:
+        "results/time_3b.csv",
+    output:
+        "results/runtime_phases.pdf",
+    script:
+        "scripts/plot_runtime_phases.py"
 
 
 rule export_true_ldag:

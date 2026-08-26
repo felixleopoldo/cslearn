@@ -52,6 +52,12 @@ CLAUDE.md's "One figure, one script" note for why.
 | `results/time.pdf` | `time_plot` | `time_3a.csv` + `3b.csv` |
 | `results/shd.pdf` | `shd_plot` | `shd_a.csv` + `shd_b.csv` + `shd_c.csv` + `shd_scale.csv` |
 | `results/sensitivity.pdf` | `sensitivity_plot` | `sensitivity_kl.csv` + `sensitivity_shd.csv` |
+| `results/runtime_phases.pdf` | `runtime_phases_plot` | `time_3b.csv` |
+
+`runtime_phases.pdf` is a supplement figure (CSlearn+PC's own runtime split
+into its constraint-based/PC phase vs. Gibbs sampler + exact search phase,
+at n=1000) -- not one of the five main-text figures above, but reproducible
+the same way, from the same committed `time_3b.csv`.
 
 Every legend renders via `palette.py`'s `add_shared_legend`: a two-part
 legend (one grid of method/β-arm entries -- color + marker -- up to
@@ -69,9 +75,9 @@ downloads or recomputation:
 
 ```bash
 snakemake results/kl_divergence_dagbaselines.pdf results/kl_divergence_stagedtrees.pdf results/time.pdf \
-  results/shd.pdf results/sensitivity.pdf \
+  results/shd.pdf results/sensitivity.pdf results/runtime_phases.pdf \
   --use-apptainer --cores 1 \
-  --allowed-rules kl_plot_dagbaselines kl_plot_stagedtrees time_plot shd_plot sensitivity_plot
+  --allowed-rules kl_plot_dagbaselines kl_plot_stagedtrees time_plot shd_plot sensitivity_plot runtime_phases_plot
 ```
 
 PDFs appear in `results/`.
