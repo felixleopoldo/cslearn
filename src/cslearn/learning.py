@@ -252,9 +252,7 @@ def _find_optimal_order(score_table):
 
     # iterate over all permutations
     for perm in list(perms):
-        # dont stage the last variable. What do i mean by this? /Felix
         order = list(perm)
-        # maybe it should be the indices instead...
         score = sc.score_order(order, score_table)
 
         if score > max_score:
