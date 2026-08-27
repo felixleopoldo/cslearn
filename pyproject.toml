@@ -27,6 +27,7 @@ dev = [
     "ipykernel",
     "mpl-tools",
     "pp-ez",
+    "pikepdf>=10.12.0",
 ]
 expt = [
     "seaborn",

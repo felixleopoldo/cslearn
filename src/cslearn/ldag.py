@@ -22,10 +22,13 @@ class LDAG(nx.DiGraph):
         args="",
         with_legend=False,
         fontsize=10,
+        fontname="CMU Serif",
         compact=True,
         nodesep="0.05",
         ranksep="0.1",
         margin="0.02,0.01",
+        node_labels=None,
+        no_constraint_edges=None,
     ):
         """Render this LDAG via graphviz.
 
@@ -34,47 +37,57 @@ class LDAG(nx.DiGraph):
             args: extra raw graphviz args, passed through to ``AGraph.layout``.
             with_legend: if True, replace each edge's (possibly long) context
                 label with a single letter and return a dict mapping letters
-                back to the original labels, instead of drawing the labels in
+                back to the original labels, instead of drawing labels in
                 full. Long context strings otherwise dominate the layout's
-                footprint -- e.g. the Mushroom LDAG has edge labels up to 79
-                characters, which alone pushed its native width to ~1400pt,
-                far past what fits on a printed page even after shrinking
-                every other lever.
+                footprint and can push a figure past printable page width.
+            node_labels: optional dict mapping node name to replacement label
+                text (e.g. abbreviations for long feature names). Applied
+                before layout, so box sizes reflect the replacement text.
+            no_constraint_edges: optional iterable of (u, v) edges to mark
+                ``constraint=false`` before layout, so dot's ranking
+                algorithm doesn't force a bridge edge between two loosely
+                related subgraphs to pull them into opposite corners.
             fontsize: pt size for graph/node/edge text (JCGS requires >=10pt
-                *as printed*; since these figures are always embedded scaled
-                down from native size, set the authored size here rather than
-                relying on graphviz's 14pt default).
+                as printed; these figures are embedded at native size, so
+                the authored size here is the printed size).
+            fontname: graphviz font family. Graphviz's default (Times) has a
+                larger x-height than the manuscript's ``lmodern`` body font,
+                so matching size doesn't mean matching visual size; "CMU
+                Serif" (via devenv's ``FONTCONFIG_FILE``) does.
             compact: if True (default), use a tight box node shape/margin and
-                nodesep/ranksep instead of graphviz's defaults (padded
-                ellipses at 0.25in/0.5in spacing). Ellipses need extra room to
-                keep text inside the oval boundary; for graphs with many
-                nodes per rank this alone can be the difference between
-                fitting on a page and not (confirmed on ALARM: default
-                spacing/shape landed at 820pt native width, box+tight spacing
-                at 426pt).
-            nodesep, ranksep, margin: graphviz spacing/padding to use when
-                ``compact`` is True. The defaults are enough for most graphs;
-                denser ones (e.g. Mushroom's 22 nodes) may need tighter
-                values to fit a printed page even after ``with_legend``.
+                nodesep/ranksep instead of graphviz's default padded
+                ellipses, which need extra room to fit text and can be the
+                difference between fitting a page and not.
+            nodesep, ranksep, margin: graphviz spacing/padding used when
+                ``compact`` is True; denser graphs may need tighter values.
         """
+        agraph = nx.nx_agraph.to_agraph(self)
+        if no_constraint_edges:
+            for u, v in no_constraint_edges:
+                agraph.get_edge(u, v).attr["constraint"] = "false"
+        if node_labels:
+            for node, label in node_labels.items():
+                if agraph.has_node(node):
+                    agraph.get_node(node).attr["label"] = label
         if with_legend:
+            # Substitute on the AGraph copy, not self's edge attrs, so a
+            # re-plotted LDAG doesn't get re-lettered on a second call.
             strs = (letter for letter in ascii_letters)
             legend_dict = {}
-            for pa, ch, attr in self.edges(data=True):
-                if "label" not in attr:
+            for u, v in agraph.edges():
+                edge = agraph.get_edge(u, v)
+                if "label" not in edge.attr or not edge.attr["label"]:
                     continue
                 new_label = next(strs)
-                legend_dict[new_label] = attr["label"]
-                attr["label"] = new_label
-        agraph = nx.nx_agraph.to_agraph(self)
-        # graphviz defaults to 14pt Times; JCGS requires figure text >=10pt, and
-        # since these figures are always embedded at less than native size (see
-        # \includegraphics[width=...] in the manuscript), the *effective* printed
-        # size is smaller still unless the authored size is set explicitly here.
-        # Node AND edge attrs both matter -- LDAG context labels live on edges.
+                legend_dict[new_label] = edge.attr["label"]
+                edge.attr["label"] = new_label
+        # Edge attrs matter too, not just node -- LDAG context labels live on edges.
         agraph.graph_attr["fontsize"] = fontsize
         agraph.node_attr["fontsize"] = fontsize
         agraph.edge_attr["fontsize"] = fontsize
+        agraph.graph_attr["fontname"] = fontname
+        agraph.node_attr["fontname"] = fontname
+        agraph.edge_attr["fontname"] = fontname
         if compact:
             agraph.graph_attr["nodesep"] = nodesep
             agraph.graph_attr["ranksep"] = ranksep
@@ -152,7 +165,16 @@ def _collectParents(v, df):
     return parents
 
 
-def _collectVertexLabels(v, df):
+def _collectVertexLabels(v, df, keep_vars=False):
+    """Collect, per parent, the list of CSI relations that label its edge to ``v``.
+
+    Args:
+        keep_vars: if False (default), each relation is the bare list of
+            context values (``Bcontexts``), used by ``to_LDAG()``'s edge-label
+            rendering. If True, each relation is ``list(zip(B, Bcontexts))``
+            instead, pairing each value with its variable -- needed to render
+            a human-readable "variable = value" context string.
+    """
     CSIs = _collectCSIs(v, df)
     m = len(CSIs)
 
@@ -172,7 +194,10 @@ def _collectVertexLabels(v, df):
         for i in range(m):
             if CSIs[i][0].count(k) == 0:
                 padict[k] += [CSIs[i]]
-                labels[k] += [CSIs[i][1]]
+                if keep_vars:
+                    labels[k] += [list(zip(CSIs[i][0], CSIs[i][1]))]
+                else:
+                    labels[k] += [CSIs[i][1]]
         edgeLabels[(k, v)] = labels[k]
 
         kvanish = [len(x[0]) for x in padict[k]]
@@ -189,11 +214,11 @@ def _collectVertexLabels(v, df):
     return edgeLabels
 
 
-def _collectLabels(df):
+def _collectLabels(df, keep_vars=False):
     num_nodes = len(list(df.columns))
     labels = {}
     for i in range(num_nodes):
-        labels.update(_collectVertexLabels(i, df))
+        labels.update(_collectVertexLabels(i, df, keep_vars=keep_vars))
 
     return labels
 

@@ -1006,12 +1006,22 @@ class CStree:
             self.labels = [old_labels[idx] for idx in self.labels]
         return self
 
-    def to_LDAG(self):
+    def to_LDAG(self, return_contexts=False):
         """Return the LDAG representation of the CStree.
+
+        Args:
+            return_contexts: if True, also return a dict mapping each edge to
+                its CSI relations as ``(variable, value)`` pairs, rather than
+                just the bare context values the edge's own ``"label"``
+                attribute carries. Useful for building a human-readable
+                context table.
 
         Returns:
             nx.DiGraph: A DAG whose edges carry CSI-relation labels. Node labels
-            match ``self.labels``.
+            match ``self.labels``. If ``return_contexts`` is True, returns a
+            ``(LDAG, contexts)`` tuple instead, where ``contexts`` maps each
+            edge to a list of its CSI relations, each relation a list of
+            ``(variable, value)`` pairs.
         """
 
         df = self.to_df()
@@ -1039,7 +1049,20 @@ class CStree:
         LDAG = nx.relabel_nodes(LDAG, newVertices)
         nx.set_edge_attributes(LDAG, newLabels, "label")
 
-        return LDAG
+        if not return_contexts:
+            return LDAG
+
+        contexts = ldag._collectLabels(df, keep_vars=True)
+        contextEdges = ldag._updateEdges(contexts, varorder)
+        contextkeys = list(contexts.keys())
+        namedContexts = {}
+        for i in range(len(contextkeys)):
+            relations = contexts[contextkeys[i]]
+            namedContexts[contextEdges[i]] = [
+                [(varorder[var_idx], value) for var_idx, value in relation] for relation in relations
+            ]
+
+        return LDAG, namedContexts
 
     def pmf(self, x, label_order=None):
         """Calculate the probability mass function of a given outcome.
