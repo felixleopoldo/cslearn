@@ -34,21 +34,29 @@ def write_minimal_context_graphs_to_files(context_dags, prefix="mygraphs"):
 
     for key, val in context_dags.items():
         agraph = nx.nx_agraph.to_agraph(val)
+        agraph.graph_attr["fontsize"] = 10
+        agraph.node_attr["fontsize"] = 10
+        agraph.edge_attr["fontsize"] = 10
         agraph.layout("dot")
         agraph.draw(prefix + str(key) + ".png", args='-Glabel="' + str(key) + '"   ')
 
 
-def plot(graph, layout="dot"):
+def plot(graph, layout="dot", fontsize=10):
     """Plots a graph using graphviz. Creates a pygraphviz graph from a NetworkX graph.
 
     Args:
         graph (nx.Graph): The graph to plot.
         layout (str, optional): Graphviz layout engine. Defaults to "dot".
+        fontsize (int, optional): Font size (pt) for graph/node/edge labels.
+            Defaults to 10 (graphviz's own default is 14pt).
 
     Returns:
         pygraphviz.agraph.AGraph: A pygraphviz graph.
     """
     agraph = nx.nx_agraph.to_agraph(graph)
+    agraph.graph_attr["fontsize"] = fontsize
+    agraph.node_attr["fontsize"] = fontsize
+    agraph.edge_attr["fontsize"] = fontsize
     agraph.layout(layout)
     return agraph
 
@@ -562,6 +570,9 @@ class CStree:
         agraphs = {}
         for key, graph in graphs.items():
             agraphs[key] = nx.nx_agraph.to_agraph(graph)
+            agraphs[key].graph_attr["fontsize"] = 10
+            agraphs[key].node_attr["fontsize"] = 10
+            agraphs[key].edge_attr["fontsize"] = 10
             agraphs[key].layout(layout)
 
         return agraphs
