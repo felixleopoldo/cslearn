@@ -32,9 +32,8 @@ ax.set_yscale("log")
 fig.supxlabel("number of variables ($p$)")
 ax.set_ylabel("KL-divergence")
 
-# See plot_time.py's comment: growing height only (grow_to_fit) doesn't
-# affect a "beside" legend's width-fraction, so frac doesn't need
-# recomputing after growth here.
+# A "beside" legend's frac is a width fraction, untouched by grow_to_fit
+# (which only grows height), so it doesn't need recomputing after growth.
 grow_to_fit(fig, ax)
 FRAC = 0.42
 reserve_legend_margin(fig, "beside", FRAC)

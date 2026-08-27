@@ -1144,17 +1144,10 @@ rule time_plots_3b_csv:
         "scripts/join_csvs.py"
 
 
-# Figure 2 (kl-div 2a+2b): one Python-assembled 1x4 grid (PC/MLE, PC/MAP,
-# GRaSP/MLE, GRaSP/MAP), sharing one legend above instead of each of the
-# former 2a/2b panels drawing an identical n/linestyle legend row
-# independently -- see plot_kl.py and palette.py's square_grid/
-# add_shared_legend. One script, one PDF, included in the manuscript at
-# native size (no \includegraphics width= -- see CLAUDE.md). Named for what
-# it compares against (plain DAG-learning baselines: PC, GRaSP), paired
-# with figure 3's kl_divergence_stagedtrees.pdf (staged-tree baselines) --
-# not by figure number, which is a vestige that goes stale if the
-# manuscript's figure order ever shifts (see kl_plot_stagedtrees's comment,
-# the same reasoning that renamed that one away from "2c").
+# Figure 2: CSlearn (PC/GRaSP) vs DAG baselines, KL divergence. One
+# Python-assembled 1x4 grid with a shared legend (see plot_kl.py). Named
+# for content, not figure number, so it doesn't go stale if the
+# manuscript's figure order changes.
 rule kl_plot_dagbaselines:
     input:
         a="results/kl_divergence_2a.csv",
@@ -1165,14 +1158,9 @@ rule kl_plot_dagbaselines:
         "scripts/plot_kl.py"
 
 
-# Figure 3: CSlearn (GRaSP) vs. staged-tree baselines (BOS, Backwards Hill
-# Climbing). Single panel + its own legend, assembled together in one script
-# instead of two separately-generated PDFs. Named for content, not for the
-# input CSV's "2c" suffix -- that naming was a vestige of an older draft
-# where this was one panel of a three-panel figure alongside kl_divergence_2a/2b;
-# it's its own figure now, and "2c" describes nothing about the current
-# structure. (The CSV itself, kl_divergence_2c.csv, keeps its existing name --
-# that's the aggregation pipeline's naming, out of scope here.)
+# Figure 3: CSlearn (GRaSP) vs staged-tree baselines (BOS, GRaSP+BHC).
+# Named for content, not the input CSV's stale "2c" suffix (a vestige of
+# an older three-panel draft; the CSV itself keeps that name).
 rule kl_plot_stagedtrees:
     input:
         "results/kl_divergence_2c.csv",
@@ -1195,13 +1183,10 @@ rule time_plot:
 
 
 # Supplement figure: CSlearn+PC's own runtime split into its two phases
-# (the constraint-based PC step vs. the Gibbs sampler + exact search step,
-# see estimate_cstree.py) at n=1000, p up to 500. Reads time_3b.csv
-# directly -- both components (the CSlearn-only "time" column and the
-# "total_time" it's a part of) are already in that CSV, no separate
-# aggregation rule needed. Replaces an old (Feb 2024, pre-Snakemake)
-# hand-generated PDF that was never reproducible from committed data and
-# used a different plotting style; see CLAUDE.md.
+# (constraint-based PC step vs. Gibbs sampler + exact search, see
+# estimate_cstree.py) at n=1000, p up to 500. Reads time_3b.csv directly --
+# both components are already in that CSV. Replaces an old, pre-Snakemake
+# hand-generated PDF that wasn't reproducible from committed data.
 rule runtime_phases_plot:
     input:
         "results/time_3b.csv",
@@ -1656,15 +1641,9 @@ rule shd_plots_scale_csv:
 
 
 # Figure 5 (SHD): all 4 panels assembled in one Python-generated 1x4 grid
-# (square_grid/add_shared_legend, see palette.py) instead of 4 separately
-# generated panel PDFs + a separate legend PDF stitched together in LaTeX --
-# that split-file design was what made an earlier "4 panels in one row"
-# attempt illegible (each panel authored at 2.9in but LaTeX-displayed at a
-# narrower 0.24\textwidth, shrinking the embedded fonts with it) and, this
-# round, produced cropped x-axis labels (each narrow panel had to fit its
-# own full label set with no shared margin). One script, one PDF, included
-# in the manuscript at native size (no \includegraphics width= -- see
-# CLAUDE.md's "authored width must equal display width" note).
+# (square_grid/add_shared_legend, see palette.py), included in the
+# manuscript at native size rather than 4 separate panel PDFs stitched
+# together in LaTeX.
 rule shd_plot:
     input:
         a="results/shd_a.csv",

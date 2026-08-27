@@ -16,9 +16,7 @@ from palette import (
     square_grid,
 )
 
-PANEL_SIZE = 1.59  # 4 panels x 1.59in = 6.36in vs. \textwidth's exact 6.396431in (verified via
-# a scratch `\the\textwidth` compile, not the earlier approximation) -- 0.036in/2.6pt margin,
-# close to the practical ceiling a 1x4 row can use at this page width; see CLAUDE.md's sizing note.
+PANEL_SIZE = 1.59  # 4 panels x 1.59in = 6.36in, near the ceiling \textwidth (6.396431in) allows
 HUE_NCOL = 4
 
 _SUFFIX_RE = re.compile(r"^(?P<base>.+) \((?P<suffix>MLE|MAP)\)$")
@@ -31,12 +29,9 @@ def split_suffix(label):
 
 sources = [("PC", snakemake.input.a), ("GRaSP", snakemake.input.b)]
 
-# One panel per (phase-1 method, estimator) combination -- 1x4, not a 2x2 of
-# phase-1-method columns x estimator rows, for consistency with figure 5's
-# "one row of square panels sharing a metric" shape. Methods with no MAP
-# variant (the plain PC/GRaSP baselines, only ever estimated via MLE) act as
-# a fixed reference and appear in both the MLE and MAP panel of their
-# column, not siloed into just the MLE one.
+# One panel per (phase-1 method, estimator) combination, 1x4. Methods with
+# no MAP variant (the plain PC/GRaSP baselines) act as a fixed reference and
+# appear in both the MLE and MAP panel of their column.
 panels = []
 all_methods, all_ns = set(), set()
 for phase1, path in sources:
@@ -59,10 +54,8 @@ style_entries = [(f"n={n}", linestyle_map[n]) for n in sorted(all_ns)]
 set_plot_style()
 fig, axes = square_grid(1, 4, panel_size=PANEL_SIZE)
 
-# Letter each panel (a-d): with no more per-panel LaTeX subfigure, this is
-# now the only way the manuscript prose can point at one specific panel
-# ("Figure~\ref{fig:kl-div}(a)" instead of the old separate fig:kl-div-2a
-# label a subfigure environment used to provide).
+# Letter each panel (a-d): with no per-panel LaTeX subfigure, this is how
+# manuscript prose points at one specific panel.
 for letter, ax, (title, subset) in zip("abcd", axes.flat, panels):
     draw_lines(ax, subset, "p", "kl_div", "_base_method", "n", METHOD_COLORS, METHOD_MARKERS, linestyle_map)
     ax.set_yscale("log")
@@ -76,10 +69,8 @@ fig.supxlabel("number of variables ($p$)")
 # vertically offset from the actual panels.
 axes[0].set_ylabel("KL-divergence")
 
-# Let the panels grow into whatever horizontal space square_grid's box
-# height starvation was leaving unused (see grow_to_fit) before reserving
-# room for the legend -- reserving the legend margin first, against the
-# too-small starved row, was locking in the waste instead of recovering it.
+# grow_to_fit before reserving legend margin, so panels grow into unused
+# space first rather than reserving margin against an already-starved row.
 grow_to_fit(fig, axes[0])
 
 # Margin sized from the legend's actual content (row counts) and the row's

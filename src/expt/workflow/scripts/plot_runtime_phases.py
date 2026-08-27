@@ -27,11 +27,8 @@ df["search_phase"] = df["time"]
 
 medians = df.groupby("p")[["constraint_phase", "search_phase"]].median().sort_index()
 
-# Reuse Figure 4's own method colors rather than inventing a new palette:
-# the constraint-based phase *is* a PC run, and the search phase is what
-# CSlearn itself spends beyond that -- so pairing them with "PC"'s and
-# "CSlearn+PC"'s colors from Figure 4 ties this supplement figure back to
-# the main-text one instead of introducing an unrelated color pairing.
+# Reuse Figure 4's PC/CSlearn+PC colors: the constraint-based phase is a PC
+# run, and the search phase is what CSlearn spends beyond that.
 CONSTRAINT_COLOR = METHOD_COLORS["PC"]
 SEARCH_COLOR = METHOD_COLORS["CSlearn+PC"]
 # Hatching, not just color, distinguishes the two bar segments in black and
@@ -67,14 +64,9 @@ ax.set_xticklabels([str(p) for p in medians.index])
 ax.set_xlabel("number of variables ($p$)")
 ax.set_ylabel("runtime (seconds)")
 
-# Bespoke Patch-based legend, not add_shared_legend: that machinery draws
-# line+marker handles for method/n comparisons across panels, a mismatch
-# for a single bar chart's two stacked segments -- a legend showing color
-# *and* hatch swatches is the more direct representation here. Still uses
-# grow_to_fit/reserve_legend_margin (see palette.py) so the legend gets its
-# own reserved band above the panel instead of overlapping it or being
-# clipped at the figure edge -- an in-axes ax.legend() here was overlapping
-# the bars and getting its text clipped at save time.
+# Bespoke Patch-based legend, not add_shared_legend, which draws line+marker
+# handles for method/n comparisons -- a mismatch for two stacked bar
+# segments. Still uses grow_to_fit/reserve_legend_margin for a reserved band.
 handles = [
     mpatches.Patch(
         facecolor=CONSTRAINT_COLOR, hatch=CONSTRAINT_HATCH, edgecolor="black", linewidth=0.6, label="constraint-based phase (PC)"

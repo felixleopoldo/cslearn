@@ -24,24 +24,19 @@ _BASE_LABELS = {
 
 _SUFFIX_RE = re.compile(r"^(?P<base>.+?)\s*\((?P<suffix>mle|map)\)$", re.IGNORECASE)
 
-# Phase-1-only methods with no CSlearn context-specific refinement -- shown in
-# every figure as a fixed reference, never as "the paper's own method". Not
-# distinguished by a "baseline" word in the label (that cost legend width
-# every figure needed back once legends moved beside/within narrower
-# columns); the distinction is carried by the method name itself plus the
-# surrounding prose.
+# Phase-1-only methods with no CSlearn context-specific refinement -- shown
+# as a fixed reference in every figure. Not labeled "baseline" in the legend
+# text itself (that cost width); the distinction is carried by the method
+# name and surrounding prose instead.
 BASELINE_METHODS = {"PC", "GRaSP"}
 
 
 def baseline_method_label(method: str, mle_suffix: bool = False) -> str:
     """Canonical legend label for a bare method name.
 
-    `mle_suffix` states a baseline's estimator explicitly (" (MLE)") --
-    only meaningful when the figure/legend also shows a real MLE-vs-MAP split
-    for some other method (kl_divergence_2a/2b), where the baseline appears
-    unchanged in both, so it must say which estimator that unchanging value
-    actually is; otherwise it reads as "we also computed a MAP version of the
-    baseline", which is false.
+    `mle_suffix` appends " (MLE)" to a baseline's label -- only needed when
+    the figure also shows a real MLE-vs-MAP split for another method, so the
+    unchanging baseline value doesn't read as having a MAP variant too.
     """
     if method in BASELINE_METHODS:
         suffix = " (MLE)" if mle_suffix else ""

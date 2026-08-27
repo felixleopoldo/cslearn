@@ -29,11 +29,8 @@ for path in panels:
 linestyle_map = linestyles_for(all_ns)
 
 set_plot_style()
-# sharex=False: panel (a) covers p=5-20 (all methods) but panel (b) covers
-# p up to 500 (scalable methods only) -- a genuinely different x-domain, not
-# a wider view of the same one. Sharing squeezed (a)'s data into a sliver
-# near the axis origin of a 0-500 axis instead of letting it use its own
-# natural range.
+# sharex=False: panel (a) covers p=5-20, panel (b) up to 500 -- a genuinely
+# different x-domain, not a wider view of the same one.
 fig, axes = square_grid(1, 2, panel_size=2.1, sharex=False)
 
 for title, ax, df in zip(PANEL_TITLES, axes, dfs):
@@ -44,11 +41,8 @@ for title, ax, df in zip(PANEL_TITLES, axes, dfs):
 fig.supxlabel("number of variables ($p$)")
 axes[0].set_ylabel("runtime (seconds)")
 
-# Let the panels grow into whatever vertical space square_grid's box height
-# starvation was leaving unused (see grow_to_fit) before reserving room for
-# the legend. A "beside" legend eats figure *width*, so unlike the "above"
-# figures, frac here doesn't need recomputing after growth -- it's a width
-# fraction, untouched by growing height only.
+# A "beside" legend's frac is a width fraction, untouched by grow_to_fit
+# (which only grows height), so it doesn't need recomputing after growth.
 grow_to_fit(fig, axes[0])
 FRAC = 0.30
 reserve_legend_margin(fig, "beside", FRAC)
