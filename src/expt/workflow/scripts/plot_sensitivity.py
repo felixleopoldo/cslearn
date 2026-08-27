@@ -12,6 +12,8 @@ from palette import (
     square_grid,
 )
 
+PANEL_SIZE = 1.59  # matches figures 2 and 5's panel size
+
 kl_data = pd.read_csv(snakemake.input.kl)
 shd_data = pd.read_csv(snakemake.input.shd)
 kl_data["n"] = kl_data["n"].astype(int)
@@ -24,7 +26,7 @@ linestyle_map = linestyles_for(all_ns)
 set_plot_style()
 # KL divergence and SHD are different metrics, so sharey=False keeps each
 # panel's own y-tick labels rather than treating one as redundant.
-fig, axes = square_grid(1, 2, panel_size=2.1, sharey=False)
+fig, axes = square_grid(1, 2, panel_size=PANEL_SIZE, sharey=False)
 
 draw_lines(axes[0], kl_data, "p", "kl_div", "true_max_cvar", "n", BETA_COLORS, BETA_MARKERS, linestyle_map)
 axes[0].set_yscale("log")

@@ -13,6 +13,8 @@ from palette import (
     square_grid,
 )
 
+PANEL_SIZE = 1.59  # matches figures 2 and 5's panel size
+
 panels = [snakemake.input.a, snakemake.input.b]
 PANEL_TITLES = ["(a) all methods", "(b) scalable methods"]
 
@@ -31,7 +33,7 @@ linestyle_map = linestyles_for(all_ns)
 set_plot_style()
 # sharex=False: panel (a) covers p=5-20, panel (b) up to 500 -- a genuinely
 # different x-domain, not a wider view of the same one.
-fig, axes = square_grid(1, 2, panel_size=2.1, sharex=False)
+fig, axes = square_grid(1, 2, panel_size=PANEL_SIZE, sharex=False)
 
 for title, ax, df in zip(PANEL_TITLES, axes, dfs):
     draw_lines(ax, df, "p", "total_time", "method", "n", METHOD_COLORS, METHOD_MARKERS, linestyle_map)
@@ -44,7 +46,7 @@ axes[0].set_ylabel("runtime (seconds)")
 # A "beside" legend's frac is a width fraction, untouched by grow_to_fit
 # (which only grows height), so it doesn't need recomputing after growth.
 grow_to_fit(fig, axes[0])
-FRAC = 0.30
+FRAC = 0.32
 reserve_legend_margin(fig, "beside", FRAC)
 
 hue_entries = [(m, METHOD_COLORS[m], METHOD_MARKERS[m]) for m in sorted_methods(all_methods)]
