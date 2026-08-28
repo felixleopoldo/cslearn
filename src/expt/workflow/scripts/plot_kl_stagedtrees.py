@@ -34,6 +34,14 @@ ax.set_yscale("log")
 fig.supxlabel("number of variables ($p$)")
 ax.set_ylabel("KL-divergence")
 
+# grow_to_fit only grows height, which helps a multi-column grid (figures 2
+# and 5) borrow width back via label_outer once height stops binding; this
+# is a 1x1 grid, so it has no such column to borrow from and the y-tick
+# labels alone cap the box below PANEL_SIZE. Widen first so grow_to_fit has
+# a real width to grow into.
+fig.canvas.draw()
+fig.set_figwidth(fig.get_figwidth() + 0.65)
+
 # A "beside" legend's frac is a width fraction, untouched by grow_to_fit
 # (which only grows height), so it doesn't need recomputing after growth.
 grow_to_fit(fig, ax)
