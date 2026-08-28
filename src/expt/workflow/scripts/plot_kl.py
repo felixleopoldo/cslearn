@@ -10,6 +10,7 @@ from palette import (
     grow_to_fit,
     legend_height_in,
     linestyles_for,
+    log_yaxis,
     reserve_legend_margin,
     set_plot_style,
     sorted_methods,
@@ -58,7 +59,7 @@ fig, axes = square_grid(1, 4, panel_size=PANEL_SIZE)
 # manuscript prose points at one specific panel.
 for letter, ax, (title, subset) in zip("abcd", axes.flat, panels):
     draw_lines(ax, subset, "p", "kl_div", "_base_method", "n", METHOD_COLORS, METHOD_MARKERS, linestyle_map)
-    ax.set_yscale("log")
+    log_yaxis(ax)
     ax.set_title(f"({letter}) {title}")
 
 fig.supxlabel("number of variables ($p$)")

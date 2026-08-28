@@ -8,6 +8,7 @@ from palette import (
     draw_lines,
     grow_to_fit,
     linestyles_for,
+    log_yaxis,
     reserve_legend_margin,
     set_plot_style,
     sorted_methods,
@@ -29,7 +30,7 @@ fig, axes = square_grid(1, 1, panel_size=PANEL_SIZE)
 ax = axes[0]
 
 draw_lines(ax, plot_data, "p", "kl_div", "method", "n", METHOD_COLORS, METHOD_MARKERS, linestyle_map)
-ax.set_yscale("log")
+log_yaxis(ax)
 
 fig.supxlabel("number of variables ($p$)")
 ax.set_ylabel("KL-divergence")

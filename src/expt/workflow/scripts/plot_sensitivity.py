@@ -7,6 +7,7 @@ from palette import (
     draw_lines,
     grow_to_fit,
     linestyles_for,
+    log_yaxis,
     reserve_legend_margin,
     set_plot_style,
     square_grid,
@@ -29,7 +30,7 @@ set_plot_style()
 fig, axes = square_grid(1, 2, panel_size=PANEL_SIZE, sharey=False)
 
 draw_lines(axes[0], kl_data, "p", "kl_div", "true_max_cvar", "n", BETA_COLORS, BETA_MARKERS, linestyle_map)
-axes[0].set_yscale("log")
+log_yaxis(axes[0])
 axes[0].set_ylabel("KL divergence")
 axes[0].set_title("(a)", loc="left")
 

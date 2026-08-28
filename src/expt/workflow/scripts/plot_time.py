@@ -7,6 +7,7 @@ from palette import (
     draw_lines,
     grow_to_fit,
     linestyles_for,
+    log_yaxis,
     reserve_legend_margin,
     set_plot_style,
     sorted_methods,
@@ -37,7 +38,7 @@ fig, axes = square_grid(1, 2, panel_size=PANEL_SIZE, sharex=False)
 
 for title, ax, df in zip(PANEL_TITLES, axes, dfs):
     draw_lines(ax, df, "p", "total_time", "method", "n", METHOD_COLORS, METHOD_MARKERS, linestyle_map)
-    ax.set_yscale("log")
+    log_yaxis(ax)
     ax.set_title(title, loc="left")
 
 fig.supxlabel("number of variables ($p$)")

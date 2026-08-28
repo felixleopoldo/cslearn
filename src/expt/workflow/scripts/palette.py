@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from labels import canonical_method_label
+from matplotlib.ticker import LogLocator, NullFormatter, ScalarFormatter
 
 # Generated offline with qualpal (github.com/jolars/qualpal): a
 # farthest-point search over CIEDE2000 distance in LCh(ab) space for colors
@@ -127,6 +128,22 @@ def set_plot_style():
             "pdf.fonttype": 42,
         }
     )
+
+
+def log_yaxis(ax):
+    """Log-scale the y-axis with plain-decimal tick labels.
+
+    matplotlib's default power-of-ten labels ($10^{-1}$) set the exponent at
+    70% of the base size -- 7pt from our 10pt base, under JCGS's 10pt figure
+    floor. A non-scientific ScalarFormatter labels the decade ticks as plain
+    decimals ("0.1", "1", "10") at the full base size instead.
+    """
+    ax.set_yscale("log")
+    ax.yaxis.set_major_locator(LogLocator(base=10.0))
+    fmt = ScalarFormatter()
+    fmt.set_scientific(False)
+    ax.yaxis.set_major_formatter(fmt)
+    ax.yaxis.set_minor_formatter(NullFormatter())
 
 
 def draw_lines(ax, data, x, y, hue_col, style_col, color_map, marker_map, linestyle_map):
