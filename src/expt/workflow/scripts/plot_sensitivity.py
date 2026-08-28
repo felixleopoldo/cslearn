@@ -31,12 +31,11 @@ fig, axes = square_grid(1, 2, panel_size=PANEL_SIZE, sharey=False)
 draw_lines(axes[0], kl_data, "p", "kl_div", "true_max_cvar", "n", BETA_COLORS, BETA_MARKERS, linestyle_map)
 axes[0].set_yscale("log")
 axes[0].set_ylabel("KL divergence")
-# Titles name what each metric means, not just repeat the y-axis label.
-axes[0].set_title("(a) distributional accuracy", loc="left")
+axes[0].set_title("(a)", loc="left")
 
 draw_lines(axes[1], shd_data, "p", "shd", "true_max_cvar", "n", BETA_COLORS, BETA_MARKERS, linestyle_map)
 axes[1].set_ylabel("SHD (LDAG)")
-axes[1].set_title("(b) structural accuracy", loc="left")
+axes[1].set_title("(b)", loc="left")
 
 fig.supxlabel("number of variables ($p$)")
 

@@ -7,6 +7,7 @@ from palette import (
     add_shared_legend,
     draw_lines,
     grow_to_fit,
+    grow_to_fit_width,
     linestyles_for,
     reserve_legend_margin,
     set_plot_style,
@@ -34,9 +35,10 @@ ax.set_yscale("log")
 fig.supxlabel("number of variables ($p$)")
 ax.set_ylabel("KL-divergence")
 
-# A "beside" legend's frac is a width fraction, untouched by grow_to_fit
-# (which only grows height), so it doesn't need recomputing after growth.
+grow_to_fit_width(fig, ax)
 grow_to_fit(fig, ax)
+# reserve_legend_margin reads fig's width at call time, so the growth
+# above is already accounted for without recomputing FRAC.
 FRAC = 0.5
 reserve_legend_margin(fig, "beside", FRAC)
 
