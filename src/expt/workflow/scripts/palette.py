@@ -221,29 +221,6 @@ def square_grid(nrows, ncols, panel_size=1.5, sharex=True, sharey=True):
     return fig, axes
 
 
-def _grow_to_fit(fig, get_size, set_size, get_box_extent, tol, step_in, max_iter):
-    """Grow one figure dimension (`get_size`/`set_size`) until the other,
-    `box_aspect`-linked box dimension (`get_box_extent`) stops growing, then
-    back off the last (unproductive) step. Shared by `grow_to_fit` and
-    `grow_to_fit_width`, which differ only in which dimension they grow.
-    """
-    fig.canvas.draw()
-    prev_extent = get_box_extent()
-    prev_size = get_size()
-    for _ in range(max_iter):
-        set_size(get_size() + step_in)
-        fig.canvas.draw()
-        extent = get_box_extent()
-        if extent - prev_extent < tol:
-            set_size(prev_size)  # last step didn't help -- revert the wasted growth
-            # A second draw so constrained_layout fully reconverges after the
-            # size change -- one draw() alone can leave a label clipped.
-            fig.canvas.draw()
-            fig.canvas.draw()
-            return
-        prev_extent, prev_size = extent, get_size()
-
-
 def grow_to_fit(fig, ref_ax, tol=0.003, step_in=0.3, max_iter=12):
     """Grow `fig`'s height only -- not width -- until `ref_ax`'s box stops
     getting wider.
@@ -260,24 +237,58 @@ def grow_to_fit(fig, ref_ax, tol=0.003, step_in=0.3, max_iter=12):
     before `reserve_legend_margin`, so the space measured here is the row's
     own, not inflated by a legend band.
     """
-    _grow_to_fit(
-        fig, fig.get_figheight, fig.set_figheight, lambda: ref_ax.get_position().width * fig.get_figwidth(),
-        tol, step_in, max_iter,
-    )
+    def box_width():
+        return ref_ax.get_position().width * fig.get_figwidth()
+
+    fig.canvas.draw()
+    for _ in range(max_iter):
+        before = box_width()
+        fig.set_figheight(fig.get_figheight() + step_in)
+        fig.canvas.draw()
+        if box_width() - before < tol:
+            fig.set_figheight(fig.get_figheight() - step_in)
+            break
+    # Two draws so constrained_layout fully reconverges after the last resize
+    # -- one draw() alone can leave a label clipped.
+    fig.canvas.draw()
+    fig.canvas.draw()
 
 
-def grow_to_fit_width(fig, ref_ax, tol=0.003, step_in=0.3, max_iter=12):
-    """Grow `fig`'s width only -- not height. Mirrors `grow_to_fit`, for a
-    single-column figure where the y-label/y-tick text, not the x-axis
-    label, is what caps the box below `panel_size`: with only one column,
-    there's no `label_outer`-freed neighbor for `grow_to_fit`'s height-only
-    growth to unlock horizontal space from. Call before `grow_to_fit` in
-    that case, so it can mop up any remaining height-side slack.
+def grow_to_fit_square(fig, ref_ax, target, tol=0.003, max_iter=5):
+    """Grow `fig`'s width and height so `ref_ax`'s square box reaches
+    `target` inches per side.
+
+    Unlike `grow_to_fit`, a single-column figure has no dimension held
+    fixed to cap the growth: both width and height start out too small
+    (each carries its own full label/tick overhead, with no second column
+    to borrow slack from), so "keep growing while it helps" never stops --
+    growing either dimension always frees a little more box room from the
+    other. Measure each dimension's fixed overhead directly instead and
+    solve for the figure size that gives the box exactly `target`; a few
+    rounds handle the overhead itself shifting slightly as the figure
+    resizes.
     """
-    _grow_to_fit(
-        fig, fig.get_figwidth, fig.set_figwidth, lambda: ref_ax.get_position().height * fig.get_figheight(),
-        tol, step_in, max_iter,
-    )
+    def box_width():
+        return ref_ax.get_position().width * fig.get_figwidth()
+
+    def box_height():
+        return ref_ax.get_position().height * fig.get_figheight()
+
+    def settle():
+        # constrained_layout doesn't fully reconverge after a resize until a
+        # second draw -- measuring after only one draw undershoots `target`.
+        fig.canvas.draw()
+        fig.canvas.draw()
+
+    settle()
+    for _ in range(max_iter):
+        overhead_w = fig.get_figwidth() - box_width()
+        overhead_h = fig.get_figheight() - box_height()
+        fig.set_figwidth(target + overhead_w)
+        fig.set_figheight(target + overhead_h)
+        settle()
+        if abs(box_width() - target) < tol and abs(box_height() - target) < tol:
+            break
 
 
 def reserve_legend_margin(fig, loc, frac):

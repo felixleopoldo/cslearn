@@ -6,8 +6,7 @@ from palette import (
     _split_suffix,
     add_shared_legend,
     draw_lines,
-    grow_to_fit,
-    grow_to_fit_width,
+    grow_to_fit_square,
     linestyles_for,
     reserve_legend_margin,
     set_plot_style,
@@ -35,10 +34,7 @@ ax.set_yscale("log")
 fig.supxlabel("number of variables ($p$)")
 ax.set_ylabel("KL-divergence")
 
-grow_to_fit_width(fig, ax)
-grow_to_fit(fig, ax)
-# reserve_legend_margin reads fig's width at call time, so the growth
-# above is already accounted for without recomputing FRAC.
+grow_to_fit_square(fig, ax, PANEL_SIZE)
 FRAC = 0.5
 reserve_legend_margin(fig, "beside", FRAC)
 
