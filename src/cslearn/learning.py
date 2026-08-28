@@ -3,7 +3,6 @@ from itertools import permutations
 
 import networkx as nx
 import numpy as np
-from pgmpy.base import PDAG
 from tqdm import tqdm
 
 import cslearn.cstree as ct
@@ -572,6 +571,10 @@ def causallearn_graph_to_dag(graph, labels, alg="pc"):
         adj = graph.graph
     if alg == "ges":
         adj = graph["G"]
+
+    # pgmpy is only needed for this CPDAG orientation helper, not for the core
+    # learning pipeline, so it is imported lazily and kept an optional dependency.
+    from pgmpy.base import PDAG
 
     # convert to DAG
     directed_mask = np.logical_and(adj == -1, adj.T == 1)

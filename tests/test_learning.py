@@ -4,6 +4,7 @@ all_stagings with poss_cvars, and the causallearn bridge functions."""
 import random
 
 import numpy as np
+import pytest
 
 import cslearn.learning as ctl
 import cslearn.scoring as sc
@@ -116,6 +117,7 @@ def test_causallearn_graph_to_posscvars_output_shape():
 
 def test_causallearn_graph_to_dag_output_shape():
     """causallearn_graph_to_dag returns a square binary adjacency DataFrame."""
+    pytest.importorskip("pgmpy")
     from causallearn.search.ConstraintBased.PC import pc
 
     np.random.seed(1)
