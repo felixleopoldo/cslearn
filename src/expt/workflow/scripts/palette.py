@@ -223,7 +223,7 @@ def square_grid(nrows, ncols, panel_size=1.5, sharex=True, sharey=True):
 
 def grow_to_fit(fig, ref_ax, tol=0.003, step_in=0.3, max_iter=12):
     """Grow `fig`'s height only -- not width -- until `ref_ax`'s box stops
-    getting wider.
+    getting wider, then back off the last (unproductive) step.
 
     `square_grid`'s `ax.set_box_aspect(1)` forces box width to equal box
     height, but the figure height it sets reserves no room for the
@@ -237,58 +237,21 @@ def grow_to_fit(fig, ref_ax, tol=0.003, step_in=0.3, max_iter=12):
     before `reserve_legend_margin`, so the space measured here is the row's
     own, not inflated by a legend band.
     """
-    def box_width():
-        return ref_ax.get_position().width * fig.get_figwidth()
-
     fig.canvas.draw()
+    prev_w = ref_ax.get_position().width * fig.get_figwidth()
+    prev_h = fig.get_figheight()
     for _ in range(max_iter):
-        before = box_width()
         fig.set_figheight(fig.get_figheight() + step_in)
         fig.canvas.draw()
-        if box_width() - before < tol:
-            fig.set_figheight(fig.get_figheight() - step_in)
-            break
-    # Two draws so constrained_layout fully reconverges after the last resize
-    # -- one draw() alone can leave a label clipped.
-    fig.canvas.draw()
-    fig.canvas.draw()
-
-
-def grow_to_fit_square(fig, ref_ax, target, tol=0.003, max_iter=5):
-    """Grow `fig`'s width and height so `ref_ax`'s square box reaches
-    `target` inches per side.
-
-    Unlike `grow_to_fit`, a single-column figure has no dimension held
-    fixed to cap the growth: both width and height start out too small
-    (each carries its own full label/tick overhead, with no second column
-    to borrow slack from), so "keep growing while it helps" never stops --
-    growing either dimension always frees a little more box room from the
-    other. Measure each dimension's fixed overhead directly instead and
-    solve for the figure size that gives the box exactly `target`; a few
-    rounds handle the overhead itself shifting slightly as the figure
-    resizes.
-    """
-    def box_width():
-        return ref_ax.get_position().width * fig.get_figwidth()
-
-    def box_height():
-        return ref_ax.get_position().height * fig.get_figheight()
-
-    def settle():
-        # constrained_layout doesn't fully reconverge after a resize until a
-        # second draw -- measuring after only one draw undershoots `target`.
-        fig.canvas.draw()
-        fig.canvas.draw()
-
-    settle()
-    for _ in range(max_iter):
-        overhead_w = fig.get_figwidth() - box_width()
-        overhead_h = fig.get_figheight() - box_height()
-        fig.set_figwidth(target + overhead_w)
-        fig.set_figheight(target + overhead_h)
-        settle()
-        if abs(box_width() - target) < tol and abs(box_height() - target) < tol:
-            break
+        w = ref_ax.get_position().width * fig.get_figwidth()
+        if w - prev_w < tol:
+            fig.set_figheight(prev_h)  # last step didn't help -- revert the wasted growth
+            # A second draw so constrained_layout fully reconverges after the
+            # size change -- one draw() alone can leave a label clipped.
+            fig.canvas.draw()
+            fig.canvas.draw()
+            return
+        prev_w, prev_h = w, fig.get_figheight()
 
 
 def reserve_legend_margin(fig, loc, frac):
