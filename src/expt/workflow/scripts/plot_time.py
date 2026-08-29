@@ -25,6 +25,11 @@ for path in panels:
     df = pd.read_csv(path)
     df["method"] = df["method"].map(canonical_method_label)
     df["n"] = df["n"].astype(int)
+    # CSlearn runs were recorded at n=251/1001 from an off-by-one in data
+    # generation (not a different experimental condition); the staged-tree
+    # baselines used n=250/1000. Normalize so the linestyle channel encodes
+    # two sample sizes, not four. Same fix as plot_runtime_phases.py.
+    df["n"] = df["n"].replace({251: 250, 1001: 1000})
     dfs.append(df)
     all_methods.update(df["method"].unique())
     all_ns.update(df["n"].unique())
