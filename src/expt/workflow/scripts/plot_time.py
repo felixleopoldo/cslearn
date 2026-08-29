@@ -42,7 +42,7 @@ for title, ax, df in zip(PANEL_TITLES, axes, dfs):
     ax.set_title(title, loc="left")
 
 fig.supxlabel("number of variables ($p$)")
-axes[0].set_ylabel("runtime (seconds)")
+axes[0].set_ylabel("time (seconds)")
 
 # A "beside" legend's frac is a width fraction, untouched by grow_to_fit
 # (which only grows height), so it doesn't need recomputing after growth.

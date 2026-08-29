@@ -68,7 +68,7 @@ fig.supxlabel("number of variables ($p$)")
 # supylabel centers on the whole figure canvas -- with a legend margin
 # reserved above, those aren't the same point, so supylabel read as
 # vertically offset from the actual panels.
-axes[0].set_ylabel("KL-divergence")
+axes[0].set_ylabel("KL divergence")
 
 # grow_to_fit before reserving legend margin, so panels grow into unused
 # space first rather than reserving margin against an already-starved row.

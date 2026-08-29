@@ -62,7 +62,7 @@ ax.bar(
 ax.set_xticks(list(x))
 ax.set_xticklabels([str(p) for p in medians.index])
 ax.set_xlabel("number of variables ($p$)")
-ax.set_ylabel("runtime (seconds)")
+ax.set_ylabel("time (seconds)")
 
 # Bespoke Patch-based legend, not add_shared_legend, which draws line+marker
 # handles for method/n comparisons -- a mismatch for two stacked bar

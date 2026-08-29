@@ -33,7 +33,7 @@ draw_lines(ax, plot_data, "p", "kl_div", "method", "n", METHOD_COLORS, METHOD_MA
 log_yaxis(ax)
 
 fig.supxlabel("number of variables ($p$)")
-ax.set_ylabel("KL-divergence")
+ax.set_ylabel("KL divergence")
 
 # grow_to_fit only grows height, which helps a multi-column grid (figures 2
 # and 5) borrow width back via label_outer once height stops binding; this
