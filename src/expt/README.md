@@ -5,8 +5,11 @@ All commands should be run from this directory (`src/expt/`).
 
 ## Requirements
 
-- [Snakemake](https://snakemake.readthedocs.io/) ≥ 7.0
-- [Apptainer](https://apptainer.org/) (for container execution; includes `docker://` image support)
+- [Snakemake](https://snakemake.readthedocs.io/) ≥ 8.0 (installed however you like -- pip, conda, nix, apt)
+- [Apptainer](https://apptainer.org/) (includes `docker://` / `oras://` image support)
+
+Nothing else is needed: every rule runs inside a pinned container, so all Python
+dependencies are supplied by the images, not by your environment.
 
 ## Directory layout
 
@@ -67,22 +70,20 @@ marker and linestyle carry method and n independently (see `palette.py`'s
 module docstring). `_fit_legend` measures the legend's actual rendered
 width and backs off to fewer columns if it doesn't fit the reserved margin.
 
-Regenerating the figures needs no data downloads and no recomputation --
-the plotting rules read the committed CSVs directly. They only import
-`pandas`, `matplotlib`, and `seaborn`. If your Python environment already
-has those (`pip install cslearn[expt]` does), no container is needed:
+Regenerating the figures needs no data download and no recomputation -- the
+plotting rules read the committed CSVs directly, each running in the pinned
+`cslearn-expt` container:
 
 ```bash
 snakemake results/kl_divergence_dagbaselines.pdf results/kl_divergence_stagedtrees.pdf results/time.pdf \
   results/shd.pdf results/sensitivity.pdf results/runtime_phases.pdf \
-  --cores 1 \
+  --use-apptainer --cores 1 \
   --allowed-rules kl_plot_dagbaselines kl_plot_stagedtrees time_plot shd_plot sensitivity_plot runtime_phases_plot
 ```
 
-PDFs appear in `results/`. Add `--use-apptainer` only if you do not have
-`pandas`/`matplotlib`/`seaborn` available -- note that this pulls the full
-`cslearn-expt` container image (several GB) even though the plot scripts
-use none of its other contents.
+The first run pulls the `cslearn-expt` image (~6.8 GB, one time; cached
+afterwards); the PDFs then appear in `results/`. These are the figures used
+in the paper.
 
 (`--allowed-rules` prevents Snakemake from tracing the full upstream
 simulation DAG when only the aggregated CSVs are available locally.)
