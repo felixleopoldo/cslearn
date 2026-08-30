@@ -7,6 +7,7 @@
     pkgs.snakemake
     pkgs.apptainer
     pkgs.ghostscript
+    pkgs.ruff
     pkgs.python313Packages.packaging
     pkgs.python313Packages.pygraphviz
     pkgs.python313Packages.pikepdf

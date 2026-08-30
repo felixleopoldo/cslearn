@@ -1,4 +1,4 @@
-sphinx==6.2
+sphinx>=7,<9
 nbsphinx
 sphinx_rtd_theme
 sphinx_copybutton
