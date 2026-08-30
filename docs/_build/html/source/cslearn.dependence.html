@@ -1,0 +1,502 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dependence &mdash; cslearn 1.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=bb516dca"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="scoring" href="cslearn.scoring.html" />
+    <link rel="prev" title="learning" href="cslearn.learning.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            cslearn
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="cslearn.html">Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="cslearn.cstree.html">cstree</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cslearn.learning.html">learning</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">dependence</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cslearn.dependence.CI"><code class="docutils literal notranslate"><span class="pre">CI</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cslearn.dependence.CSI"><code class="docutils literal notranslate"><span class="pre">CSI</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.dependence.CSI.as_list"><code class="docutils literal notranslate"><span class="pre">CSI.as_list()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#cslearn.dependence.Context"><code class="docutils literal notranslate"><span class="pre">Context</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cslearn.dependence.csi_relations_to_dags"><code class="docutils literal notranslate"><span class="pre">csi_relations_to_dags()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cslearn.dependence.decomposition"><code class="docutils literal notranslate"><span class="pre">decomposition()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cslearn.dependence.minimal_csis"><code class="docutils literal notranslate"><span class="pre">minimal_csis()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cslearn.dependence.mix"><code class="docutils literal notranslate"><span class="pre">mix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cslearn.dependence.pairwise_cis"><code class="docutils literal notranslate"><span class="pre">pairwise_cis()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cslearn.dependence.pairwise_csis"><code class="docutils literal notranslate"><span class="pre">pairwise_csis()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cslearn.dependence.partition_csis"><code class="docutils literal notranslate"><span class="pre">partition_csis()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cslearn.dependence.weak_union"><code class="docutils literal notranslate"><span class="pre">weak_union()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cslearn.scoring.html">scoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cslearn.evaluate.html">evaluate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cslearn.ldag.html">ldag</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Example notebooks</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Project info</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cslearn</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="cslearn.html">Reference</a></li>
+      <li class="breadcrumb-item active">dependence</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/cslearn.dependence.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-cslearn.dependence">
+<span id="dependence"></span><h1>dependence<a class="headerlink" href="#module-cslearn.dependence" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="cslearn.dependence.CI">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cslearn.dependence.</span></span><span class="sig-name descname"><span class="pre">CI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/dependence.html#CI"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.dependence.CI" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This is a conditional independence relation on the form a ⊥ b | sep.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<em>set</em>) – The first set of variables.</p></li>
+<li><p><strong>b</strong> (<em>set</em>) – The second set of variables.</p></li>
+<li><p><strong>sep</strong> (<em>set</em>) – The set of variables that separate a and b.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">cslearn.dependence</span><span class="w"> </span><span class="kn">import</span> <span class="n">CI</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">CI</span><span class="p">({</span><span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">},</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;X&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">)]))</span>
+<span class="go">X2 ⊥ X3 | X1, X5</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cslearn.dependence.CSI">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cslearn.dependence.</span></span><span class="sig-name descname"><span class="pre">CSI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ci</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#cslearn.dependence.CI" title="cslearn.dependence.CI"><span class="pre">CI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#cslearn.dependence.Context" title="cslearn.dependence.Context"><span class="pre">Context</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cards</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/dependence.html#CSI"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.dependence.CSI" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This is a context specific relation on the form a ⊥ b | sep, context=something.
+:param ci: The CI relation.
+:type ci: CI
+:param context: The context.
+:type context: Context
+:param cards: The list of cardinalities of the variables.
+:type cards: list</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">cslearn.dependence</span><span class="w"> </span><span class="kn">import</span> <span class="n">Context</span><span class="p">,</span> <span class="n">CI</span><span class="p">,</span> <span class="n">CSI</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">7</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Context</span><span class="p">({</span><span class="mi">6</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span><span class="mi">1</span><span class="p">},</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ci</span> <span class="o">=</span> <span class="n">CI</span><span class="p">({</span><span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">},</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">csi</span> <span class="o">=</span> <span class="n">CSI</span><span class="p">(</span><span class="n">ci</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">csi</span><span class="p">)</span>
+<span class="go">X1 ⊥ X2 | X4, X5, X6=0, X3=1</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.dependence.CSI.as_list">
+<span class="sig-name descname"><span class="pre">as_list</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/dependence.html#CSI.as_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.dependence.CSI.as_list" title="Link to this definition"></a></dt>
+<dd><p>List representation. Important: only for pairwise CSIs, i.e. something like Xi ⊥ Xj | …</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List representation of the CSI. The indices in the list represents the levels. The None values encode the CI variables. The singleton sets encode the context variables values. The sets with full cardinalities encode the sep variables.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">cslearn.dependence</span><span class="w"> </span><span class="kn">import</span> <span class="n">Context</span><span class="p">,</span> <span class="n">CI</span><span class="p">,</span> <span class="n">CSI</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Context</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span><span class="mi">1</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ci</span> <span class="o">=</span> <span class="n">CI</span><span class="p">({</span><span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">csi</span> <span class="o">=</span> <span class="n">CSI</span><span class="p">(</span><span class="n">ci</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">cards</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="mi">6</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">csi</span><span class="o">.</span><span class="n">as_list</span><span class="p">()</span>
+<span class="go">[{0}, None, None, {1}, {0, 1}, {0, 1}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cslearn.dependence.Context">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cslearn.dependence.</span></span><span class="sig-name descname"><span class="pre">Context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/dependence.html#Context"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.dependence.Context" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for the context of a CSI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> (<em>dict</em>) – A dictionary of the context. The keys are the levels and the values are the values of the (context) variables at the same level.</p></li>
+<li><p><strong>labels</strong> (<em>list</em><em>, </em><em>optional</em>) – A list of labels for the keys in the dict. Defaults to None.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">cslearn.dependence</span><span class="w"> </span><span class="kn">import</span> <span class="n">Context</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">Context</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="mi">1</span><span class="p">}))</span>
+<span class="go">0=0, 3=1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">Context</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;X&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)]))</span>
+<span class="go">X0=0, X3=1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cslearn.dependence.csi_relations_to_dags">
+<span class="sig-prename descclassname"><span class="pre">cslearn.dependence.</span></span><span class="sig-name descname"><span class="pre">csi_relations_to_dags</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csi_relations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/dependence.html#csi_relations_to_dags"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.dependence.csi_relations_to_dags" title="Link to this definition"></a></dt>
+<dd><p>Converts the CSI relations to dags.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>csi_relations</strong> (<em>dict</em>) – A dictionary with contexts as keys and lists of csi relations as values.</p></li>
+<li><p><strong>p</strong> (<em>int</em>) – The number of variables.</p></li>
+<li><p><strong>labels</strong> (<em>list</em><em>, </em><em>optional</em>) – A list of labels for the variables. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary with contexts as keys and dags as values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>The CStree of Figure 1 in Duarte &amp; Solus (2021):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">cslearn</span><span class="w"> </span><span class="kn">import</span> <span class="n">dependence</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">CStree</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;X&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">update_stages</span><span class="p">({</span>
+<span class="gp">... </span>    <span class="mi">0</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">}},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}],</span>
+<span class="gp">... </span>    <span class="mi">1</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;green&quot;</span><span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">}},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}],</span>
+<span class="gp">... </span>    <span class="mi">2</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;orange&quot;</span><span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">}},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cdags</span> <span class="o">=</span> <span class="n">dependence</span><span class="o">.</span><span class="n">csi_relations_to_dags</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">tree</span><span class="o">.</span><span class="n">to_minimal_context_csis</span><span class="p">(),</span> <span class="n">tree</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">tree</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">dag</span> <span class="ow">in</span> <span class="n">cdags</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dag</span><span class="o">.</span><span class="n">edges</span><span class="p">())))</span>
+<span class="go">X2=0: [(&#39;X1&#39;, &#39;X4&#39;), (&#39;X3&#39;, &#39;X4&#39;)]</span>
+<span class="go">X3=0: [(&#39;X1&#39;, &#39;X2&#39;), (&#39;X1&#39;, &#39;X4&#39;)]</span>
+<span class="go">X1=0: [(&#39;X2&#39;, &#39;X3&#39;), (&#39;X3&#39;, &#39;X4&#39;)]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cslearn.dependence.decomposition">
+<span class="sig-prename descclassname"><span class="pre">cslearn.dependence.</span></span><span class="sig-name descname"><span class="pre">decomposition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ci</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#cslearn.dependence.CI" title="cslearn.dependence.CI"><span class="pre">CI</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/dependence.html#decomposition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.dependence.decomposition" title="Link to this definition"></a></dt>
+<dd><p>Generate all possible pairwise CI relations that are implied by
+decomposition rule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ci</strong> (<a class="reference internal" href="#cslearn.dependence.CI" title="cslearn.dependence.CI"><em>CI</em></a>) – A CI relation.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of pairwise CI relations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">cslearn.dependence</span><span class="w"> </span><span class="kn">import</span> <span class="n">CI</span><span class="p">,</span> <span class="n">decomposition</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">decomposition</span><span class="p">(</span><span class="n">CI</span><span class="p">({</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">},</span> <span class="p">{</span><span class="mi">0</span><span class="p">})):</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="go">1 ⊥ 3 | 0</span>
+<span class="go">1 ⊥ 4 | 0</span>
+<span class="go">2 ⊥ 3 | 0</span>
+<span class="go">2 ⊥ 4 | 0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cslearn.dependence.minimal_csis">
+<span class="sig-prename descclassname"><span class="pre">cslearn.dependence.</span></span><span class="sig-name descname"><span class="pre">minimal_csis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">paired_csis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cards</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/dependence.html#minimal_csis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.dependence.minimal_csis" title="Link to this definition"></a></dt>
+<dd><p>Find the minimal CSIs from the pairwise CSIs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>paired_csis</strong> (<em>dict</em>) – Dict of csis grouped by pairwise indep rels as Xi ⊥ Xj | …</p></li>
+<li><p><strong>cards</strong> (<em>list</em>) – Cardinalities of the levels.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>The CStree of Figure 1 in Duarte &amp; Solus (2021):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">CStree</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;X&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">update_stages</span><span class="p">({</span>
+<span class="gp">... </span>    <span class="mi">0</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">}},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}],</span>
+<span class="gp">... </span>    <span class="mi">1</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;green&quot;</span><span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">}},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}],</span>
+<span class="gp">... </span>    <span class="mi">2</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;orange&quot;</span><span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">}},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">csis</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">to_minimal_context_csis</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">csi</span> <span class="ow">in</span> <span class="n">csis</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="n">csi</span><span class="p">)</span>
+<span class="go">X1 ⊥ X3 | X2=0</span>
+<span class="go">X2 ⊥ X4 | X1, X3=0</span>
+<span class="go">X2 ⊥ X4 | X3, X1=0</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict of minimal CSIs grouped by contexts.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cslearn.dependence.mix">
+<span class="sig-prename descclassname"><span class="pre">cslearn.dependence.</span></span><span class="sig-name descname"><span class="pre">mix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csilist_tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cards</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/dependence.html#mix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.dependence.mix" title="Link to this definition"></a></dt>
+<dd><p>Mix two pairwise CI relations represented as lists.
+A mix is the intersection at each level except for the current level l
+where the values are joined.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>csilist_tuple</strong> (<em>tuple</em>) – Two pairwise CSI lists</p></li>
+<li><p><strong>level</strong> (<em>int</em>) – the level</p></li>
+<li><p><strong>cards</strong> (<em>list</em>) – cardinalities of the levels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A mixed CSI list.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">cslearn.dependence</span><span class="w"> </span><span class="kn">import</span> <span class="n">mix</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="mi">1</span><span class="p">}]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">{</span><span class="mi">0</span><span class="p">},</span> <span class="p">{</span><span class="mi">1</span><span class="p">}]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">mix</span><span class="p">((</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span>
+<span class="go">[{0, 1}, None, None, {0}, {1}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cslearn.dependence.pairwise_cis">
+<span class="sig-prename descclassname"><span class="pre">cslearn.dependence.</span></span><span class="sig-name descname"><span class="pre">pairwise_cis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ci</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#cslearn.dependence.CI" title="cslearn.dependence.CI"><span class="pre">CI</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/dependence.html#pairwise_cis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.dependence.pairwise_cis" title="Link to this definition"></a></dt>
+<dd><p>Using weak union just to get pairwise independence relations from a CI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ci</strong> (<a class="reference internal" href="#cslearn.dependence.CI" title="cslearn.dependence.CI"><em>CI</em></a>) – CI relation</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of pairwise CI relations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">cslearn.dependence</span><span class="w"> </span><span class="kn">import</span> <span class="n">CI</span><span class="p">,</span> <span class="n">pairwise_cis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pairwise_cis</span><span class="p">(</span><span class="n">CI</span><span class="p">({</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">},</span> <span class="p">{</span><span class="mi">0</span><span class="p">})):</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">1 ⊥ 3 | 0, 2, 4</span>
+<span class="go">1 ⊥ 4 | 0, 2, 3</span>
+<span class="go">2 ⊥ 3 | 0, 1, 4</span>
+<span class="go">2 ⊥ 4 | 0, 1, 3</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cslearn.dependence.pairwise_csis">
+<span class="sig-prename descclassname"><span class="pre">cslearn.dependence.</span></span><span class="sig-name descname"><span class="pre">pairwise_csis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#cslearn.dependence.CSI" title="cslearn.dependence.CSI"><span class="pre">CSI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cards</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/dependence.html#pairwise_csis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.dependence.pairwise_csis" title="Link to this definition"></a></dt>
+<dd><p>Using weak union just to get pairwise indep relations from a CSI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>csi</strong> (<a class="reference internal" href="#cslearn.dependence.CSI" title="cslearn.dependence.CSI"><em>CSI</em></a>) – CSI relation</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of pairwise CSI relations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">cslearn.dependence</span><span class="w"> </span><span class="kn">import</span> <span class="n">CI</span><span class="p">,</span> <span class="n">Context</span><span class="p">,</span> <span class="n">CSI</span><span class="p">,</span> <span class="n">pairwise_csis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">csi</span> <span class="o">=</span> <span class="n">CSI</span><span class="p">(</span><span class="n">CI</span><span class="p">({</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">},</span> <span class="p">{</span><span class="mi">0</span><span class="p">}),</span> <span class="n">Context</span><span class="p">({</span><span class="mi">5</span><span class="p">:</span> <span class="mi">0</span><span class="p">}))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pairwise_csis</span><span class="p">(</span><span class="n">csi</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">1 ⊥ 3 | 0, 2, 4, 5=0</span>
+<span class="go">1 ⊥ 4 | 0, 2, 3, 5=0</span>
+<span class="go">2 ⊥ 3 | 0, 1, 4, 5=0</span>
+<span class="go">2 ⊥ 4 | 0, 1, 3, 5=0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cslearn.dependence.partition_csis">
+<span class="sig-prename descclassname"><span class="pre">cslearn.dependence.</span></span><span class="sig-name descname"><span class="pre">partition_csis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csilist_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cards</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/dependence.html#partition_csis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.dependence.partition_csis" title="Link to this definition"></a></dt>
+<dd><p>Put the CSIs in different sets that can possibly be mixed to create
+new CSIs. It is assumed that all are pairwise CSIs and has the same
+“indepedent” variables, e.g. 1 and 3 in the example below.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>csilist_list</strong> (<em>list</em>) – List of pairwise CSI lists.</p></li>
+<li><p><strong>level</strong> (<em>int</em>) – The level up to which the mixing is done.</p></li>
+<li><p><strong>cards</strong> (<em>list</em>) – Cardinalities of the levels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of disjoint lists of pairwise CSI lists that can possibly be mixed.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">cslearn.dependence</span><span class="w"> </span><span class="kn">import</span> <span class="n">CI</span><span class="p">,</span> <span class="n">Context</span><span class="p">,</span> <span class="n">CSI</span><span class="p">,</span> <span class="n">partition_csis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cards</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="mi">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">csis</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="n">CSI</span><span class="p">(</span><span class="n">CI</span><span class="p">({</span><span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="mi">3</span><span class="p">},</span> <span class="p">{</span><span class="mi">4</span><span class="p">}),</span> <span class="n">Context</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">0</span><span class="p">}),</span> <span class="n">cards</span><span class="o">=</span><span class="n">cards</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">CSI</span><span class="p">(</span><span class="n">CI</span><span class="p">({</span><span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="mi">3</span><span class="p">},</span> <span class="p">{</span><span class="mi">4</span><span class="p">}),</span> <span class="n">Context</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">}),</span> <span class="n">cards</span><span class="o">=</span><span class="n">cards</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">CSI</span><span class="p">(</span><span class="n">CI</span><span class="p">({</span><span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="mi">3</span><span class="p">},</span> <span class="p">{</span><span class="mi">4</span><span class="p">}),</span> <span class="n">Context</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">0</span><span class="p">}),</span> <span class="n">cards</span><span class="o">=</span><span class="n">cards</span><span class="p">),</span>
+<span class="gp">... </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">partition_csis</span><span class="p">([</span><span class="n">c</span><span class="o">.</span><span class="n">as_list</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">csis</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cards</span><span class="p">)</span>
+<span class="go">[[[{0}, None, {0}, None, {0, 1}], [{0}, None, {1}, None, {0, 1}]], [[{1}, None, {0}, None, {0, 1}]]]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cslearn.dependence.weak_union">
+<span class="sig-prename descclassname"><span class="pre">cslearn.dependence.</span></span><span class="sig-name descname"><span class="pre">weak_union</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ci</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#cslearn.dependence.CI" title="cslearn.dependence.CI"><span class="pre">CI</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/dependence.html#weak_union"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.dependence.weak_union" title="Link to this definition"></a></dt>
+<dd><p>Using weak union just to get pairwise independence relations from a CSI.
+:param ci: CI relation
+:type ci: CI</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of pairwise CI relations.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">cslearn</span><span class="w"> </span><span class="kn">import</span> <span class="n">dependence</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dependence</span><span class="o">.</span><span class="n">weak_union</span><span class="p">(</span><span class="n">dependence</span><span class="o">.</span><span class="n">CI</span><span class="p">({</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">},</span> <span class="p">{</span><span class="mi">0</span><span class="p">})):</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="go">1, 2 ⊥ 4 | 0, 3</span>
+<span class="go">1, 2 ⊥ 3 | 0, 4</span>
+<span class="go">2 ⊥ 3, 4 | 0, 1</span>
+<span class="go">1 ⊥ 3, 4 | 0, 2</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="cslearn.learning.html" class="btn btn-neutral float-left" title="learning" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cslearn.scoring.html" class="btn btn-neutral float-right" title="scoring" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Anonymous.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

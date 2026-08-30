@@ -19,9 +19,8 @@ def sachs_observational(binarized: bool = True) -> pd.DataFrame:
     P. Nolan. Causal protein-signaling networks derived from
     multiparameter single-cell data. Science, 308(5721):523–529, 2005.
 
-    .. [2] F. L. Rios, A. Markham, and L. Solus. Scalable structure
-    learning for sparse context-specific causal systems. 2024.
-    arXiv:2402.07762.
+    .. [2] Anonymous. Scalable structure learning for sparse
+    context-specific causal systems. 2024.
 
     .. [3] Y. Wang, L. Solus, K. Yang, and C. Uhler. Permutation-based
     causal inference algorithms with interventions. Advances in Neural

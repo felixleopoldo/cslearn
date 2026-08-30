@@ -1,0 +1,369 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Learning a CStree &mdash; cslearn 1.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=bb516dca"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Learning CStree using Gibbs sampler" href="learn_demo_gibbs.html" />
+    <link rel="prev" title="CStree from (Duarte &amp; Solus, 2022)" href="fig1_demo.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            cslearn
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cslearn.html">Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="examples.html">Example notebooks</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="examples.html#notebooks">Notebooks</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="fig1_demo.html">CStree from (Duarte &amp; Solus, 2022)</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Learning a CStree</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Create-a-CStree">Create a CStree</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Draw-samples">Draw samples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Calculate-score-tables">Calculate score tables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Find-the-optimal-order-by-exhaustive-search">Find the optimal order by exhaustive search</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Find-the-optimal-CStree-(staging-of-each-level)-of-the-best-order">Find the optimal CStree (staging of each level) of the best order</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Estimate-the-parameters">Estimate the parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Plot-the-minimal-context-DAGs">Plot the minimal context DAGs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="learn_demo_gibbs.html">Learning CStree using Gibbs sampler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushroom_prediction.html">Prediction with CSlearn: Mushroom Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sachs_ldag_repr.html">Sachs et al. 2005</a></li>
+<li class="toctree-l3"><a class="reference internal" href="alarm_ldag_repr.html">Alarm data</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Project info</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cslearn</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="examples.html">Reference</a></li>
+      <li class="breadcrumb-item active">Learning a CStree</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/learn_demo.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Learning-a-CStree">
+<h1>Learning a CStree<a class="headerlink" href="#Learning-a-CStree" title="Link to this heading"></a></h1>
+<p>This notebook shows how to learn a CStree from observational data using an exhaustive search procedure.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.stage</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">st</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.learning</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ctl</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.scoring</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>
+
+<span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The autoreload extension is already loaded. To reload it, use:
+  %reload_ext autoreload
+</pre></div></div>
+</div>
+<section id="Create-a-CStree">
+<h2>Create a CStree<a class="headerlink" href="#Create-a-CStree" title="Link to this heading"></a></h2>
+<p>We first create a CStree which we know can be represented by a single DAG, shown below. We sample the stage probabilities from the Beta distribution with total pseudo counts 1.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">tree</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">CStree</span><span class="p">([</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+
+<span class="n">tree</span><span class="o">.</span><span class="n">update_stages</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="mi">0</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">}},</span> <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}],</span>
+        <span class="mi">1</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="mi">0</span><span class="p">}},</span> <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}],</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="n">tree</span><span class="o">.</span><span class="n">sample_stage_parameters</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">tree</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/source_learn_demo_5_0.svg" src="../_images/source_learn_demo_5_0.svg" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">true_adags</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">to_minimal_context_agraphs</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of DAGs:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">true_adags</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Context:&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">true_adags</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">true_adags</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Number of DAGs: 1
+Context: None
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/source_learn_demo_6_1.svg" src="../_images/source_learn_demo_6_1.svg" />
+</div>
+</div>
+</section>
+<section id="Draw-samples">
+<h2>Draw samples<a class="headerlink" href="#Draw-samples" title="Link to this heading"></a></h2>
+<p>We draw 10000 samples from this CStree.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Calculate-score-tables">
+<h2>Calculate score tables<a class="headerlink" href="#Calculate-score-tables" title="Link to this heading"></a></h2>
+<p>The structure learning (learning of CStree) uses pre-calculated scores. We restrict the number of variables in each context to be at most 2 and use the BDeu score with pseudo count 1. By letting poss_cvars=None, the possible context variables for a variable are unrestricted.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">score_table</span><span class="p">,</span> <span class="n">context_scores</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">order_score_tables</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">max_cvars</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">poss_cvars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">alpha_tot</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;BDeu&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Context score tables: 100%|██████████| 3/3 [00:00&lt;00:00, 160.33it/s]
+Creating #stagings tables: 100%|██████████| 3/3 [00:00&lt;00:00, 2533.81it/s]
+Order score tables: 100%|██████████| 3/3 [00:00&lt;00:00, 2697.88it/s]
+</pre></div></div>
+</div>
+<p>The dict score_table contains the order score tables and context_scores, the scores for every context of every variable.</p>
+</section>
+<section id="Find-the-optimal-order-by-exhaustive-search">
+<h2>Find the optimal order by exhaustive search<a class="headerlink" href="#Find-the-optimal-order-by-exhaustive-search" title="Link to this heading"></a></h2>
+<p>We first find the optimal order using an exhaustive search.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optord</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="n">ctl</span><span class="o">.</span><span class="n">_find_optimal_order</span><span class="p">(</span><span class="n">score_table</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;optimal order: </span><span class="si">{}</span><span class="s2">, score </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">optord</span><span class="p">,</span> <span class="n">score</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+optimal order: [&#39;b&#39;, &#39;c&#39;, &#39;a&#39;], score -16332.559328979401
+</pre></div></div>
+</div>
+</section>
+<section id="Find-the-optimal-CStree-(staging-of-each-level)-of-the-best-order">
+<h2>Find the optimal CStree (staging of each level) of the best order<a class="headerlink" href="#Find-the-optimal-CStree-(staging-of-each-level)-of-the-best-order" title="Link to this heading"></a></h2>
+<p>Given the optimal order, we find the optomial CStree consistent with this order.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opttree</span> <span class="o">=</span> <span class="n">ctl</span><span class="o">.</span><span class="n">_optimal_cstree_given_order</span><span class="p">(</span><span class="n">optord</span><span class="p">,</span> <span class="n">context_scores</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>We plot the tree before estimating the parameters.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opttree</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/source_learn_demo_21_0.svg" src="../_images/source_learn_demo_21_0.svg" />
+</div>
+</div>
+</section>
+<section id="Estimate-the-parameters">
+<h2>Estimate the parameters<a class="headerlink" href="#Estimate-the-parameters" title="Link to this heading"></a></h2>
+<p>Estimate the stage parameters using the BDeu prior with a total pseudo count per level of 1.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opttree</span><span class="o">.</span><span class="n">estimate_stage_parameters</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">alpha_tot</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;BDeu&quot;</span><span class="p">)</span>
+<span class="n">opttree</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/source_learn_demo_24_0.svg" src="../_images/source_learn_demo_24_0.svg" />
+</div>
+</div>
+</section>
+<section id="Plot-the-minimal-context-DAGs">
+<h2>Plot the minimal context DAGs<a class="headerlink" href="#Plot-the-minimal-context-DAGs" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt_adags</span> <span class="o">=</span> <span class="n">opttree</span><span class="o">.</span><span class="n">to_minimal_context_agraphs</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of DAGs:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">opt_adags</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Context:&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">opt_adags</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">opt_adags</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Number of DAGs: 1
+Context: None
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/source_learn_demo_26_1.svg" src="../_images/source_learn_demo_26_1.svg" />
+</div>
+</div>
+<p>Note that this has the same CSI/CI statement as the original DAG representation.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="fig1_demo.html" class="btn btn-neutral float-left" title="CStree from (Duarte &amp; Solus, 2022)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="learn_demo_gibbs.html" class="btn btn-neutral float-right" title="Learning CStree using Gibbs sampler" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Anonymous.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

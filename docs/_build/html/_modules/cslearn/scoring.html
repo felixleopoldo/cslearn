@@ -1,0 +1,601 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cslearn.scoring &mdash; cslearn 1.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=bb516dca"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            cslearn
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/cslearn.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/examples.html">Example notebooks</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Project info</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">cslearn</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">cslearn.scoring</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for cslearn.scoring</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">combinations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">loggamma</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.dependence</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">csi_rel</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.learning</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">learn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.stage</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">st</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_counts_at_level</span><span class="p">(</span><span class="n">cstree</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">CStree</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collect all the observed counts at a specific level by stages.</span>
+<span class="sd">    So the counts for level l depends on the stage of level l-1.</span>
+<span class="sd">    (we probably have to ase these on context instead of stage)</span>
+<span class="sd">    This is a bit legacy, it is only used when estimating parameters for a stage in th CStee class.</span>
+<span class="sd">    It should probably be replaced with some precalculations.. But that would induce more calculations..</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cstree (ct.CStree): A CStree</span>
+<span class="sd">        level (int): The level to get counts for.</span>
+<span class="sd">        data (pd.DataFrame): The data.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; import random</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.scoring as sc</span>
+<span class="sd">        &gt;&gt;&gt; np.random.seed(1)</span>
+<span class="sd">        &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">        &gt;&gt;&gt; tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)</span>
+<span class="sd">        &gt;&gt;&gt; tree.sample_stage_parameters(alpha=1.0)</span>
+<span class="sd">        &gt;&gt;&gt; df = tree.sample(1000)</span>
+<span class="sd">        &gt;&gt;&gt; counts = sc._counts_at_level(tree, 2, df)</span>
+<span class="sd">        &gt;&gt;&gt; sum(sum(v.values()) for v in counts.values())  # one count per sample</span>
+<span class="sd">        1000</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stage_counts</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># TODO: Maybe it should be context counts instead!</span>
+
+    <span class="c1"># reorder the columns according to the order.</span>
+    <span class="c1"># cardinalities are at first row.</span>
+
+    <span class="n">dataperm</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">cstree</span><span class="o">.</span><span class="n">labels</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dataperm</span><span class="p">)):</span>  <span class="c1"># iterate over the samples</span>
+        <span class="n">pred_vals</span> <span class="o">=</span> <span class="n">dataperm</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:</span><span class="n">level</span><span class="p">]</span>
+        <span class="n">stage</span> <span class="o">=</span> <span class="n">cstree</span><span class="o">.</span><span class="n">get_stage</span><span class="p">(</span><span class="n">pred_vals</span><span class="p">)</span>  <span class="c1"># or context</span>
+        <span class="c1"># print(&#39;pred_vals: &#39;, pred_vals)</span>
+        <span class="c1"># print(&quot;stages at level {}: {}&quot;.format(l-1, t.stages[l-1]))</span>
+        <span class="k">if</span> <span class="n">stage</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># singleton stage. Shold note be any of these in our setting.</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;singleton stage&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stage</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stage_counts</span><span class="p">:</span>
+            <span class="c1"># only save the observed ones #[0] * t.cards[l]  # initiate with</span>
+            <span class="c1"># zeros.x</span>
+            <span class="n">stage_counts</span><span class="p">[</span><span class="n">stage</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">dataperm</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">level</span><span class="p">]</span> <span class="ow">in</span> <span class="n">stage_counts</span><span class="p">[</span><span class="n">stage</span><span class="p">]:</span>
+            <span class="n">stage_counts</span><span class="p">[</span><span class="n">stage</span><span class="p">][</span><span class="n">dataperm</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">level</span><span class="p">]]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">stage_counts</span><span class="p">[</span><span class="n">stage</span><span class="p">][</span><span class="n">dataperm</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">level</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">stage_counts</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_score_context</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">context_vars</span><span class="p">,</span> <span class="n">cards</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">alpha_tot</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;BDeu&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Building block for the CS-BDeu score as defined in C. Hughes et al., but here we calculate it for a specific variable and a context.</span>
+<span class="sd">    These are then combined to get the CS-BDeu score.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        var (str): Variable label e.g. X4.</span>
+<span class="sd">        context (str): Context e.g. the string &quot;X1=1,X3=0&quot;.</span>
+<span class="sd">        context_vars (list): List of context variables, e.g. [&quot;X1&quot;, &quot;X3&quot;].</span>
+<span class="sd">        cards (dict): Dictionary with cardinalities for all variables.</span>
+<span class="sd">        counts (dict): Counts for all the stage (sufficient statistics).</span>
+<span class="sd">        alpha_tot (float, optional): Hyper parameter for the stage parameters Dirichlet prior distribution. Defaults to 1.0.</span>
+<span class="sd">        method (str, optional): Parameter estimator. Defaults to &quot;BDeu&quot;.</span>
+
+<span class="sd">    Reference:</span>
+<span class="sd">        C. Hughes, P. Strong, and A. Shenvi. Score equivalence for staged trees, 2023, https://arxiv.org/abs/2206.15322</span>
+
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: The context score for var.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;K2&quot;</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">alpha_tot</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="n">alpha_obs</span> <span class="o">=</span> <span class="n">alpha_tot</span>
+        <span class="n">alpha_context</span> <span class="o">=</span> <span class="n">alpha_tot</span> <span class="o">*</span> <span class="n">cards</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;BD&quot;</span><span class="p">:</span>  <span class="c1"># This should be the Cooper-Herzkovits</span>
+        <span class="n">alpha_obs</span> <span class="o">=</span> <span class="n">alpha_tot</span>
+        <span class="n">alpha_context</span> <span class="o">=</span> <span class="n">alpha_tot</span> <span class="o">*</span> <span class="n">cards</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;BDeu&quot;</span><span class="p">:</span>
+        <span class="n">context_prop</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">([</span><span class="n">cards</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">context_vars</span><span class="p">])</span>
+        <span class="n">alpha_context</span> <span class="o">=</span> <span class="n">alpha_tot</span> <span class="o">*</span> <span class="n">context_prop</span>
+        <span class="n">alpha_obs</span> <span class="o">=</span> <span class="n">alpha_context</span> <span class="o">/</span> <span class="n">cards</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+
+    <span class="n">context_counts</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">counts</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">context</span><span class="p">][</span><span class="s2">&quot;counts&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+    <span class="c1"># Note that the score is depending on the context in the stage. So</span>
+    <span class="c1"># note really the stage as such.</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="n">loggamma</span><span class="p">(</span><span class="n">alpha_context</span><span class="p">)</span> <span class="o">-</span> <span class="n">loggamma</span><span class="p">(</span><span class="n">alpha_context</span> <span class="o">+</span> <span class="n">context_counts</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">val</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">counts</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">context</span><span class="p">][</span><span class="s2">&quot;counts&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">score</span> <span class="o">+=</span> <span class="n">loggamma</span><span class="p">(</span><span class="n">alpha_obs</span> <span class="o">+</span> <span class="n">count</span><span class="p">)</span> <span class="o">-</span> <span class="n">loggamma</span><span class="p">(</span><span class="n">alpha_obs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">score</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_estimate_parameters</span><span class="p">(</span><span class="n">cstree</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">CStree</span><span class="p">,</span> <span class="n">stage</span><span class="p">,</span> <span class="n">stage_counts</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;BDeu&quot;</span><span class="p">,</span> <span class="n">alpha_tot</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate the parameters for a stage.</span>
+<span class="sd">        TODO: This should probably depend on the context counts instead of the stage counts.</span>
+<span class="sd">        It is legacy code and only called from the CStree class atm so its works anyway.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cstree (ct.CStree): A CStree.</span>
+<span class="sd">        stage (Stage): A stage.</span>
+<span class="sd">        stage_counts (dict): Counts for all the stage (sufficient statistics).</span>
+<span class="sd">        method (string): Estimation method. Defaults to &quot;BDeu&quot;.</span>
+<span class="sd">        alpha_tot (float): Hyper parameter for the stage parameters Dirichlet prior distribution. Defaults to 1.0.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: List of probabilities associated with the stage. I.e conditional probabilities for the variable one level up.</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">level</span> <span class="o">=</span> <span class="n">stage</span><span class="o">.</span><span class="n">level</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># estimating fot the level above the stage</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;K2&quot;</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">alpha_tot</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="n">alpha_obs</span> <span class="o">=</span> <span class="n">alpha_tot</span>
+        <span class="n">alpha_stage</span> <span class="o">=</span> <span class="n">alpha_tot</span> <span class="o">*</span> <span class="n">cstree</span><span class="o">.</span><span class="n">cards</span><span class="p">[</span><span class="n">level</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;BD&quot;</span><span class="p">:</span>  <span class="c1"># This should be the Cooper-Herzkovits</span>
+        <span class="n">alpha_obs</span> <span class="o">=</span> <span class="n">alpha_tot</span>
+        <span class="n">alpha_stage</span> <span class="o">=</span> <span class="n">alpha_tot</span> <span class="o">*</span> <span class="n">cstree</span><span class="o">.</span><span class="n">cards</span><span class="p">[</span><span class="n">level</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;BDeu&quot;</span><span class="p">:</span>  <span class="c1"># if alpha_tot  == 0, we get MLE?</span>
+        <span class="c1"># TODO: assert that all stages are colored.</span>
+        <span class="c1"># level 0 has no stages. it has [] actually...</span>
+        <span class="n">alpha_stage</span> <span class="o">=</span> <span class="n">alpha_tot</span> <span class="o">*</span> <span class="n">cstree</span><span class="o">.</span><span class="n">stage_proportion</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>
+        <span class="n">alpha_obs</span> <span class="o">=</span> <span class="n">alpha_stage</span> <span class="o">/</span> <span class="n">cstree</span><span class="o">.</span><span class="n">cards</span><span class="p">[</span><span class="n">level</span><span class="p">]</span>
+
+    <span class="n">probs</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">cstree</span><span class="o">.</span><span class="n">cards</span><span class="p">[</span><span class="n">level</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">stage</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stage_counts</span><span class="p">:</span>
+        <span class="c1"># no observations here so use only prior</span>
+        <span class="n">prob</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">alpha_obs</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">alpha_obs</span> <span class="o">/</span> <span class="n">alpha_stage</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">prob</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">probs</span><span class="p">]</span>
+
+    <span class="n">stage_counts_total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">stage_counts</span><span class="p">[</span><span class="n">stage</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cstree</span><span class="o">.</span><span class="n">cards</span><span class="p">[</span><span class="n">level</span><span class="p">]):</span>
+        <span class="c1"># no observations here so use only prior</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stage_counts</span><span class="p">[</span><span class="n">stage</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">alpha_obs</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">alpha_obs</span> <span class="o">/</span> <span class="n">alpha_stage</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># posterior mean or posterior predictive probabilites.</span>
+            <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">alpha_obs</span> <span class="o">+</span> <span class="n">stage_counts</span><span class="p">[</span><span class="n">stage</span><span class="p">][</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha_stage</span> <span class="o">+</span> <span class="n">stage_counts_total</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">probs</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_context_score_tables</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;posterior&quot;</span><span class="p">,</span>
+    <span class="n">max_cvars</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">poss_cvars</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">alpha_tot</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;BDeu&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates the context score tables for a dataset.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (pd.DataFrame): A dataset.</span>
+<span class="sd">        strategy (str, optional): Defaults to &quot;posterior&quot;.</span>
+<span class="sd">        max_cvars (int, optional): Maximum number of variables in a context. Defaults to 2.</span>
+<span class="sd">        poss_cvars (dict | None, optional): Possible context variabels for each variable. Defaults to None which means all.</span>
+<span class="sd">        alpha_tot (float, optional): Hyper parameter for the Dirichlet distribution, total pseudo counts per variable. Defaults to 1.0.</span>
+<span class="sd">        method (str, optional): Scoring method. Defaults to &quot;BDeu&quot;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Context scores for each variable.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; import random</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.scoring as sc</span>
+<span class="sd">        &gt;&gt;&gt; np.random.seed(1)</span>
+<span class="sd">        &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">        &gt;&gt;&gt; tree = ct.sample_cstree([2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)</span>
+<span class="sd">        &gt;&gt;&gt; tree.sample_stage_parameters(alpha=1.0)</span>
+<span class="sd">        &gt;&gt;&gt; df = tree.sample(1000)</span>
+<span class="sd">        &gt;&gt;&gt; context_scores, context_counts = sc._context_score_tables(</span>
+<span class="sd">        ...     df, max_cvars=1, poss_cvars=None, alpha_tot=1.0, method=&quot;BDeu&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; sorted(context_scores)</span>
+<span class="sd">        [&#39;cards&#39;, &#39;scores&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; context_scores[&quot;cards&quot;]</span>
+<span class="sd">        {0: 2, 1: 2, 2: 2}</span>
+<span class="sd">        &gt;&gt;&gt; sorted(context_scores[&quot;scores&quot;][0])</span>
+<span class="sd">        [&#39;1=0&#39;, &#39;1=1&#39;, &#39;2=0&#39;, &#39;2=1&#39;, &#39;None&#39;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">poss_cvars</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">poss_cvars</span> <span class="o">=</span> <span class="p">{</span><span class="n">l</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">-</span> <span class="p">{</span><span class="n">l</span><span class="p">})</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">}</span>
+
+    <span class="n">cards_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">var</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">var</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">}</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">scores</span><span class="p">[</span><span class="s2">&quot;cards&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cards_dict</span>
+    <span class="n">scores</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">lab</span><span class="p">:</span> <span class="p">{}</span> <span class="k">for</span> <span class="n">lab</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">}</span>
+
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">counts</span><span class="p">[</span><span class="s2">&quot;cards&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cards_dict</span>
+    <span class="n">counts</span><span class="p">[</span><span class="s2">&quot;var_counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">lab</span><span class="p">:</span> <span class="p">{}</span> <span class="k">for</span> <span class="n">lab</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">}</span>
+
+    <span class="c1"># go through all variables</span>
+    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Context score tables&quot;</span><span class="p">):</span>
+        <span class="c1"># Iterate through all context sizes</span>
+        <span class="k">for</span> <span class="n">csize</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_cvars</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="c1"># Iterate through all possible contexts</span>
+            <span class="c1"># remove the current variable from the active labels</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">l</span> <span class="o">!=</span> <span class="n">var</span><span class="p">]</span>
+
+            <span class="c1"># Restricting to some possible context variables.</span>
+            <span class="k">for</span> <span class="n">context_variables</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">([</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">labels</span> <span class="k">if</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">poss_cvars</span><span class="p">[</span><span class="n">var</span><span class="p">]],</span> <span class="n">csize</span><span class="p">):</span>
+                <span class="c1"># get the active labels like A,B,C</span>
+                <span class="n">active_labels</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">labels</span> <span class="k">if</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">context_variables</span><span class="p">])</span>
+
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_labels</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">test</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:][</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">test</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">active_labels</span><span class="p">)[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+
+                <span class="c1"># get the counts</span>
+                <span class="n">testdf</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">var</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; counts&quot;</span><span class="p">})</span>
+                <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">testdf</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="kc">None</span>
+
+                    <span class="c1"># Sort variables</span>
+                    <span class="n">context</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_labels</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">cvarind</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">index</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+                            <span class="n">context</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">=</span><span class="si">{}</span><span class="s2">,&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">active_labels</span><span class="p">[</span><span class="n">cvarind</span><span class="p">],</span> <span class="n">val</span><span class="p">)</span>
+                        <span class="n">context</span> <span class="o">=</span> <span class="n">context</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">context</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="n">index</span>
+
+                    <span class="k">if</span> <span class="n">context</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">counts</span><span class="p">[</span><span class="s2">&quot;var_counts&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">]:</span>
+                        <span class="n">counts</span><span class="p">[</span><span class="s2">&quot;var_counts&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">][</span><span class="n">context</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;counts&quot;</span><span class="p">:</span> <span class="p">{}}</span>
+                    <span class="n">counts</span><span class="p">[</span><span class="s2">&quot;var_counts&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">][</span><span class="n">context</span><span class="p">][</span><span class="s2">&quot;counts&quot;</span><span class="p">][</span><span class="n">value</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">counts</span><span class="p">[</span><span class="s2">&quot;var_counts&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">][</span><span class="n">context</span><span class="p">][</span><span class="s2">&quot;context_vars&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">active_labels</span>
+
+        <span class="c1"># Using the counts to compute the scores</span>
+        <span class="k">for</span> <span class="n">count_context</span> <span class="ow">in</span> <span class="n">counts</span><span class="p">[</span><span class="s2">&quot;var_counts&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">]:</span>
+            <span class="n">active_labels</span> <span class="o">=</span> <span class="n">counts</span><span class="p">[</span><span class="s2">&quot;var_counts&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">][</span><span class="n">count_context</span><span class="p">][</span><span class="s2">&quot;context_vars&quot;</span><span class="p">]</span>
+            <span class="n">score</span> <span class="o">=</span> <span class="n">_score_context</span><span class="p">(</span>
+                <span class="n">var</span><span class="p">,</span>
+                <span class="n">count_context</span><span class="p">,</span>
+                <span class="n">active_labels</span><span class="p">,</span>
+                <span class="n">cards_dict</span><span class="p">,</span>
+                <span class="n">counts</span><span class="p">[</span><span class="s2">&quot;var_counts&quot;</span><span class="p">],</span>
+                <span class="n">alpha_tot</span><span class="o">=</span><span class="n">alpha_tot</span><span class="p">,</span>
+                <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">scores</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">][</span><span class="n">count_context</span><span class="p">]</span> <span class="o">=</span> <span class="n">score</span>
+
+    <span class="k">return</span> <span class="n">scores</span><span class="p">,</span> <span class="n">counts</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_list_to_score_key</span><span class="p">(</span><span class="n">labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a list of variable labels to the string key used in score tables.</span>
+
+<span class="sd">    Sorts the labels and joins them with commas. An empty list returns ``&quot;None&quot;``,</span>
+<span class="sd">    which is the key for the no-context (marginal) score.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">subset</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+    <span class="n">subset_str</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">subset</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">subset_str</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="n">subset_str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+    <span class="k">return</span> <span class="n">subset_str</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_stage_to_context_key</span><span class="p">(</span><span class="n">stage</span><span class="p">:</span> <span class="n">st</span><span class="o">.</span><span class="n">Stage</span><span class="p">,</span> <span class="n">labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a stage to the context string key used in score tables.</span>
+
+<span class="sd">    Produces a comma-separated ``&quot;var=val&quot;`` string sorted by variable name,</span>
+<span class="sd">    e.g. ``&quot;X1=0,X3=1&quot;``. Returns ``&quot;None&quot;`` for the singleton (no-context) stage.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stage_context</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">stage</span><span class="o">.</span><span class="n">to_csi</span><span class="p">()</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">context</span> <span class="o">==</span> <span class="p">{}:</span>
+        <span class="n">stage_context</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># need to relabeled first</span>
+        <span class="n">cvars</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">cvarind</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stage</span><span class="o">.</span><span class="n">list_repr</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>  <span class="c1"># a context variable</span>
+                <span class="n">cvars</span><span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">cvarind</span><span class="p">]]</span> <span class="o">=</span> <span class="n">val</span>
+
+        <span class="k">for</span> <span class="n">cvar</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">cvars</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="n">stage_context</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">=</span><span class="si">{}</span><span class="s2">,&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cvar</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+        <span class="n">stage_context</span> <span class="o">=</span> <span class="n">stage_context</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">stage_context</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_log_n_stagings_tables</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">cards_dict</span><span class="p">,</span> <span class="n">poss_cvars</span><span class="p">,</span> <span class="n">max_cvars</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="n">n_stagings</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># the number of staging for a set of cardinalities [2,3,2] should be</span>
+    <span class="c1"># independent of the order, so same for [2,2,3]</span>
+
+    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Creating #stagings tables&quot;</span><span class="p">):</span>
+        <span class="c1"># all cards except the current one</span>
+        <span class="n">cur_cards</span> <span class="o">=</span> <span class="p">[</span><span class="n">cards_dict</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">labels</span> <span class="k">if</span> <span class="p">(</span><span class="n">l</span> <span class="o">!=</span> <span class="n">var</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">l</span> <span class="ow">in</span> <span class="n">poss_cvars</span><span class="p">[</span><span class="n">var</span><span class="p">])]</span>
+        <span class="k">for</span> <span class="n">subset</span> <span class="ow">in</span> <span class="n">csi_rel</span><span class="o">.</span><span class="n">_powerset</span><span class="p">(</span><span class="n">cur_cards</span><span class="p">):</span>
+            <span class="n">staging_lev</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">subset</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="n">subset_str</span> <span class="o">=</span> <span class="n">_list_to_score_key</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">subset</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">subset_str</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">n_stagings</span><span class="p">:</span>
+                <span class="n">n_stagings</span><span class="p">[</span><span class="n">subset_str</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">learn</span><span class="o">.</span><span class="n">n_stagings</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">subset</span><span class="p">),</span> <span class="n">staging_lev</span><span class="p">,</span> <span class="n">max_cvars</span><span class="o">=</span><span class="n">max_cvars</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">n_stagings</span>
+
+
+<div class="viewcode-block" id="order_score_tables">
+<a class="viewcode-back" href="../../source/cslearn.scoring.html#cslearn.scoring.order_score_tables">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">order_score_tables</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;posterior&quot;</span><span class="p">,</span>
+    <span class="n">max_cvars</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">poss_cvars</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">alpha_tot</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;BDeu&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculatee the order score tables for a dataset.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (pd.DataFrame): A dataset.</span>
+<span class="sd">        strategy (str, optional):  Defaults to &quot;posterior&quot;.</span>
+<span class="sd">        max_cvars (int, optional): Max number of variables in a context. Defaults to 2.</span>
+<span class="sd">        poss_cvars (dict | None, optional): Dict with possible context variables for a varible. Defaults to None meaning all.</span>
+<span class="sd">        alpha_tot (float, optional): BDeu score parameter (pseudo counts). Defaults to 1.0.</span>
+<span class="sd">        method (str, optional): Scoring method. Defaults to &quot;BDeu&quot;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: The order score tables, context score tables, and context counts.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; import random</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.scoring as sc</span>
+<span class="sd">        &gt;&gt;&gt; np.random.seed(1)</span>
+<span class="sd">        &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">        &gt;&gt;&gt; tree = ct.sample_cstree(</span>
+<span class="sd">        ...     [2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1,</span>
+<span class="sd">        ...     labels=[&quot;X1&quot;, &quot;X2&quot;, &quot;X3&quot;])</span>
+<span class="sd">        &gt;&gt;&gt; tree.sample_stage_parameters(1.0)</span>
+<span class="sd">        &gt;&gt;&gt; df = tree.sample(500)</span>
+<span class="sd">        &gt;&gt;&gt; score_table, context_scores, context_counts = sc.order_score_tables(</span>
+<span class="sd">        ...     df, max_cvars=1, alpha_tot=1.0, method=&quot;BDeu&quot;, poss_cvars=None)</span>
+<span class="sd">        &gt;&gt;&gt; sorted(score_table)</span>
+<span class="sd">        [&#39;max_cvars&#39;, &#39;poss_cvars&#39;, &#39;scores&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; score_table[&quot;max_cvars&quot;]</span>
+<span class="sd">        1</span>
+<span class="sd">        &gt;&gt;&gt; sorted(score_table[&quot;scores&quot;])</span>
+<span class="sd">        [&#39;X1&#39;, &#39;X2&#39;, &#39;X3&#39;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+    <span class="c1"># If poss_cvars is None, then all variables are possible context variables</span>
+    <span class="k">if</span> <span class="n">poss_cvars</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">poss_cvars</span> <span class="o">=</span> <span class="p">{</span><span class="n">l</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">-</span> <span class="p">{</span><span class="n">l</span><span class="p">})</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">}</span>
+
+    <span class="n">context_scores</span><span class="p">,</span> <span class="n">context_counts</span> <span class="o">=</span> <span class="n">_context_score_tables</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">strategy</span><span class="o">=</span><span class="n">strategy</span><span class="p">,</span>
+        <span class="n">max_cvars</span><span class="o">=</span><span class="n">max_cvars</span><span class="p">,</span>
+        <span class="n">poss_cvars</span><span class="o">=</span><span class="n">poss_cvars</span><span class="p">,</span>
+        <span class="n">alpha_tot</span><span class="o">=</span><span class="n">alpha_tot</span><span class="p">,</span>
+        <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">context_scores</span><span class="p">[</span><span class="s2">&quot;max_cvars&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_cvars</span>
+    <span class="n">context_scores</span><span class="p">[</span><span class="s2">&quot;poss_cvars&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">poss_cvars</span>
+
+    <span class="n">cards_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">var</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">var</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">}</span>
+
+    <span class="n">log_n_stagings</span> <span class="o">=</span> <span class="n">_log_n_stagings_tables</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">cards_dict</span><span class="p">,</span> <span class="n">poss_cvars</span><span class="p">,</span> <span class="n">max_cvars</span><span class="o">=</span><span class="n">max_cvars</span><span class="p">)</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">order_scores</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">order_scores</span><span class="p">[</span><span class="s2">&quot;max_cvars&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_cvars</span>
+    <span class="n">order_scores</span><span class="p">[</span><span class="s2">&quot;poss_cvars&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">poss_cvars</span>
+    <span class="n">order_scores</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">var</span><span class="p">:</span> <span class="p">{}</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Order score tables&quot;</span><span class="p">):</span>
+        <span class="c1"># Ths subset are the variables before var in the order</span>
+        <span class="k">for</span> <span class="n">subset</span> <span class="ow">in</span> <span class="n">csi_rel</span><span class="o">.</span><span class="n">_powerset</span><span class="p">(</span><span class="n">poss_cvars</span><span class="p">[</span><span class="n">var</span><span class="p">]):</span>
+            <span class="c1"># TODO: It should sum over all the subsets for each subset.</span>
+            <span class="c1"># This could be done faster using Hasse diagrams?</span>
+            <span class="n">staging_level</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">subset</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+            <span class="n">subset_str</span> <span class="o">=</span> <span class="n">_list_to_score_key</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">subset</span><span class="p">))</span>
+
+            <span class="n">cards</span> <span class="o">=</span> <span class="p">[</span><span class="n">cards_dict</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">subset</span><span class="p">]</span>
+
+            <span class="c1"># Te prior is uniform voer all stagings so we have it outside (ok?)</span>
+            <span class="n">cards_str</span> <span class="o">=</span> <span class="n">_list_to_score_key</span><span class="p">(</span><span class="n">cards</span><span class="p">[:</span> <span class="n">staging_level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">log_staging_prior</span> <span class="o">=</span> <span class="o">-</span><span class="n">log_n_stagings</span><span class="p">[</span><span class="n">cards_str</span><span class="p">]</span>
+            <span class="n">log_level_prior</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="n">staging_level</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">staging</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">learn</span><span class="o">.</span><span class="n">all_stagings</span><span class="p">(</span><span class="n">cards</span><span class="p">,</span> <span class="n">staging_level</span><span class="p">,</span> <span class="n">max_cvars</span><span class="o">=</span><span class="n">max_cvars</span><span class="p">)):</span>
+                <span class="n">staging_unnorm_post</span> <span class="o">=</span> <span class="n">log_level_prior</span> <span class="o">+</span> <span class="n">log_staging_prior</span>
+                <span class="c1"># this is for the level -1</span>
+                <span class="k">if</span> <span class="n">staging</span> <span class="o">==</span> <span class="p">[]:</span>  <span class="c1"># special case at level -1</span>
+                    <span class="n">staging_unnorm_post</span> <span class="o">+=</span> <span class="n">context_scores</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">][</span><span class="s2">&quot;None&quot;</span><span class="p">]</span>
+
+                <span class="c1"># Sum log-marginal likelihood of all stages in the staging</span>
+                <span class="k">for</span> <span class="n">stage</span> <span class="ow">in</span> <span class="n">staging</span><span class="p">:</span>
+                    <span class="c1"># OK! even when restricting to some possible cvars</span>
+                    <span class="n">stage_context</span> <span class="o">=</span> <span class="n">_stage_to_context_key</span><span class="p">(</span><span class="n">stage</span><span class="p">,</span> <span class="n">subset</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">stage_context</span> <span class="ow">in</span> <span class="n">context_scores</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">]:</span>
+                        <span class="n">staging_unnorm_post</span> <span class="o">+=</span> <span class="n">context_scores</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">][</span><span class="n">stage_context</span><span class="p">]</span>
+
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">order_scores</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">][</span><span class="n">subset_str</span><span class="p">]</span> <span class="o">=</span> <span class="n">staging_unnorm_post</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">order_scores</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">][</span><span class="n">subset_str</span><span class="p">]</span> <span class="o">=</span> <span class="n">_logsumexp</span><span class="p">(</span>
+                        <span class="p">[</span><span class="n">order_scores</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">][</span><span class="n">subset_str</span><span class="p">],</span> <span class="n">staging_unnorm_post</span><span class="p">]</span>
+                    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">order_scores</span><span class="p">,</span> <span class="n">context_scores</span><span class="p">,</span> <span class="n">context_counts</span></div>
+
+
+
+<div class="viewcode-block" id="score_order">
+<a class="viewcode-back" href="../../source/cslearn.scoring.html#cslearn.scoring.score_order">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">score_order</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">order_scores</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scores an order using the order score tables. The score is the sum of the individual variable scores for each level.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        order (list): List of variables in the order.</span>
+<span class="sd">        order_scores (dict): Order scores.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        double: Score of an order.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; import random</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.scoring as sc</span>
+<span class="sd">        &gt;&gt;&gt; np.random.seed(1)</span>
+<span class="sd">        &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">        &gt;&gt;&gt; tree = ct.sample_cstree(</span>
+<span class="sd">        ...     [2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1,</span>
+<span class="sd">        ...     labels=[&quot;X1&quot;, &quot;X2&quot;, &quot;X3&quot;])</span>
+<span class="sd">        &gt;&gt;&gt; tree.sample_stage_parameters(1.0)</span>
+<span class="sd">        &gt;&gt;&gt; df = tree.sample(500)</span>
+<span class="sd">        &gt;&gt;&gt; score_table, _, _ = sc.order_score_tables(</span>
+<span class="sd">        ...     df, max_cvars=1, alpha_tot=1.0, method=&quot;BDeu&quot;, poss_cvars=None)</span>
+<span class="sd">        &gt;&gt;&gt; s = sc.score_order([&quot;X3&quot;, &quot;X2&quot;, &quot;X1&quot;], score_table)</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(s, float) and s &lt; 0</span>
+<span class="sd">        True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">log_score</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># log score</span>
+    <span class="k">for</span> <span class="n">level</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">order</span><span class="p">):</span>
+        <span class="n">poss_parents</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">order</span><span class="p">[:</span><span class="n">level</span><span class="p">])</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">order_scores</span><span class="p">[</span><span class="s2">&quot;poss_cvars&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">]))</span>
+        <span class="c1"># possible parents as string</span>
+        <span class="n">poss_parents_str</span> <span class="o">=</span> <span class="n">_list_to_score_key</span><span class="p">(</span><span class="n">poss_parents</span><span class="p">)</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">order_scores</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">][</span><span class="n">poss_parents_str</span><span class="p">]</span>
+        <span class="n">log_score</span> <span class="o">+=</span> <span class="n">score</span>
+
+    <span class="k">return</span> <span class="n">log_score</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_logsumexp</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Log sum exp trick function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x (numpy array): Array of numbers.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        float: The log of the sum of the exponentials of the numbers in x.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">m</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">m</span><span class="p">)))</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Anonymous.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -58,7 +58,7 @@ master_doc = "index"
 # General information about the project.
 project = "cslearn"
 project_title = project.title()
-author = "Felix Rios, Alex Markham, and Liam Solus"
+author = "Anonymous"
 copyright = "2023, %s" % author
 
 

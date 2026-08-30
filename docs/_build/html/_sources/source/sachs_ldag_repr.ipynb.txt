@@ -1,0 +1,1130 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "aada14c4-3ed3-4e1b-b641-273b38965440",
+   "metadata": {},
+   "source": [
+    "# Sachs et al. 2005"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "cb30bfe1-f462-4aad-9660-c120d5904da5",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-30T04:43:02.976627Z",
+     "iopub.status.busy": "2026-08-30T04:43:02.976415Z",
+     "iopub.status.idle": "2026-08-30T04:43:04.110455Z",
+     "shell.execute_reply": "2026-08-30T04:43:04.109916Z"
+    }
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/home/alex/projects/cstrees/code/.devenv/state/venv/lib/python3.13/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html\n",
+      "  from .autonotebook import tqdm as notebook_tqdm\n"
+     ]
+    }
+   ],
+   "source": [
+    "import random\n",
+    "import time\n",
+    "\n",
+    "from causallearn.search.ConstraintBased.PC import pc\n",
+    "from causallearn.utils.cit import chisq\n",
+    "\n",
+    "import pandas as pd\n",
+    "import cslearn.scoring as sc\n",
+    "import cslearn.learning as ctl\n",
+    "import numpy as np\n",
+    "\n",
+    "%load_ext autoreload\n",
+    "%autoreload 2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "0c255490",
+   "metadata": {},
+   "source": [
+    "## Read data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "3baad6d3-2e1c-48ec-9c94-77815df91db3",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-30T04:43:04.112134Z",
+     "iopub.status.busy": "2026-08-30T04:43:04.111899Z",
+     "iopub.status.idle": "2026-08-30T04:43:04.128010Z",
+     "shell.execute_reply": "2026-08-30T04:43:04.127146Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# Load the packaged copy of the observational Sachs data (resolves regardless\n",
+    "# of the working directory the notebook is run from). Equivalent to\n",
+    "# cslearn.examp_datasets.sachs_observational(binarized=False).\n",
+    "from importlib.resources import files\n",
+    "import cslearn.datasets\n",
+    "\n",
+    "sachs = pd.read_csv(files(cslearn.datasets) / 'sachs_observational.csv')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "395b3bc0",
+   "metadata": {},
+   "source": [
+    "As a pre-processing step, we make all variables binary."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "e99fc198-0ccc-4aaf-8f0d-673283d5775d",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-30T04:43:04.129739Z",
+     "iopub.status.busy": "2026-08-30T04:43:04.129556Z",
+     "iopub.status.idle": "2026-08-30T04:43:04.144227Z",
+     "shell.execute_reply": "2026-08-30T04:43:04.143653Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# Binarize data and add a row at the top of the dataframe containing variable cardinalities\n",
+    "sachsnp = sachs.to_numpy()\n",
+    "\n",
+    "sachs2 = np.zeros([len(sachs), len(list(sachs.columns))], int)\n",
+    "\n",
+    "for i in range(len(list(sachs.columns))):\n",
+    "    sachs2[:,i] = pd.cut(sachsnp[:,i], 2, labels = False)\n",
+    "    \n",
+    "# add row with state space cardinalities\n",
+    "sachs2states = np.zeros([len(sachs) + 1, len(list(sachs.columns))], int)\n",
+    "sachs2states[0,:] = [2 for i in range(len(list(sachs.columns)))]\n",
+    "for i in range(len(sachs)):\n",
+    "    sachs2states[i+1,:] = sachs2[i,:]\n",
+    "    \n",
+    "sachsdf = pd.DataFrame(sachs2states, columns = list(sachs.columns))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "74bbbcc9",
+   "metadata": {},
+   "source": [
+    "## MCMC sampling"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "f0c1f2ad",
+   "metadata": {},
+   "source": [
+    "We run without restricting the parent sets according to a CPDAG (poss_cvars=None).\n",
+    "To run with this restriction uncomment the commented lines of code and let the poss_cvars=poss_cvars in sc.order_score_tables."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "45e65886-a4fe-456b-ac11-2bc036ce17da",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-30T04:43:04.146469Z",
+     "iopub.status.busy": "2026-08-30T04:43:04.146262Z",
+     "iopub.status.idle": "2026-08-30T04:44:39.158404Z",
+     "shell.execute_reply": "2026-08-30T04:44:39.157642Z"
+    }
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Context score tables:   0%|          | 0/11 [00:00<?, ?it/s]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Context score tables:  18%|█▊        | 2/11 [00:00<00:00, 12.11it/s]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Context score tables:  36%|███▋      | 4/11 [00:00<00:00, 12.86it/s]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Context score tables:  55%|█████▍    | 6/11 [00:00<00:00, 13.26it/s]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Context score tables:  73%|███████▎  | 8/11 [00:00<00:00, 13.38it/s]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Context score tables:  91%|█████████ | 10/11 [00:00<00:00, 13.25it/s]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Context score tables: 100%|██████████| 11/11 [00:00<00:00, 13.13it/s]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Creating #stagings tables:   0%|          | 0/11 [00:00<?, ?it/s]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Creating #stagings tables: 100%|██████████| 11/11 [00:00<00:00, 197.92it/s]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Order score tables:   0%|          | 0/11 [00:00<?, ?it/s]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Order score tables:   9%|▉         | 1/11 [00:08<01:20,  8.04s/it]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Order score tables:  18%|█▊        | 2/11 [00:16<01:16,  8.52s/it]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Order score tables:  27%|██▋       | 3/11 [00:25<01:08,  8.59s/it]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Order score tables:  36%|███▋      | 4/11 [00:34<01:00,  8.67s/it]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Order score tables:  45%|████▌     | 5/11 [00:42<00:51,  8.51s/it]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Order score tables:  55%|█████▍    | 6/11 [00:50<00:42,  8.45s/it]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Order score tables:  64%|██████▎   | 7/11 [00:59<00:33,  8.47s/it]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Order score tables:  73%|███████▎  | 8/11 [01:07<00:25,  8.49s/it]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Order score tables:  82%|████████▏ | 9/11 [01:16<00:16,  8.45s/it]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Order score tables:  91%|█████████ | 10/11 [01:24<00:08,  8.45s/it]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Order score tables: 100%|██████████| 11/11 [01:33<00:00,  8.50s/it]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Order score tables: 100%|██████████| 11/11 [01:33<00:00,  8.49s/it]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Gibbs order sampler:   0%|          | 0/5000 [00:00<?, ?it/s]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Gibbs order sampler:  15%|█▌        | 772/5000 [00:00<00:00, 7710.56it/s]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Gibbs order sampler:  31%|███       | 1544/5000 [00:00<00:00, 6670.22it/s]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Gibbs order sampler:  44%|████▍     | 2220/5000 [00:00<00:00, 6268.51it/s]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Gibbs order sampler:  60%|█████▉    | 2996/5000 [00:00<00:00, 6802.37it/s]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Gibbs order sampler:  76%|███████▌  | 3805/5000 [00:00<00:00, 7238.34it/s]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Gibbs order sampler:  92%|█████████▏| 4610/5000 [00:00<00:00, 7501.86it/s]"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\r",
+      "Gibbs order sampler: 100%|██████████| 5000/5000 [00:00<00:00, 7218.02it/s]"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Score tables + Phase 2 (Gibbs order sampler) time in seconds: 94.99792098999023\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "# pcgraph = pc(sachsdf[1:].values, 0.9, \"chisq\", node_names=sachsdf.columns)\n",
+    "# poss_cvars = ctl.causallearn_graph_to_posscvars(pcgraph, labels=sachsdf.columns)\n",
+    "# print(\"Possible context variables per node:\", poss_cvars)\n",
+    "np.random.seed(1)\n",
+    "random.seed(1)\n",
+    "start = time.time()\n",
+    "score_table, context_scores, context_counts = sc.order_score_tables(sachsdf,\n",
+    "                                                                    max_cvars=2,\n",
+    "                                                                    alpha_tot=1.0,\n",
+    "                                                                    method=\"BDeu\",\n",
+    "                                                                    poss_cvars=None)\n",
+    "\n",
+    "orders, scores = ctl.gibbs_order_sampler(5000, score_table)\n",
+    "print('Score tables + Phase 2 (Gibbs order sampler) time in seconds:', time.time() - start)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "4ed66998",
+   "metadata": {},
+   "source": [
+    "Optimal variable ordering"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "4a50b757-8366-4566-944c-bac9210e0262",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-30T04:44:39.161049Z",
+     "iopub.status.busy": "2026-08-30T04:44:39.160889Z",
+     "iopub.status.idle": "2026-08-30T04:44:39.175086Z",
+     "shell.execute_reply": "2026-08-30T04:44:39.174461Z"
+    }
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "['Raf', 'PIP3', 'PLCg', 'PIP2', 'PKA', 'JNK', 'PKC', 'Akt', 'Erk', 'Mek', 'p38']\n"
+     ]
+    }
+   ],
+   "source": [
+    "sachsmaporder = orders[scores.index(max(scores))]\n",
+    "print(sachsmaporder)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "2d1612d2",
+   "metadata": {},
+   "source": [
+    "Get optimal tree for ordering"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "c318a7d9-7926-4dc6-a8a7-d41d295f01d3",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-30T04:44:39.176927Z",
+     "iopub.status.busy": "2026-08-30T04:44:39.176780Z",
+     "iopub.status.idle": "2026-08-30T04:44:39.315333Z",
+     "shell.execute_reply": "2026-08-30T04:44:39.314503Z"
+    }
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Full pipeline time in seconds: 95.15494322776794\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Phase 3: exact staging search over the MAP order (no CPDAG restriction here,\n",
+    "# so this is the gamma = infinity case). This cell produces the final learned\n",
+    "# CStree; `start` is still the timer from the score-tables/Gibbs cell, so this\n",
+    "# prints the end-to-end time for the whole pipeline.\n",
+    "sachsopttree = ctl._optimal_cstree_given_order(sachsmaporder, context_scores)\n",
+    "print('Full pipeline time in seconds:', time.time() - start)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c57dc9ac",
+   "metadata": {},
+   "source": [
+    "Dataframe representation"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "08d28dcc",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-30T04:44:39.317986Z",
+     "iopub.status.busy": "2026-08-30T04:44:39.317730Z",
+     "iopub.status.idle": "2026-08-30T04:44:39.359852Z",
+     "shell.execute_reply": "2026-08-30T04:44:39.359061Z"
+    }
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Raf</th>\n",
+       "      <th>PIP3</th>\n",
+       "      <th>PLCg</th>\n",
+       "      <th>PIP2</th>\n",
+       "      <th>PKA</th>\n",
+       "      <th>JNK</th>\n",
+       "      <th>PKC</th>\n",
+       "      <th>Akt</th>\n",
+       "      <th>Erk</th>\n",
+       "      <th>Mek</th>\n",
+       "      <th>p38</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>*</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>*</td>\n",
+       "      <td>0</td>\n",
+       "      <td>*</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>*</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>5</th>\n",
+       "      <td>*</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>6</th>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>0</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7</th>\n",
+       "      <td>0</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>1</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>8</th>\n",
+       "      <td>1</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>1</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9</th>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>0</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10</th>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>1</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11</th>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>12</th>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>0</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>13</th>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>1</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>14</th>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>0</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>15</th>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>1</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>16</th>\n",
+       "      <td>0</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>17</th>\n",
+       "      <td>1</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>18</th>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>0</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>19</th>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>1</td>\n",
+       "      <td>*</td>\n",
+       "      <td>0</td>\n",
+       "      <td>*</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>20</th>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>*</td>\n",
+       "      <td>1</td>\n",
+       "      <td>*</td>\n",
+       "      <td>1</td>\n",
+       "      <td>*</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>21</th>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "      <td>-</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   Raf PIP3 PLCg PIP2 PKA JNK PKC Akt Erk Mek p38\n",
+       "0    2    2    2    2   2   2   2   2   2   2   2\n",
+       "1    *    -    -    -   -   -   -   -   -   -   -\n",
+       "2    *    *    -    -   -   -   -   -   -   -   -\n",
+       "3    *    0    *    -   -   -   -   -   -   -   -\n",
+       "4    *    1    0    -   -   -   -   -   -   -   -\n",
+       "5    *    1    1    -   -   -   -   -   -   -   -\n",
+       "6    *    *    *    0   -   -   -   -   -   -   -\n",
+       "7    0    *    *    1   -   -   -   -   -   -   -\n",
+       "8    1    *    *    1   -   -   -   -   -   -   -\n",
+       "9    *    *    0    *   *   -   -   -   -   -   -\n",
+       "10   *    *    1    *   *   -   -   -   -   -   -\n",
+       "11   *    *    *    *   *   *   -   -   -   -   -\n",
+       "12   *    *    *    *   0   *   *   -   -   -   -\n",
+       "13   *    *    *    *   1   *   *   -   -   -   -\n",
+       "14   *    *    *    *   *   *   *   0   -   -   -\n",
+       "15   *    *    *    *   *   *   *   1   -   -   -\n",
+       "16   0    *    *    *   *   *   *   *   *   -   -\n",
+       "17   1    *    *    *   *   *   *   *   *   -   -\n",
+       "18   *    *    *    *   *   *   0   *   *   *   -\n",
+       "19   *    *    *    *   *   *   1   *   0   *   -\n",
+       "20   *    *    *    *   *   *   1   *   1   *   -\n",
+       "21   -    -    -    -   -   -   -   -   -   -   -"
+      ]
+     },
+     "execution_count": 7,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sachsopttree.to_df()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "b13dd013",
+   "metadata": {},
+   "source": [
+    "## LDAG representation"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5b40c1cd",
+   "metadata": {},
+   "source": [
+    "Print the LDAG representation of the learned CStree model"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "8ecd8ffb-d221-4a1b-b1c0-958799a7b1cd",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-08-30T04:44:39.361637Z",
+     "iopub.status.busy": "2026-08-30T04:44:39.361492Z",
+     "iopub.status.idle": "2026-08-30T04:44:40.053205Z",
+     "shell.execute_reply": "2026-08-30T04:44:40.052173Z"
+    }
+   },
+   "outputs": [
+    {
+     "data": {
+      "image/svg+xml": [
+       "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n",
+       "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n",
+       " \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n",
+       "<!-- Generated by graphviz version 12.2.1 (0)\n",
+       " -->\n",
+       "<!-- Pages: 1 -->\n",
+       "<svg width=\"301pt\" height=\"295pt\"\n",
+       " viewBox=\"0.00 0.00 301.39 295.23\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n",
+       "<g id=\"graph0\" class=\"graph\" transform=\"scale(1 1) rotate(0) translate(4 291.23)\">\n",
+       "<polygon fill=\"white\" stroke=\"none\" points=\"-4,4 -4,-291.23 297.39,-291.23 297.39,4 -4,4\"/>\n",
+       "<!-- Raf -->\n",
+       "<g id=\"node1\" class=\"node\">\n",
+       "<title>Raf</title>\n",
+       "<polygon fill=\"none\" stroke=\"black\" points=\"20.13,-189.56 1.5,-189.56 1.5,-175.38 20.13,-175.38 20.13,-189.56\"/>\n",
+       "<text text-anchor=\"middle\" x=\"10.82\" y=\"-179.34\" font-family=\"CMU Serif\" font-size=\"10.00\">Raf</text>\n",
+       "</g>\n",
+       "<!-- PKA -->\n",
+       "<g id=\"node2\" class=\"node\">\n",
+       "<title>PKA</title>\n",
+       "<polygon fill=\"none\" stroke=\"black\" points=\"65.15,-254.94 40.52,-254.94 40.52,-240.75 65.15,-240.75 65.15,-254.94\"/>\n",
+       "<text text-anchor=\"middle\" x=\"52.83\" y=\"-244.72\" font-family=\"CMU Serif\" font-size=\"10.00\">PKA</text>\n",
+       "</g>\n",
+       "<!-- Raf&#45;&gt;PKA -->\n",
+       "<g id=\"edge1\" class=\"edge\">\n",
+       "<title>Raf&#45;&gt;PKA</title>\n",
+       "<path fill=\"none\" stroke=\"black\" d=\"M15.64,-189.97C22.03,-199.92 33.5,-217.77 42.02,-231.03\"/>\n",
+       "<polygon fill=\"black\" stroke=\"black\" points=\"38.9,-232.64 47.25,-239.16 44.78,-228.85 38.9,-232.64\"/>\n",
+       "<text text-anchor=\"middle\" x=\"20.2\" y=\"-213.75\" font-family=\"CMU Serif\" font-size=\"10.00\">[[0]]</text>\n",
+       "</g>\n",
+       "<!-- Mek -->\n",
+       "<g id=\"node3\" class=\"node\">\n",
+       "<title>Mek</title>\n",
+       "<polygon fill=\"none\" stroke=\"black\" points=\"21.63,-111.84 0,-111.84 0,-97.66 21.63,-97.66 21.63,-111.84\"/>\n",
+       "<text text-anchor=\"middle\" x=\"10.82\" y=\"-101.62\" font-family=\"CMU Serif\" font-size=\"10.00\">Mek</text>\n",
+       "</g>\n",
+       "<!-- Raf&#45;&gt;Mek -->\n",
+       "<g id=\"edge2\" class=\"edge\">\n",
+       "<title>Raf&#45;&gt;Mek</title>\n",
+       "<path fill=\"none\" stroke=\"black\" d=\"M10.82,-175.02C10.82,-163.27 10.82,-140.07 10.82,-123.55\"/>\n",
+       "<polygon fill=\"black\" stroke=\"black\" points=\"14.32,-123.58 10.82,-113.58 7.32,-123.58 14.32,-123.58\"/>\n",
+       "</g>\n",
+       "<!-- Akt -->\n",
+       "<g id=\"node4\" class=\"node\">\n",
+       "<title>Akt</title>\n",
+       "<polygon fill=\"none\" stroke=\"black\" points=\"133.21,-287.23 113.83,-287.23 113.83,-273.03 133.21,-273.03 133.21,-287.23\"/>\n",
+       "<text text-anchor=\"middle\" x=\"123.52\" y=\"-277\" font-family=\"CMU Serif\" font-size=\"10.00\">Akt</text>\n",
+       "</g>\n",
+       "<!-- PKA&#45;&gt;Akt -->\n",
+       "<g id=\"edge3\" class=\"edge\">\n",
+       "<title>PKA&#45;&gt;Akt</title>\n",
+       "<path fill=\"none\" stroke=\"black\" d=\"M65.47,-253.62C76.05,-258.45 91.34,-265.43 103.57,-271.02\"/>\n",
+       "<polygon fill=\"black\" stroke=\"black\" points=\"101.79,-274.06 112.34,-275.02 104.7,-267.69 101.79,-274.06\"/>\n",
+       "</g>\n",
+       "<!-- Erk -->\n",
+       "<g id=\"node5\" class=\"node\">\n",
+       "<title>Erk</title>\n",
+       "<polygon fill=\"none\" stroke=\"black\" points=\"209.76,-276.17 191.13,-276.17 191.13,-261.97 209.76,-261.97 209.76,-276.17\"/>\n",
+       "<text text-anchor=\"middle\" x=\"200.44\" y=\"-265.94\" font-family=\"CMU Serif\" font-size=\"10.00\">Erk</text>\n",
+       "</g>\n",
+       "<!-- Akt&#45;&gt;Erk -->\n",
+       "<g id=\"edge4\" class=\"edge\">\n",
+       "<title>Akt&#45;&gt;Erk</title>\n",
+       "<path fill=\"none\" stroke=\"black\" d=\"M133.58,-278.68C145.29,-277 164.93,-274.17 179.9,-272.02\"/>\n",
+       "<polygon fill=\"black\" stroke=\"black\" points=\"180.21,-275.51 189.61,-270.63 179.22,-268.58 180.21,-275.51\"/>\n",
+       "</g>\n",
+       "<!-- p38 -->\n",
+       "<g id=\"node10\" class=\"node\">\n",
+       "<title>p38</title>\n",
+       "<polygon fill=\"none\" stroke=\"black\" points=\"268.49,-225.28 249.86,-225.28 249.86,-211.09 268.49,-211.09 268.49,-225.28\"/>\n",
+       "<text text-anchor=\"middle\" x=\"259.17\" y=\"-215.06\" font-family=\"CMU Serif\" font-size=\"10.00\">p38</text>\n",
+       "</g>\n",
+       "<!-- Erk&#45;&gt;p38 -->\n",
+       "<g id=\"edge9\" class=\"edge\">\n",
+       "<title>Erk&#45;&gt;p38</title>\n",
+       "<path fill=\"none\" stroke=\"black\" d=\"M209.11,-261.56C217.7,-254.12 231.09,-242.51 241.87,-233.18\"/>\n",
+       "<polygon fill=\"black\" stroke=\"black\" points=\"244.07,-235.91 249.33,-226.71 239.48,-230.62 244.07,-235.91\"/>\n",
+       "<text text-anchor=\"middle\" x=\"216.86\" y=\"-250.62\" font-family=\"CMU Serif\" font-size=\"10.00\">[[0]]</text>\n",
+       "</g>\n",
+       "<!-- PIP3 -->\n",
+       "<g id=\"node6\" class=\"node\">\n",
+       "<title>PIP3</title>\n",
+       "<polygon fill=\"none\" stroke=\"black\" points=\"136.21,-14.19 110.83,-14.19 110.83,0 136.21,0 136.21,-14.19\"/>\n",
+       "<text text-anchor=\"middle\" x=\"123.52\" y=\"-3.97\" font-family=\"CMU Serif\" font-size=\"10.00\">PIP3</text>\n",
+       "</g>\n",
+       "<!-- PIP2 -->\n",
+       "<g id=\"node7\" class=\"node\">\n",
+       "<title>PIP2</title>\n",
+       "<polygon fill=\"none\" stroke=\"black\" points=\"65.52,-46.47 40.14,-46.47 40.14,-32.28 65.52,-32.28 65.52,-46.47\"/>\n",
+       "<text text-anchor=\"middle\" x=\"52.83\" y=\"-36.25\" font-family=\"CMU Serif\" font-size=\"10.00\">PIP2</text>\n",
+       "</g>\n",
+       "<!-- PIP3&#45;&gt;PIP2 -->\n",
+       "<g id=\"edge5\" class=\"edge\">\n",
+       "<title>PIP3&#45;&gt;PIP2</title>\n",
+       "<path fill=\"none\" stroke=\"black\" d=\"M110.55,-13.02C100.89,-17.43 87.43,-23.58 75.94,-28.82\"/>\n",
+       "<polygon fill=\"black\" stroke=\"black\" points=\"74.73,-25.53 67.09,-32.87 77.64,-31.9 74.73,-25.53\"/>\n",
+       "</g>\n",
+       "<!-- PIP2&#45;&gt;PKA -->\n",
+       "<g id=\"edge6\" class=\"edge\">\n",
+       "<title>PIP2&#45;&gt;PKA</title>\n",
+       "<path fill=\"none\" stroke=\"black\" d=\"M52.83,-46.8C52.83,-76.18 52.83,-184.9 52.83,-229.04\"/>\n",
+       "<polygon fill=\"black\" stroke=\"black\" points=\"49.33,-228.79 52.83,-238.79 56.33,-228.79 49.33,-228.79\"/>\n",
+       "</g>\n",
+       "<!-- PLCg -->\n",
+       "<g id=\"node8\" class=\"node\">\n",
+       "<title>PLCg</title>\n",
+       "<polygon fill=\"none\" stroke=\"black\" points=\"214.63,-25.25 186.25,-25.25 186.25,-11.06 214.63,-11.06 214.63,-25.25\"/>\n",
+       "<text text-anchor=\"middle\" x=\"200.44\" y=\"-15.03\" font-family=\"CMU Serif\" font-size=\"10.00\">PLCg</text>\n",
+       "</g>\n",
+       "<!-- PLCg&#45;&gt;PIP2 -->\n",
+       "<g id=\"edge7\" class=\"edge\">\n",
+       "<title>PLCg&#45;&gt;PIP2</title>\n",
+       "<path fill=\"none\" stroke=\"black\" d=\"M186.02,-20.23C160.66,-23.88 107.84,-31.47 76.88,-35.92\"/>\n",
+       "<polygon fill=\"black\" stroke=\"black\" points=\"76.72,-32.41 67.32,-37.3 77.71,-39.34 76.72,-32.41\"/>\n",
+       "<text text-anchor=\"middle\" x=\"122.82\" y=\"-31.33\" font-family=\"CMU Serif\" font-size=\"10.00\">[[0]]</text>\n",
+       "</g>\n",
+       "<!-- JNK -->\n",
+       "<g id=\"node9\" class=\"node\">\n",
+       "<title>JNK</title>\n",
+       "<polygon fill=\"none\" stroke=\"black\" points=\"270.74,-76.14 247.61,-76.14 247.61,-61.95 270.74,-61.95 270.74,-76.14\"/>\n",
+       "<text text-anchor=\"middle\" x=\"259.17\" y=\"-65.92\" font-family=\"CMU Serif\" font-size=\"10.00\">JNK</text>\n",
+       "</g>\n",
+       "<!-- PLCg&#45;&gt;JNK -->\n",
+       "<g id=\"edge8\" class=\"edge\">\n",
+       "<title>PLCg&#45;&gt;JNK</title>\n",
+       "<path fill=\"none\" stroke=\"black\" d=\"M209.11,-25.66C217.7,-33.11 231.09,-44.71 241.87,-54.05\"/>\n",
+       "<polygon fill=\"black\" stroke=\"black\" points=\"239.48,-56.61 249.33,-60.51 244.06,-51.32 239.48,-56.61\"/>\n",
+       "</g>\n",
+       "<!-- PKC -->\n",
+       "<g id=\"node11\" class=\"node\">\n",
+       "<title>PKC</title>\n",
+       "<polygon fill=\"none\" stroke=\"black\" points=\"293.39,-150.71 268.76,-150.71 268.76,-136.52 293.39,-136.52 293.39,-150.71\"/>\n",
+       "<text text-anchor=\"middle\" x=\"281.07\" y=\"-140.49\" font-family=\"CMU Serif\" font-size=\"10.00\">PKC</text>\n",
+       "</g>\n",
+       "<!-- PKC&#45;&gt;p38 -->\n",
+       "<g id=\"edge10\" class=\"edge\">\n",
+       "<title>PKC&#45;&gt;p38</title>\n",
+       "<path fill=\"none\" stroke=\"black\" d=\"M278.89,-151.03C275.58,-162.31 269.18,-184.11 264.57,-199.81\"/>\n",
+       "<polygon fill=\"black\" stroke=\"black\" points=\"261.23,-198.75 261.78,-209.33 267.95,-200.72 261.23,-198.75\"/>\n",
+       "</g>\n",
+       "</g>\n",
+       "</svg>\n"
+      ],
+      "text/plain": [
+       "<AGraph <Swig Object of type 'Agraph_t *' at 0x7bd4ef3c0c90>>"
+      ]
+     },
+     "execution_count": 8,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "LDAG = sachsopttree.to_LDAG() \n",
+    "agraph = LDAG.plot_graphviz(args=\"-Goneblock=True -Gmindist=0.7\",\n",
+    "                            prog=\"circo\")\n",
+    "agraph.draw(\"sachs_CStree_LDAG.pdf\")\n",
+    "agraph"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.13.13"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

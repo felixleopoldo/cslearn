@@ -1,0 +1,843 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CStree from (Duarte &amp; Solus, 2022) &mdash; cslearn 1.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=bb516dca"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Learning a CStree" href="learn_demo.html" />
+    <link rel="prev" title="Reference" href="examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            cslearn
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cslearn.html">Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="examples.html">Example notebooks</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="examples.html#notebooks">Notebooks</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">CStree from (Duarte &amp; Solus, 2022)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Create-the-CStree">Create the CStree</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#The-CSI-relations">The CSI relations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#The-minimal-context-CSI-relations">The minimal context CSI relations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#The-minimal-context-DAGs">The minimal context DAGs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Sampling-data">Sampling data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Write-the-CStree-structure-to-a-Pandas-dataframe">Write the CStree structure to a Pandas dataframe</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Read-CStree-from-a-Pandas-dataframe">Read CStree from a Pandas dataframe</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="learn_demo.html">Learning a CStree</a></li>
+<li class="toctree-l3"><a class="reference internal" href="learn_demo_gibbs.html">Learning CStree using Gibbs sampler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushroom_prediction.html">Prediction with CSlearn: Mushroom Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sachs_ldag_repr.html">Sachs et al. 2005</a></li>
+<li class="toctree-l3"><a class="reference internal" href="alarm_ldag_repr.html">Alarm data</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Project info</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cslearn</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="examples.html">Reference</a></li>
+      <li class="breadcrumb-item active">CStree from (Duarte &amp; Solus, 2022)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/fig1_demo.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="CStree-from-(Duarte-&amp;-Solus,-2022)">
+<h1>CStree from (Duarte &amp; Solus, 2022)<a class="headerlink" href="#CStree-from-(Duarte-&-Solus,-2022)" title="Link to this heading"></a></h1>
+<p>We create the CStree from Figure 1. of (Duarte &amp; Solus, 2022).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[132]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.stage</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">st</span>
+
+<span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+<span class="c1"># logging.basicConfig(stream=sys.stderr, level=logging.ERROR)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The autoreload extension is already loaded. To reload it, use:
+  %reload_ext autoreload
+</pre></div></div>
+</div>
+<section id="Create-the-CStree">
+<h2>Create the CStree<a class="headerlink" href="#Create-the-CStree" title="Link to this heading"></a></h2>
+<p>This CStree has four levels, 0,…,3, which we label as X1,…,X4, each having cardinality 2 (i.e. can take values in the set {0, 1}).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[133]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">tree</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">CStree</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;X&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)])</span>
+</pre></div>
+</div>
+</div>
+<p>We set/update the stages level-wise, by a dict containing the levels and the values of the contexts. We also add the color some of the stages by the “color” key of the dict. Note that singleton stages will be automatically be colored in black.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[134]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tree</span><span class="o">.</span><span class="n">update_stages</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="mi">0</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">}},</span> <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}],</span>
+        <span class="mi">1</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;green&quot;</span><span class="p">},</span>
+            <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">}},</span>
+            <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">}},</span>
+        <span class="p">],</span>
+        <span class="mi">2</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">},</span>
+            <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;orange&quot;</span><span class="p">},</span>
+            <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">},</span>
+            <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">}},</span>
+            <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">}},</span>
+        <span class="p">],</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>We sample the parameters for each stage from the Beta distribution with parameter alpha (in general, for non-binary variables, this will be the Dirichlet distribution).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[135]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tree</span><span class="o">.</span><span class="n">sample_stage_parameters</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Below we plot full CStree by using the full flag of the plot method. Note that the parameter full defaults to False in which case it will only plot the part of the tree that was used for sampling data. This is to prevent from plotting and building very large trees. The plot method returns an AGraph, which is a pygraphviz object that represents a graph. It can eiter be drawn in the notebook or saved to file (commented out).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[136]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">a</span>
+<span class="c1"># a.draw(&quot;fig1_demo.png&quot;)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[136]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/source_fig1_demo_11_0.svg" src="../_images/source_fig1_demo_11_0.svg" />
+</div>
+</div>
+</section>
+<section id="The-CSI-relations">
+<h2>The CSI relations<a class="headerlink" href="#The-CSI-relations" title="Link to this heading"></a></h2>
+<p>One can print the CSI relations (groupted by context) that the CStree encode, using the csi_relations() method.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[137]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rels</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">csi_relations</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">cont</span><span class="p">,</span> <span class="n">rels</span> <span class="ow">in</span> <span class="n">rels</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">rel</span> <span class="ow">in</span> <span class="n">rels</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">rel</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+X1 ⊥ X3 | X2=0
+X2 ⊥ X4 | X1=0, X3=0
+X2 ⊥ X4 | X1=0, X3=1
+X2 ⊥ X4 | X1=1, X3=0
+</pre></div></div>
+</div>
+</section>
+<section id="The-minimal-context-CSI-relations">
+<h2>The minimal context CSI relations<a class="headerlink" href="#The-minimal-context-CSI-relations" title="Link to this heading"></a></h2>
+<p>You may also plot the minimal CSI relations as below. See the paper for definition of a minimal CSI.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[138]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">minl_csis</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">to_minimal_context_csis</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">cont</span><span class="p">,</span> <span class="n">csis</span> <span class="ow">in</span> <span class="n">minl_csis</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">csi</span> <span class="ow">in</span> <span class="n">csis</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">csi</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+X1 ⊥ X3 | X2=0
+X2 ⊥ X4 | X1, X3=0
+X2 ⊥ X4 | X3, X1=0
+</pre></div></div>
+</div>
+</section>
+<section id="The-minimal-context-DAGs">
+<h2>The minimal context DAGs<a class="headerlink" href="#The-minimal-context-DAGs" title="Link to this heading"></a></h2>
+<p>We can also plot the minimal context DAGs based on the minimal context CSIs. These are grouped by the minimal contexts and represented by pygraphviz graphs.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[139]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get Graphviz graphs for plotting</span>
+<span class="n">agraphs</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">to_minimal_context_agraphs</span><span class="p">()</span>
+<span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">agraphs</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[140]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">agraphs</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+X2=0
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[140]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/source_fig1_demo_21_1.svg" src="../_images/source_fig1_demo_21_1.svg" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[141]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">agraphs</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+X3=0
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[141]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/source_fig1_demo_22_1.svg" src="../_images/source_fig1_demo_22_1.svg" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[142]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">agraphs</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+X1=0
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[142]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/source_fig1_demo_23_1.svg" src="../_images/source_fig1_demo_23_1.svg" />
+</div>
+</div>
+</section>
+<section id="Sampling-data">
+<h2>Sampling data<a class="headerlink" href="#Sampling-data" title="Link to this heading"></a></h2>
+<p>Data sampled from a CStree is stored as a Pandas dataframe, with labels inherited from the CStree level labels. The second row contains the cardinalities of variables.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[143]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">df</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[143]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>X1</th>
+      <th>X2</th>
+      <th>X3</th>
+      <th>X4</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Write-the-CStree-structure-to-a-Pandas-dataframe">
+<h2>Write the CStree structure to a Pandas dataframe<a class="headerlink" href="#Write-the-CStree-structure-to-a-Pandas-dataframe" title="Link to this heading"></a></h2>
+<p>You may save/serialize a CStree to a Pandas dataframe. The first row shows tha cardinalities of the variables. Each other row represent a stage, where the last columns of each row represent the distribution for each stage.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[144]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">treedf</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">to_df</span><span class="p">(</span><span class="n">write_probs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">treedf</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[144]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>X1</th>
+      <th>X2</th>
+      <th>X3</th>
+      <th>X4</th>
+      <th>PROB_0</th>
+      <th>PROB_1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.956144</td>
+      <td>0.043856</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.582621</td>
+      <td>0.417379</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>*</td>
+      <td>0</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.576286</td>
+      <td>0.423714</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>1</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.191666</td>
+      <td>0.808334</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>1</td>
+      <td>1</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.534362</td>
+      <td>0.465638</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>0</td>
+      <td>*</td>
+      <td>0</td>
+      <td>-</td>
+      <td>0.563052</td>
+      <td>0.436948</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>0</td>
+      <td>*</td>
+      <td>1</td>
+      <td>-</td>
+      <td>0.167056</td>
+      <td>0.832944</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>1</td>
+      <td>*</td>
+      <td>0</td>
+      <td>-</td>
+      <td>0.117001</td>
+      <td>0.882999</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-</td>
+      <td>0.738383</td>
+      <td>0.261617</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>-</td>
+      <td>0.957600</td>
+      <td>0.042400</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.912455</td>
+      <td>0.087545</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Read-CStree-from-a-Pandas-dataframe">
+<h2>Read CStree from a Pandas dataframe<a class="headerlink" href="#Read-CStree-from-a-Pandas-dataframe" title="Link to this heading"></a></h2>
+<p>You may easily read a CStree from a Pandas dataframe. A CStree can thus be saved to file as a usual Pandas dataframe.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[145]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">df_to_cstree</span><span class="p">(</span><span class="n">treedf</span><span class="p">)</span>
+<span class="n">t</span><span class="o">.</span><span class="n">to_df</span><span class="p">(</span><span class="n">write_probs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[145]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>X1</th>
+      <th>X2</th>
+      <th>X3</th>
+      <th>X4</th>
+      <th>PROB_0</th>
+      <th>PROB_1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.956144</td>
+      <td>0.043856</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.582621</td>
+      <td>0.417379</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>*</td>
+      <td>0</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.576286</td>
+      <td>0.423714</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>1</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.191666</td>
+      <td>0.808334</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>1</td>
+      <td>1</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.534362</td>
+      <td>0.465638</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>0</td>
+      <td>*</td>
+      <td>0</td>
+      <td>-</td>
+      <td>0.563052</td>
+      <td>0.436948</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>0</td>
+      <td>*</td>
+      <td>1</td>
+      <td>-</td>
+      <td>0.167056</td>
+      <td>0.832944</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>1</td>
+      <td>*</td>
+      <td>0</td>
+      <td>-</td>
+      <td>0.117001</td>
+      <td>0.882999</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>-</td>
+      <td>0.738383</td>
+      <td>0.261617</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>-</td>
+      <td>0.957600</td>
+      <td>0.042400</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>0.912455</td>
+      <td>0.087545</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[146]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Use plot(full=True) to draw the full tree.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[146]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/source_fig1_demo_33_1.svg" src="../_images/source_fig1_demo_33_1.svg" />
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="examples.html" class="btn btn-neutral float-left" title="Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="learn_demo.html" class="btn btn-neutral float-right" title="Learning a CStree" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Anonymous.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

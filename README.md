@@ -1,5 +1,5 @@
 <div align="center">
-  <a href="https://cslearn.readthedocs.io">
+  <a href="docs/_build/html/index.html">
     <img src="images/cstree.png" alt="CStree logo">
   </a>
   <img src="images/minl_cont_dag_X1=0.png" alt="Minimal context DAG X1=0" width="40">
@@ -11,7 +11,7 @@
   <p align="center">
     A Python library for context-specific causal graphical models.
     <br />
-    <a href="https://cslearn.readthedocs.io"><strong>Docs »</strong></a>
+    <a href="docs/_build/html/index.html"><strong>Docs »</strong></a>
   </p>
 </div>
 
@@ -48,7 +48,7 @@ Then install the package:
 pip install cslearn
 ```
 
-See the [full installation instructions](https://cslearn.readthedocs.io/en/latest/install.html) for development setup.
+See the [full installation instructions](docs/_build/html/install.html) for development setup.
 
 ## Quick start
 
@@ -68,33 +68,19 @@ learned = CStree().fit(data)
 predictions = learned.predict(data.iloc[1:6, :-1])
 ```
 
-See the [example notebooks](https://cslearn.readthedocs.io) for walkthroughs covering CStree construction and visualization, structure learning with exact and Gibbs-sampler search, LDAG representations on the alarm and Sachs datasets, and prediction.
+See the [example notebooks](docs/_build/html/source/examples.html) for walkthroughs covering CStree construction and visualization, structure learning with exact and Gibbs-sampler search, LDAG representations on the alarm and Sachs datasets, and prediction.
 
 ## Paper experiments
 
 The simulation experiments and figures from the accompanying paper are in
 `src/expt/`. Aggregated results (CSVs) are committed to the repository;
-precomputed intermediates (~5.9 GB) are on Zenodo at
-[https://doi.org/10.5281/zenodo.21198084](https://doi.org/10.5281/zenodo.21198084).
-See [`src/expt/README.md`](src/expt/README.md) for reproduction instructions.
+precomputed intermediates (~5.9 GB) can be fetched with `snakemake
+download_intermediates`. See [`src/expt/README.md`](src/expt/README.md) for
+reproduction instructions.
 
 ## Reference
 
-If you use this package, please cite the accompanying paper:
-
-> Rios, F. L., Markham, A. & Solus, L. (2024). Scalable Structure Learning for Sparse Context-Specific Systems. [arXiv:2402.07762](https://arxiv.org/abs/2402.07762)
-
-```bibtex
-@misc{rios2024scalablestructurelearningsparse,
-      title={Scalable Structure Learning for Sparse Context-Specific Systems},
-      author={Felix Leopoldo Rios and Alex Markham and Liam Solus},
-      year={2024},
-      eprint={2402.07762},
-      archivePrefix={arXiv},
-      primaryClass={stat.ML},
-      url={https://arxiv.org/abs/2402.07762},
-}
-```
+Citation withheld for anonymous review.
 
 ## Contributing
 

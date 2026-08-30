@@ -1,0 +1,960 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cslearn.dependence &mdash; cslearn 1.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=bb516dca"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            cslearn
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/cslearn.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/examples.html">Example notebooks</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Project info</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">cslearn</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">cslearn.dependence</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for cslearn.dependence</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">combinations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_mymax</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="nb">set</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+
+<div class="viewcode-block" id="Context">
+<a class="viewcode-back" href="../../source/cslearn.dependence.html#cslearn.dependence.Context">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Context</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class for the context of a CSI.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        context (dict): A dictionary of the context. The keys are the levels and the values are the values of the (context) variables at the same level.</span>
+<span class="sd">        labels (list, optional): A list of labels for the keys in the dict. Defaults to None.</span>
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from cslearn.dependence import Context</span>
+<span class="sd">        &gt;&gt;&gt; print(Context({0: 0, 3: 1}))</span>
+<span class="sd">        0=0, 3=1</span>
+<span class="sd">        &gt;&gt;&gt; print(Context({0: 0, 3: 1}, labels=[&quot;X&quot; + str(i) for i in range(4)]))</span>
+<span class="sd">        X0=0, X3=1</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">labels</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">context</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">levels</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">levels</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">context_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">context_str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">=</span><span class="si">{}</span><span class="s2">, &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">val</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">context_str</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">context_str</span> <span class="o">=</span> <span class="n">context_str</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">context_str</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">context_str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+        <span class="k">return</span> <span class="n">context_str</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="n">__o</span><span class="p">)</span> <span class="o">==</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># special case when context is emtpy</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">hash</span><span class="p">(())</span>
+
+        <span class="n">m</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">:</span>
+                <span class="n">tmp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">tmp</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="CI">
+<a class="viewcode-back" href="../../source/cslearn.dependence.html#cslearn.dependence.CI">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CI</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This is a conditional independence relation on the form a ⊥ b | sep.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        a (set): The first set of variables.</span>
+<span class="sd">        b (set): The second set of variables.</span>
+<span class="sd">        sep (set): The set of variables that separate a and b.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from cslearn.dependence import CI</span>
+<span class="sd">        &gt;&gt;&gt; print(CI({1}, {2}, {4, 0}, labels=[&quot;X&quot; + str(i) for i in range(1, 6)]))</span>
+<span class="sd">        X2 ⊥ X3 | X1, X5</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="nb">set</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">set</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">set</span><span class="p">,</span> <span class="n">labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">b</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sep</span> <span class="o">=</span> <span class="n">sep</span>
+
+        <span class="c1"># Just set the labels to [0,1,2,3,..]</span>
+        <span class="k">if</span> <span class="n">labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">levels</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">_mymax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">),</span> <span class="n">_mymax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">),</span> <span class="n">_mymax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(((</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">==</span> <span class="n">o</span><span class="o">.</span><span class="n">a</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">==</span> <span class="n">o</span><span class="o">.</span><span class="n">b</span><span class="p">))</span> <span class="o">|</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">==</span> <span class="n">o</span><span class="o">.</span><span class="n">b</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">==</span> <span class="n">o</span><span class="o">.</span><span class="n">a</span><span class="p">)))</span> <span class="o">&amp;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sep</span> <span class="o">==</span> <span class="n">o</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">s1</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">:</span>
+            <span class="n">s1</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">, &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">s1</span> <span class="o">=</span> <span class="n">s1</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">s2</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">:</span>
+            <span class="n">s2</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">, &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">s2</span> <span class="o">=</span> <span class="n">s2</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">s3</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># BUG: sum instead of len ???</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">:</span>
+                <span class="n">s3</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">, &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">s3</span> <span class="o">=</span> <span class="n">s3</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+            <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> ⊥ </span><span class="si">{}</span><span class="s2"> | </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> ⊥ </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="CSI">
+<a class="viewcode-back" href="../../source/cslearn.dependence.html#cslearn.dependence.CSI">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CSI</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This is a context specific relation on the form a ⊥ b | sep, context=something.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        ci (CI): The CI relation.</span>
+<span class="sd">        context (Context): The context.</span>
+<span class="sd">        cards (list): The list of cardinalities of the variables.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from cslearn.dependence import Context, CI, CSI</span>
+<span class="sd">        &gt;&gt;&gt; labels = [&quot;X&quot;+str(i) for i in range(0, 7)]</span>
+<span class="sd">        &gt;&gt;&gt; c = Context({6:0, 3:1}, labels=labels)</span>
+<span class="sd">        &gt;&gt;&gt; ci = CI({1}, {2}, {4, 5}, labels=labels)</span>
+<span class="sd">        &gt;&gt;&gt; csi = CSI(ci, c)</span>
+<span class="sd">        &gt;&gt;&gt; print(csi)</span>
+<span class="sd">        X1 ⊥ X2 | X4, X5, X6=0, X3=1</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ci</span><span class="p">:</span> <span class="n">CI</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">,</span> <span class="n">cards</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ci</span> <span class="o">=</span> <span class="n">ci</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">context</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cards</span> <span class="o">=</span> <span class="n">cards</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__and__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_list</span><span class="p">()</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">as_list</span><span class="p">()</span>
+        <span class="n">c_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+            <span class="k">pass</span>
+
+        <span class="k">return</span> <span class="n">CSI</span><span class="p">(</span><span class="n">c_list</span><span class="p">,</span> <span class="n">cards</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">)</span>  <span class="c1"># BUG: maybe never used</span>
+
+<div class="viewcode-block" id="CSI.as_list">
+<a class="viewcode-back" href="../../source/cslearn.dependence.html#cslearn.dependence.CSI.as_list">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;List representation. Important: only for pairwise CSIs, i.e. something like Xi ⊥ Xj | ...</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: List representation of the CSI. The indices in the list represents the levels. The None values encode the CI variables. The singleton sets encode the context variables values. The sets with full cardinalities encode the sep variables.</span>
+<span class="sd">        Examples:</span>
+
+<span class="sd">            &gt;&gt;&gt; from cslearn.dependence import Context, CI, CSI</span>
+<span class="sd">            &gt;&gt;&gt; c = Context({0:0, 3:1})</span>
+<span class="sd">            &gt;&gt;&gt; ci = CI({1}, {2}, {4, 5})</span>
+<span class="sd">            &gt;&gt;&gt; csi = CSI(ci, c, cards=[2]*6)</span>
+<span class="sd">            &gt;&gt;&gt; csi.as_list()</span>
+<span class="sd">            [{0}, None, None, {1}, {0, 1}, {0, 1}]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Pairwise CSI as a list &quot;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">cards</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="c1"># Get the level as the max element-1</span>
+        <span class="c1"># The Nones not at index 0 encode the CI variables.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="o">.</span><span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="o">.</span><span class="n">b</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This only works for pairwise csis (Xi _|_ Xj | ...).&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="c1"># print(print(self.ci.sep))</span>
+        <span class="n">levels</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">max</span><span class="p">(</span>
+                <span class="n">_mymax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>
+                <span class="n">_mymax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="o">.</span><span class="n">b</span><span class="p">),</span>
+                <span class="n">_mymax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="o">.</span><span class="n">sep</span><span class="p">),</span>
+                <span class="n">_mymax</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">keys</span><span class="p">())),</span>
+            <span class="p">)</span>
+            <span class="o">+</span> <span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="n">cards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">[:</span> <span class="n">levels</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">csilist</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">levels</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">levels</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="o">.</span><span class="n">a</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="o">.</span><span class="n">b</span><span class="p">):</span>
+                <span class="n">csilist</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># None to indicate the CI variables.</span>
+            <span class="k">elif</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="o">.</span><span class="n">sep</span><span class="p">:</span>
+                <span class="n">csilist</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">cards</span><span class="p">[</span><span class="n">l</span><span class="p">]))</span>
+            <span class="k">elif</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">:</span>
+                <span class="n">csilist</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">[</span><span class="n">l</span><span class="p">]}</span>
+
+        <span class="k">return</span> <span class="n">csilist</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;TODO: Check that the order is correct, so tht not 1 CSI can</span>
+<span class="sd">        be represented in 2 ways.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: hash of the string representation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">context</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># No context</span>
+            <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">context</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># Adding the |</span>
+                <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> | </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># | is already there</span>
+                <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="decomposition">
+<a class="viewcode-back" href="../../source/cslearn.dependence.html#cslearn.dependence.decomposition">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">decomposition</span><span class="p">(</span><span class="n">ci</span><span class="p">:</span> <span class="n">CI</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate all possible pairwise CI relations that are implied by</span>
+<span class="sd">    decomposition rule.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ci (CI): A CI relation.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: List of pairwise CI relations.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from cslearn.dependence import CI, decomposition</span>
+<span class="sd">        &gt;&gt;&gt; for d in decomposition(CI({1, 2}, {3, 4}, {0})):</span>
+<span class="sd">        ...     print(d)</span>
+<span class="sd">        1 ⊥ 3 | 0</span>
+<span class="sd">        1 ⊥ 4 | 0</span>
+<span class="sd">        2 ⊥ 3 | 0</span>
+<span class="sd">        2 ⊥ 4 | 0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">cilist</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">ci</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">ci</span><span class="o">.</span><span class="n">b</span><span class="p">):</span>
+        <span class="n">new_ci</span> <span class="o">=</span> <span class="n">CI</span><span class="p">({</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]},</span> <span class="p">{</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]},</span> <span class="n">ci</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">new_ci</span> <span class="o">==</span> <span class="n">ci</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">cilist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_ci</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">cilist</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_powerset</span><span class="p">(</span><span class="n">iterable</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the set of all subsets of a set.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        iterable (list): Lest of elements.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: List of all subsets.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from cslearn.dependence import _powerset</span>
+<span class="sd">        &gt;&gt;&gt; list(_powerset([1, 2, 3]))</span>
+<span class="sd">        [(), (1,), (2,), (3,), (1, 2), (1, 3), (2, 3), (1, 2, 3)]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">s</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">combinations</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="weak_union">
+<a class="viewcode-back" href="../../source/cslearn.dependence.html#cslearn.dependence.weak_union">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">weak_union</span><span class="p">(</span><span class="n">ci</span><span class="p">:</span> <span class="n">CI</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Using weak union just to get pairwise independence relations from a CSI.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        ci (CI): CI relation</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: List of pairwise CI relations.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from cslearn import dependence</span>
+<span class="sd">        &gt;&gt;&gt; for d in dependence.weak_union(dependence.CI({1, 2}, {3, 4}, {0})):</span>
+<span class="sd">        ...     print(d)</span>
+<span class="sd">        1, 2 ⊥ 4 | 0, 3</span>
+<span class="sd">        1, 2 ⊥ 3 | 0, 4</span>
+<span class="sd">        2 ⊥ 3, 4 | 0, 1</span>
+<span class="sd">        1 ⊥ 3, 4 | 0, 2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cis</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">_powerset</span><span class="p">(</span><span class="n">ci</span><span class="o">.</span><span class="n">b</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="n">ci</span><span class="o">.</span><span class="n">b</span><span class="p">):</span>
+            <span class="k">continue</span>
+
+        <span class="n">BuD</span> <span class="o">=</span> <span class="n">ci</span><span class="o">.</span><span class="n">b</span>
+        <span class="n">cis</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CI</span><span class="p">(</span><span class="n">ci</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">BuD</span> <span class="o">-</span> <span class="n">d</span><span class="p">,</span> <span class="n">ci</span><span class="o">.</span><span class="n">sep</span> <span class="o">|</span> <span class="n">d</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">_powerset</span><span class="p">(</span><span class="n">ci</span><span class="o">.</span><span class="n">a</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="n">ci</span><span class="o">.</span><span class="n">a</span><span class="p">):</span>
+            <span class="k">continue</span>
+
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+        <span class="n">AuD</span> <span class="o">=</span> <span class="n">ci</span><span class="o">.</span><span class="n">a</span>
+        <span class="n">cis</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CI</span><span class="p">(</span><span class="n">AuD</span> <span class="o">-</span> <span class="n">d</span><span class="p">,</span> <span class="n">ci</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="n">ci</span><span class="o">.</span><span class="n">sep</span> <span class="o">|</span> <span class="n">d</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">cis</span></div>
+
+
+
+<div class="viewcode-block" id="pairwise_cis">
+<a class="viewcode-back" href="../../source/cslearn.dependence.html#cslearn.dependence.pairwise_cis">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pairwise_cis</span><span class="p">(</span><span class="n">ci</span><span class="p">:</span> <span class="n">CI</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Using weak union just to get pairwise independence relations from a CI.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ci (CI): CI relation</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        list: List of pairwise CI relations.</span>
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from cslearn.dependence import CI, pairwise_cis</span>
+<span class="sd">        &gt;&gt;&gt; for x in pairwise_cis(CI({1, 2}, {3, 4}, {0})):</span>
+<span class="sd">        ...     print(x)</span>
+<span class="sd">        1 ⊥ 3 | 0, 2, 4</span>
+<span class="sd">        1 ⊥ 4 | 0, 2, 3</span>
+<span class="sd">        2 ⊥ 3 | 0, 1, 4</span>
+<span class="sd">        2 ⊥ 4 | 0, 1, 3</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cis</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">ci</span><span class="o">.</span><span class="n">a</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">ci</span><span class="o">.</span><span class="n">b</span>  <span class="c1"># This will probably just contain one element.</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+        <span class="n">rest</span> <span class="o">=</span> <span class="p">(</span><span class="n">A</span> <span class="o">-</span> <span class="p">{</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]})</span> <span class="o">|</span> <span class="p">(</span><span class="n">B</span> <span class="o">-</span> <span class="p">{</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]})</span>
+        <span class="n">cis</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CI</span><span class="p">({</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]},</span> <span class="p">{</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]},</span> <span class="n">ci</span><span class="o">.</span><span class="n">sep</span> <span class="o">|</span> <span class="n">rest</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">cis</span></div>
+
+
+
+<div class="viewcode-block" id="pairwise_csis">
+<a class="viewcode-back" href="../../source/cslearn.dependence.html#cslearn.dependence.pairwise_csis">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pairwise_csis</span><span class="p">(</span><span class="n">csi</span><span class="p">:</span> <span class="n">CSI</span><span class="p">,</span> <span class="n">cards</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Using weak union just to get pairwise indep relations from a CSI.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        csi (CSI): CSI relation</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: List of pairwise CSI relations.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from cslearn.dependence import CI, Context, CSI, pairwise_csis</span>
+<span class="sd">        &gt;&gt;&gt; csi = CSI(CI({1, 2}, {3, 4}, {0}), Context({5: 0}))</span>
+<span class="sd">        &gt;&gt;&gt; for x in pairwise_csis(csi):</span>
+<span class="sd">        ...     print(x)</span>
+<span class="sd">        1 ⊥ 3 | 0, 2, 4, 5=0</span>
+<span class="sd">        1 ⊥ 4 | 0, 2, 3, 5=0</span>
+<span class="sd">        2 ⊥ 3 | 0, 1, 4, 5=0</span>
+<span class="sd">        2 ⊥ 4 | 0, 1, 3, 5=0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Pairwise CSIs&quot;</span><span class="p">)</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="n">csi</span><span class="o">.</span><span class="n">context</span>
+    <span class="n">ci_pairs</span> <span class="o">=</span> <span class="n">pairwise_cis</span><span class="p">(</span><span class="n">csi</span><span class="o">.</span><span class="n">ci</span><span class="p">)</span>
+    <span class="n">csis</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">ci</span> <span class="ow">in</span> <span class="n">ci_pairs</span><span class="p">:</span>
+        <span class="n">csi</span> <span class="o">=</span> <span class="n">CSI</span><span class="p">(</span><span class="n">ci</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span> <span class="n">cards</span><span class="o">=</span><span class="n">cards</span><span class="p">)</span>
+        <span class="n">csis</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">csi</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">csis</span></div>
+
+
+
+<div class="viewcode-block" id="mix">
+<a class="viewcode-back" href="../../source/cslearn.dependence.html#cslearn.dependence.mix">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mix</span><span class="p">(</span><span class="n">csilist_tuple</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">cards</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mix two pairwise CI relations represented as lists.</span>
+<span class="sd">    A mix is the intersection at each level except for the current level l</span>
+<span class="sd">    where the values are joined.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        csilist_tuple (tuple): Two pairwise CSI lists</span>
+<span class="sd">        level (int): the level</span>
+<span class="sd">        cards (list): cardinalities of the levels.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: A mixed CSI list.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from cslearn.dependence import mix</span>
+<span class="sd">        &gt;&gt;&gt; a = [0, None, None, {0,1}, {1}]</span>
+<span class="sd">        &gt;&gt;&gt; b = [1, None, None, {0}, {1}]</span>
+<span class="sd">        &gt;&gt;&gt; c = mix((a,b), 0, [2,2,2,2,2])</span>
+<span class="sd">        &gt;&gt;&gt; c</span>
+<span class="sd">        [{0, 1}, None, None, {0}, {1}]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">csilist_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">mix_result</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">p</span>
+
+    <span class="c1"># Going through all the levels and mix at all levels.</span>
+    <span class="c1"># The result should be stored somewhere.</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">csilist_tuple</span><span class="p">)):</span>
+        <span class="c1"># print(i, a)</span>
+        <span class="c1"># None means that a[0] is some of the CI tuple. So just skip.</span>
+        <span class="k">if</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">level</span><span class="p">:</span>  <span class="c1"># if at the current level, the values are joined.</span>
+            <span class="n">mix_result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">cards</span><span class="p">[</span><span class="n">level</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># do the intersection</span>
+            <span class="n">mix_result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mix_result</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># The CSIs are disjoint, so return None.</span>
+
+    <span class="k">return</span> <span class="n">mix_result</span></div>
+
+
+
+<div class="viewcode-block" id="partition_csis">
+<a class="viewcode-back" href="../../source/cslearn.dependence.html#cslearn.dependence.partition_csis">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">partition_csis</span><span class="p">(</span><span class="n">csilist_list</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">cards</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Put the CSIs in different sets that can possibly be mixed to create</span>
+<span class="sd">    new CSIs. It is assumed that all are pairwise CSIs and has the same</span>
+<span class="sd">    &quot;indepedent&quot; variables, e.g. 1 and 3 in the example below.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        csilist_list (list): List of pairwise CSI lists.</span>
+<span class="sd">        level (int): The level up to which the mixing is done.</span>
+<span class="sd">        cards (list): Cardinalities of the levels.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: list of disjoint lists of pairwise CSI lists that can possibly be mixed.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from cslearn.dependence import CI, Context, CSI, partition_csis</span>
+<span class="sd">        &gt;&gt;&gt; cards = [2] * 5</span>
+<span class="sd">        &gt;&gt;&gt; csis = [</span>
+<span class="sd">        ...     CSI(CI({1}, {3}, {4}), Context({0: 0, 2: 0}), cards=cards),</span>
+<span class="sd">        ...     CSI(CI({1}, {3}, {4}), Context({0: 0, 2: 1}), cards=cards),</span>
+<span class="sd">        ...     CSI(CI({1}, {3}, {4}), Context({0: 1, 2: 0}), cards=cards),</span>
+<span class="sd">        ... ]</span>
+<span class="sd">        &gt;&gt;&gt; partition_csis([c.as_list() for c in csis], 0, cards)</span>
+<span class="sd">        [[[{0}, None, {0}, None, {0, 1}], [{0}, None, {1}, None, {0, 1}]], [[{1}, None, {0}, None, {0, 1}]]]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Partitioning CSIs&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;level </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">level</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;cards </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cards</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">csilist_list</span><span class="p">)</span>
+
+    <span class="n">csis_to_mix</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cards</span><span class="p">[</span><span class="n">level</span><span class="p">])]</span>
+    <span class="k">for</span> <span class="n">csilist</span> <span class="ow">in</span> <span class="n">csilist_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">csilist</span><span class="p">[</span><span class="n">level</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># Only consider those with single value</span>
+            <span class="k">continue</span>
+        <span class="c1"># just to get the single value from the set</span>
+        <span class="n">var_val</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">csilist</span><span class="p">[</span><span class="n">level</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;var_val </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_val</span><span class="p">))</span>
+        <span class="n">csis_to_mix</span><span class="p">[</span><span class="n">var_val</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">csilist</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">csis_to_mix</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_csilist_to_csi</span><span class="p">(</span><span class="n">csilist</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>  <span class="c1"># This could probably take labels as well</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The independent variables are represented by None.</span>
+<span class="sd">    Only for pairwise CSIs.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        csilist (list): List representation of a CSI.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        CSI: A CSI object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">context</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">indpair</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">sep</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">csilist</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">values</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># None means that the variable is independent.</span>
+            <span class="n">indpair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">context</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">values</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">sep</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>  <span class="c1"># this should be == range(cards[i]))</span>
+
+    <span class="n">context</span> <span class="o">=</span> <span class="n">Context</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+
+    <span class="n">ci</span> <span class="o">=</span> <span class="n">CI</span><span class="p">({</span><span class="n">indpair</span><span class="p">[</span><span class="mi">0</span><span class="p">]},</span> <span class="p">{</span><span class="n">indpair</span><span class="p">[</span><span class="mi">1</span><span class="p">]},</span> <span class="n">sep</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+    <span class="n">csi</span> <span class="o">=</span> <span class="n">CSI</span><span class="p">(</span><span class="n">ci</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">csi</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_csilist_subset</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;True if a is a sub CSI of b, i.e. if at each level l,</span>
+<span class="sd">        a[l] &lt;= b[l].</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        a (list): list representation of a CSI</span>
+<span class="sd">        b (list): list representation of a CSI</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">True</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)]</span>  <span class="c1"># O(p*K)</span>
+    <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="minimal_csis">
+<a class="viewcode-back" href="../../source/cslearn.dependence.html#cslearn.dependence.minimal_csis">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">minimal_csis</span><span class="p">(</span><span class="n">paired_csis</span><span class="p">,</span> <span class="n">cards</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the minimal CSIs from the pairwise CSIs.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        paired_csis (dict): Dict of csis grouped by pairwise indep rels as Xi ⊥ Xj | ...</span>
+<span class="sd">        cards (list): Cardinalities of the levels.</span>
+<span class="sd">    Example:</span>
+<span class="sd">        The CStree of Figure 1 in Duarte &amp; Solus (2021):</span>
+
+<span class="sd">        &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">        &gt;&gt;&gt; tree = ct.CStree([2, 2, 2, 2], labels=[&quot;X&quot; + str(i) for i in range(1, 5)])</span>
+<span class="sd">        &gt;&gt;&gt; tree.update_stages({</span>
+<span class="sd">        ...     0: [{&quot;context&quot;: {0: 0}},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 1}}],</span>
+<span class="sd">        ...     1: [{&quot;context&quot;: {1: 0}, &quot;color&quot;: &quot;green&quot;},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 0, 1: 1}},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 1, 1: 1}}],</span>
+<span class="sd">        ...     2: [{&quot;context&quot;: {0: 0, 2: 0}, &quot;color&quot;: &quot;blue&quot;},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 0, 2: 1}, &quot;color&quot;: &quot;orange&quot;},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 1, 2: 0}, &quot;color&quot;: &quot;red&quot;},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 1, 1: 1, 2: 1}},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 1, 1: 0, 2: 1}}]})</span>
+<span class="sd">        &gt;&gt;&gt; for csis in tree.to_minimal_context_csis().values():</span>
+<span class="sd">        ...     for csi in csis:</span>
+<span class="sd">        ...         print(csi)</span>
+<span class="sd">        X1 ⊥ X3 | X2=0</span>
+<span class="sd">        X2 ⊥ X4 | X1, X3=0</span>
+<span class="sd">        X2 ⊥ X4 | X3, X1=0</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: dict of minimal CSIs grouped by contexts.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cards</span><span class="p">)</span>
+
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[{}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="p">)]</span>
+    <span class="c1">#  Loop through all levels l</span>
+    <span class="c1">#     1. For each stage in the level do weak union to get the pairs</span>
+    <span class="c1">#         Xi _|_ Xj | something, and group.</span>
+    <span class="c1">#     2. For each such pair go through all levels and try to find mixable</span>
+    <span class="c1">#         CSI by partition on value.</span>
+    <span class="c1">#     3. If mixable, mix and put the result in a set woth newly created.</span>
+
+    <span class="c1">#     When we loop through al levels again by where the old CSI are not mixed</span>
+    <span class="c1">#     with each other that is, each tuple needs at least one CSI from the new</span>
+    <span class="c1">#     CSIs.</span>
+    <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+        <span class="c1"># initiate newbies in the first run to be</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">#### Level </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">level</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">pair</span><span class="p">,</span> <span class="n">csilist_list</span> <span class="ow">in</span> <span class="n">paired_csis</span><span class="p">[</span><span class="n">level</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># print(&quot;\n#### CI pair {}&quot;.format(pair))</span>
+            <span class="n">oldies</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># This must be here, since we dont know on which variable new mixed</span>
+            <span class="c1"># will be mixed</span>
+            <span class="n">newbies</span> <span class="o">=</span> <span class="n">csilist_list</span>
+
+            <span class="n">iteration</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">newbies</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">#### Iteration </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">iteration</span><span class="p">))</span>
+                <span class="c1"># print(pair) print(&quot;going through the levels for partitions&quot;)</span>
+                <span class="c1"># should join with csi_list the oldies?</span>
+
+                <span class="n">fresh</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># list of created csis</span>
+                <span class="n">csis_to_absorb</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># remove from the old ones due to mixing</span>
+                <span class="c1"># Go through all levels, potentially many times.</span>
+                <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>  <span class="c1"># Added +1 after refactorization</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;level </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">l</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">pair</span><span class="p">:</span>
+                        <span class="k">continue</span>
+
+                    <span class="n">csis_to_mix</span> <span class="o">=</span> <span class="n">partition_csis</span><span class="p">(</span><span class="n">newbies</span> <span class="o">+</span> <span class="n">oldies</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">cards</span><span class="p">)</span>
+                    <span class="c1"># logger.debug(&quot;csis to mix&quot;)</span>
+                    <span class="c1"># logger.debug(csis_to_mix)</span>
+
+                    <span class="c1"># Need to separate the newly created csis from the old</span>
+                    <span class="c1"># ones. The old should not be re-mixed, i.e., the mixes</span>
+                    <span class="c1"># must contain at least one new csi. How do we implement</span>
+                    <span class="c1"># that? Just create new to mix and skip if not containing a</span>
+                    <span class="c1"># new?</span>
+
+                    <span class="c1"># E.g. combinations like {a, b, c} X {d, e} X ...</span>
+                    <span class="k">for</span> <span class="n">csilist_tuple</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">csis_to_mix</span><span class="p">):</span>
+                        <span class="c1"># logger.debug(csilist_tuple)</span>
+                        <span class="c1"># Check that at least one is a newbie</span>
+                        <span class="n">no_newbies</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="k">for</span> <span class="n">csi</span> <span class="ow">in</span> <span class="n">csilist_tuple</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">csi</span> <span class="ow">in</span> <span class="n">newbies</span><span class="p">:</span>
+                                <span class="n">no_newbies</span> <span class="o">=</span> <span class="kc">False</span>
+                                <span class="k">break</span>
+                        <span class="k">if</span> <span class="n">no_newbies</span><span class="p">:</span>
+                            <span class="c1"># print(&quot;no newbies, so skip&quot;)</span>
+                            <span class="k">continue</span>
+
+                        <span class="c1"># Mix</span>
+                        <span class="n">mixed_csi</span> <span class="o">=</span> <span class="n">mix</span><span class="p">(</span><span class="n">csilist_tuple</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">cards</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">mixed_csi</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="c1"># print(&quot;Not mixeable&quot;)</span>
+                            <span class="k">continue</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="c1"># print(mix) assert(sum([len(el)==1 for el in mix</span>
+                            <span class="c1"># if el is not None]) &lt;= 3)</span>
+                            <span class="k">if</span> <span class="n">mixed_csi</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">oldies</span> <span class="o">+</span> <span class="n">newbies</span><span class="p">):</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;mixing&quot;</span><span class="p">)</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">csilist_tuple</span><span class="p">)</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;mix result: &quot;</span><span class="p">)</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mixed_csi</span><span class="p">)</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Adding </span><span class="si">{}</span><span class="s2"> as newly created ******&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mixed_csi</span><span class="p">))</span>
+                                <span class="n">fresh</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mixed_csi</span><span class="p">)</span>
+                                <span class="c1"># Check if some csi of the oldies should be</span>
+                                <span class="c1"># removed. I.e. if some in csilist_tuple is a</span>
+                                <span class="c1"># subset of mix.</span>
+                                <span class="k">for</span> <span class="n">csilist</span> <span class="ow">in</span> <span class="n">csilist_tuple</span><span class="p">:</span>
+                                    <span class="c1"># print wher the csi is from, oldies, or</span>
+                                    <span class="c1"># newbies.</span>
+                                    <span class="k">if</span> <span class="n">_csilist_subset</span><span class="p">(</span><span class="n">csilist</span><span class="p">,</span> <span class="n">mixed_csi</span><span class="p">):</span>  <span class="c1"># This sho</span>
+                                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;will later absorb </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">csilist</span><span class="p">))</span>
+                                        <span class="n">csis_to_absorb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">csilist</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;##### Iterated through all levels. Prepare for next round. ### </span><span class="se">\n</span><span class="s2"> &quot;</span><span class="p">)</span>
+                <span class="c1"># Update the lists</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Adding the following newbies (just used for mixing) to the oldies.&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">nn</span> <span class="ow">in</span> <span class="n">newbies</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">nn</span><span class="p">)</span>
+                <span class="n">oldies</span> <span class="o">+=</span> <span class="n">newbies</span>
+
+                <span class="c1"># remove duplicates</span>
+                <span class="n">res_list</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">oldies</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">item</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">res_list</span><span class="p">:</span>
+                        <span class="n">res_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                <span class="n">oldies</span> <span class="o">=</span> <span class="n">res_list</span>
+
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;CSI to absorb/remove after having been mixed (can be duplicates)&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">csi</span> <span class="ow">in</span> <span class="n">csis_to_absorb</span><span class="p">:</span>
+                    <span class="c1"># BUG: this is maybe not ok. Feels bad to alter here. Maybe</span>
+                    <span class="c1"># an absorbtion step after instead.</span>
+                    <span class="k">if</span> <span class="p">(</span>
+                        <span class="n">csi</span> <span class="ow">in</span> <span class="n">oldies</span>
+                    <span class="p">):</span>  <span class="c1"># Shouldnt it be here? Or somewhere else maybe.. Shouldnt we remove it whereever it is?</span>
+                        <span class="c1"># Maybe make this removal after appending the newbies?</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">csi</span><span class="p">)</span>
+                        <span class="n">oldies</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">csi</span><span class="p">)</span>
+                    <span class="c1"># Maybe remove from new mixes as well then.</span>
+
+                <span class="c1"># filter duplicates</span>
+                <span class="n">res_list</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">fresh</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">item</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">res_list</span><span class="p">:</span>
+                        <span class="n">res_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                <span class="n">fresh</span> <span class="o">=</span> <span class="n">res_list</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;New mix results:&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">fresh</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+                <span class="c1"># Added this to see if it fixes the bug..</span>
+                <span class="c1"># logger.debug(&quot;Updating newbies with the unique new mix results&quot;)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;Updating mix results by removing if they already are in oldies, or a subset of an oldie.&quot;</span>
+                <span class="p">)</span>
+                <span class="n">newbies</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># check that the newbies are not in oldies!</span>
+                <span class="k">for</span> <span class="n">csi</span> <span class="ow">in</span> <span class="n">fresh</span><span class="p">:</span>  <span class="c1"># O( #tmp)</span>
+                    <span class="c1"># logger.debug(&quot;REMOVING {}&quot;.format(csi))</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">csi</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">oldies</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">csi</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">csis_to_absorb</span><span class="p">):</span>  <span class="c1"># O(#oldies)</span>
+                        <span class="n">newbies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">csi</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">newbies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">csi</span><span class="p">)</span>  <span class="c1"># Add and then remove maybe :)</span>
+                        <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">oldies</span><span class="p">:</span>  <span class="c1"># O(#oldies)</span>
+                            <span class="k">if</span> <span class="n">_csilist_subset</span><span class="p">(</span><span class="n">csi</span><span class="p">,</span> <span class="n">o</span><span class="p">):</span>
+                                <span class="c1"># logger.debug(&quot;FOUND A SUBSET OF AN OLDIE############&quot;)</span>
+                                <span class="c1"># logger.debug(csi)</span>
+                                <span class="c1"># logger.debug(&quot;is a subset of&quot;)</span>
+                                <span class="c1"># logger.debug(o)</span>
+                                <span class="n">newbies</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">csi</span><span class="p">)</span>
+                                <span class="k">break</span>
+
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;newbies (new mixes after the filtering):&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">nb</span> <span class="ow">in</span> <span class="n">newbies</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">nb</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;oldies&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">oldies</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">o</span><span class="p">)</span>
+                <span class="c1"># check the diplicates here somewhere.</span>
+                <span class="n">fresh</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">iteration</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">ret</span><span class="p">[</span><span class="n">level</span><span class="p">][</span><span class="n">pair</span><span class="p">]</span> <span class="o">=</span> <span class="n">oldies</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_csis_by_levels_2_by_pairs</span><span class="p">(</span><span class="n">rels</span><span class="p">,</span> <span class="n">cards</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">paired_csis</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">rels</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">rels</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="c1"># print(&quot;level: {}&quot;.format(l))</span>
+        <span class="n">csi_pairs</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># X_i _|_ X_j | something</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">val</span><span class="p">:</span>
+            <span class="c1"># print(v)</span>
+            <span class="n">csis</span> <span class="o">=</span> <span class="n">pairwise_csis</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">cards</span><span class="o">=</span><span class="n">cards</span><span class="p">)</span>  <span class="c1"># Using weak unions</span>
+            <span class="n">csi_pairs</span> <span class="o">=</span> <span class="n">csi_pairs</span> <span class="o">+</span> <span class="n">csis</span>
+
+            <span class="c1"># Loop though all levels for each of these and try to mix.</span>
+            <span class="c1"># print(&quot;pairwise&quot;)</span>
+            <span class="c1"># print(&quot;&quot;)</span>
+        <span class="c1"># print(&quot;All pairs&quot;)</span>
+        <span class="n">cis_by_pairs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">csi_pairs</span><span class="p">:</span>
+            <span class="c1"># print(c)</span>
+            <span class="n">clist</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">as_list</span><span class="p">()</span>
+            <span class="c1"># print(clist)</span>
+
+            <span class="n">pair</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">clist</span><span class="p">)</span> <span class="k">if</span> <span class="n">j</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">])</span>
+            <span class="c1"># print(pair)</span>
+            <span class="k">if</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">cis_by_pairs</span><span class="p">:</span>
+                <span class="n">cis_by_pairs</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">clist</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cis_by_pairs</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">clist</span><span class="p">]</span>
+
+        <span class="c1"># print(csi_pairs)</span>
+        <span class="c1"># print(cis_by_pairs)</span>
+        <span class="n">paired_csis</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">cis_by_pairs</span>
+
+    <span class="k">return</span> <span class="n">paired_csis</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_rels_by_level_2_by_context</span><span class="p">(</span><span class="n">rels_at_level</span><span class="p">):</span>
+    <span class="n">rels</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rels_at_level</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">rel</span> <span class="ow">in</span> <span class="n">r</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rel</span><span class="o">.</span><span class="n">context</span> <span class="ow">in</span> <span class="n">rels</span><span class="p">:</span>
+                <span class="n">rels</span><span class="p">[</span><span class="n">rel</span><span class="o">.</span><span class="n">context</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rel</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rels</span><span class="p">[</span><span class="n">rel</span><span class="o">.</span><span class="n">context</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">rel</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">rels</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_csi_lists_to_csis_by_level</span><span class="p">(</span><span class="n">csi_lists</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+    <span class="n">stages</span> <span class="o">=</span> <span class="p">{</span><span class="n">l</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="p">)}</span>
+    <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="n">csilist</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">csi_lists</span><span class="p">):</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Convert formats</span>
+        <span class="k">for</span> <span class="n">pair</span><span class="p">,</span> <span class="n">csil</span> <span class="ow">in</span> <span class="n">csilist</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">csi</span> <span class="ow">in</span> <span class="n">csil</span><span class="p">:</span>
+                <span class="n">csiobj</span> <span class="o">=</span> <span class="n">_csilist_to_csi</span><span class="p">(</span><span class="n">csi</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>  <span class="c1"># TODO: add labels?</span>
+                <span class="n">tmp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">csiobj</span><span class="p">)</span>
+        <span class="n">stages</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp</span>
+    <span class="k">return</span> <span class="n">stages</span>
+
+
+<div class="viewcode-block" id="csi_relations_to_dags">
+<a class="viewcode-back" href="../../source/cslearn.dependence.html#cslearn.dependence.csi_relations_to_dags">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">csi_relations_to_dags</span><span class="p">(</span><span class="n">csi_relations</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts the CSI relations to dags.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        csi_relations (dict): A dictionary with contexts as keys and lists of csi relations as values.</span>
+<span class="sd">        p (int): The number of variables.</span>
+<span class="sd">        labels (list, optional): A list of labels for the variables. Defaults to None.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: A dictionary with contexts as keys and dags as values.</span>
+<span class="sd">    Examples:</span>
+<span class="sd">        The CStree of Figure 1 in Duarte &amp; Solus (2021):</span>
+
+<span class="sd">        &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">        &gt;&gt;&gt; from cslearn import dependence</span>
+<span class="sd">        &gt;&gt;&gt; tree = ct.CStree([2, 2, 2, 2], labels=[&quot;X&quot; + str(i) for i in range(1, 5)])</span>
+<span class="sd">        &gt;&gt;&gt; tree.update_stages({</span>
+<span class="sd">        ...     0: [{&quot;context&quot;: {0: 0}},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 1}}],</span>
+<span class="sd">        ...     1: [{&quot;context&quot;: {1: 0}, &quot;color&quot;: &quot;green&quot;},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 0, 1: 1}},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 1, 1: 1}}],</span>
+<span class="sd">        ...     2: [{&quot;context&quot;: {0: 0, 2: 0}, &quot;color&quot;: &quot;blue&quot;},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 0, 2: 1}, &quot;color&quot;: &quot;orange&quot;},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 1, 2: 0}, &quot;color&quot;: &quot;red&quot;},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 1, 1: 1, 2: 1}},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 1, 1: 0, 2: 1}}]})</span>
+<span class="sd">        &gt;&gt;&gt; cdags = dependence.csi_relations_to_dags(</span>
+<span class="sd">        ...     tree.to_minimal_context_csis(), tree.p, labels=tree.labels)</span>
+<span class="sd">        &gt;&gt;&gt; for key, dag in cdags.items():</span>
+<span class="sd">        ...     print(&quot;{}: {}&quot;.format(key, sorted(dag.edges())))</span>
+<span class="sd">        X2=0: [(&#39;X1&#39;, &#39;X4&#39;), (&#39;X3&#39;, &#39;X4&#39;)]</span>
+<span class="sd">        X3=0: [(&#39;X1&#39;, &#39;X2&#39;), (&#39;X1&#39;, &#39;X4&#39;)]</span>
+<span class="sd">        X1=0: [(&#39;X2&#39;, &#39;X3&#39;), (&#39;X3&#39;, &#39;X4&#39;)]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">graphs</span> <span class="o">=</span> <span class="p">{</span><span class="n">context</span><span class="p">:</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">context</span> <span class="ow">in</span> <span class="n">csi_relations</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">context</span><span class="p">,</span> <span class="n">csis</span> <span class="ow">in</span> <span class="n">csi_relations</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">adjmat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">p</span> <span class="o">*</span> <span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">j</span><span class="p">):</span>
+                <span class="c1"># This will anyway be disregarded in the matrix slice?</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="ow">in</span> <span class="n">context</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">j</span> <span class="ow">in</span> <span class="n">context</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="c1"># create temp CI relation to compare with</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">}</span>
+                <span class="n">b</span> <span class="o">=</span> <span class="p">{</span><span class="n">j</span><span class="p">}</span>
+
+                <span class="n">s</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">k</span> <span class="o">!=</span> <span class="n">i</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">context</span><span class="p">)}</span>
+
+                <span class="n">ci_tmp</span> <span class="o">=</span> <span class="n">CI</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+
+                <span class="c1"># Check is the ci is in some of the cis of the context.</span>
+                <span class="c1"># 1. i&lt;j</span>
+                <span class="c1"># 2. no edge if Xi _|_ Xj | Pa1:j \ i</span>
+
+                <span class="n">cis</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">csi</span> <span class="ow">in</span> <span class="n">csis</span><span class="p">:</span>
+                    <span class="n">cis</span> <span class="o">+=</span> <span class="p">[</span><span class="n">csi</span><span class="o">.</span><span class="n">ci</span><span class="p">]</span>
+                    <span class="n">cis</span> <span class="o">+=</span> <span class="n">decomposition</span><span class="p">(</span><span class="n">csi</span><span class="o">.</span><span class="n">ci</span><span class="p">)</span>
+                    <span class="n">cis</span> <span class="o">+=</span> <span class="n">weak_union</span><span class="p">(</span><span class="n">csi</span><span class="o">.</span><span class="n">ci</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">ci_tmp</span> <span class="ow">in</span> <span class="n">cis</span><span class="p">:</span>
+                    <span class="n">adjmat</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">adjmat</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="n">context_els</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">inds</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="p">))</span> <span class="o">-</span> <span class="n">context_els</span><span class="p">)</span>
+        <span class="n">adjmat</span> <span class="o">=</span> <span class="n">adjmat</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">inds</span><span class="p">,</span> <span class="n">inds</span><span class="p">)]</span>
+
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">from_numpy_array</span><span class="p">(</span><span class="n">adjmat</span><span class="p">,</span> <span class="n">create_using</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">())</span>
+
+        <span class="c1"># TODO: the context should also be relabeled</span>
+        <span class="c1"># accordingly. Maybe in Context directly.</span>
+        <span class="n">labs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">inds</span><span class="p">):</span>
+            <span class="n">labs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">relabel_nodes</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">labs</span><span class="p">)</span>
+        <span class="n">graphs</span><span class="p">[</span><span class="n">context</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph</span>
+
+    <span class="k">return</span> <span class="n">graphs</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Anonymous.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

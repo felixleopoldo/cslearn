@@ -103,8 +103,7 @@ snakemake all --use-apptainer -n
 
 ## Recomputation from saved intermediates
 
-The full set of precomputed results (~5.9 GB) is archived on Zenodo:
-[https://doi.org/10.5281/zenodo.21198084](https://doi.org/10.5281/zenodo.21198084)
+The full set of precomputed results (~5.9 GB) is archived externally.
 
 Downloading restores all intermediate files so that `snakemake all` skips
 the expensive recomputation steps:

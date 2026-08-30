@@ -1,0 +1,691 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alarm data &mdash; cslearn 1.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=bb516dca"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="License" href="../license.html" />
+    <link rel="prev" title="Sachs et al. 2005" href="sachs_ldag_repr.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            cslearn
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cslearn.html">Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="examples.html">Example notebooks</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="examples.html#notebooks">Notebooks</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="fig1_demo.html">CStree from (Duarte &amp; Solus, 2022)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="learn_demo.html">Learning a CStree</a></li>
+<li class="toctree-l3"><a class="reference internal" href="learn_demo_gibbs.html">Learning CStree using Gibbs sampler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushroom_prediction.html">Prediction with CSlearn: Mushroom Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sachs_ldag_repr.html">Sachs et al. 2005</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Alarm data</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Read-data">Read data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MCMC-sampling">MCMC sampling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#LDAG-representation">LDAG representation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Baseline:-plain-DAG-(PC-only),-SHD-vs.-the-true-ALARM-network">Baseline: plain DAG (PC only), SHD vs. the true ALARM network</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Project info</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cslearn</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="examples.html">Reference</a></li>
+      <li class="breadcrumb-item active">Alarm data</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/alarm_ldag_repr.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Alarm-data">
+<h1>Alarm data<a class="headerlink" href="#Alarm-data" title="Link to this heading"></a></h1>
+<p><strong>Requires internet:</strong> the “Baseline” section near the end fetches the true ALARM network from the bnlearn repository via <code class="docutils literal notranslate"><span class="pre">pgmpy.utils.get_example_model</span></code>. Everything above it runs offline from the packaged dataset.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">causallearn.search.ConstraintBased.PC</span><span class="w"> </span><span class="kn">import</span> <span class="n">pc</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">causallearn.utils.cit</span><span class="w"> </span><span class="kn">import</span> <span class="n">chisq</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.scoring</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.learning</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ctl</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.ldag</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ldag</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/alex/projects/cstrees/code/.devenv/state/venv/lib/python3.13/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+  from .autonotebook import tqdm as notebook_tqdm
+</pre></div></div>
+</div>
+<section id="Read-data">
+<h2>Read data<a class="headerlink" href="#Read-data" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load the packaged copy of the ALARM data (resolves regardless of the</span>
+<span class="c1"># working directory the notebook is run from).</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">importlib.resources</span><span class="w"> </span><span class="kn">import</span> <span class="n">files</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.datasets</span>
+
+<span class="n">alarmdf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">files</span><span class="p">(</span><span class="n">cslearn</span><span class="o">.</span><span class="n">datasets</span><span class="p">)</span> <span class="o">/</span> <span class="s1">&#39;alarm.csv&#39;</span><span class="p">)</span>
+<span class="n">alarmdf</span> <span class="o">=</span> <span class="n">alarmdf</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Unnamed: 0&#39;</span><span class="p">])</span>
+<span class="n">alarmdf</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CVP</th>
+      <th>PCWP</th>
+      <th>HIST</th>
+      <th>TPR</th>
+      <th>BP</th>
+      <th>CO</th>
+      <th>HRBP</th>
+      <th>HREK</th>
+      <th>HRSA</th>
+      <th>PAP</th>
+      <th>...</th>
+      <th>ERLO</th>
+      <th>HR</th>
+      <th>ERCA</th>
+      <th>SHNT</th>
+      <th>PVS</th>
+      <th>ACO2</th>
+      <th>VALV</th>
+      <th>VLNG</th>
+      <th>VTUB</th>
+      <th>VMCH</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>NORMAL</td>
+      <td>NORMAL</td>
+      <td>False</td>
+      <td>LOW</td>
+      <td>NORMAL</td>
+      <td>HIGH</td>
+      <td>HIGH</td>
+      <td>HIGH</td>
+      <td>HIGH</td>
+      <td>NORMAL</td>
+      <td>...</td>
+      <td>False</td>
+      <td>HIGH</td>
+      <td>False</td>
+      <td>NORMAL</td>
+      <td>NORMAL</td>
+      <td>NORMAL</td>
+      <td>HIGH</td>
+      <td>LOW</td>
+      <td>ZERO</td>
+      <td>NORMAL</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>NORMAL</td>
+      <td>NORMAL</td>
+      <td>False</td>
+      <td>NORMAL</td>
+      <td>LOW</td>
+      <td>LOW</td>
+      <td>HIGH</td>
+      <td>HIGH</td>
+      <td>HIGH</td>
+      <td>NORMAL</td>
+      <td>...</td>
+      <td>False</td>
+      <td>HIGH</td>
+      <td>False</td>
+      <td>NORMAL</td>
+      <td>LOW</td>
+      <td>LOW</td>
+      <td>ZERO</td>
+      <td>ZERO</td>
+      <td>LOW</td>
+      <td>NORMAL</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>NORMAL</td>
+      <td>HIGH</td>
+      <td>False</td>
+      <td>NORMAL</td>
+      <td>NORMAL</td>
+      <td>HIGH</td>
+      <td>HIGH</td>
+      <td>HIGH</td>
+      <td>HIGH</td>
+      <td>NORMAL</td>
+      <td>...</td>
+      <td>False</td>
+      <td>HIGH</td>
+      <td>False</td>
+      <td>NORMAL</td>
+      <td>LOW</td>
+      <td>LOW</td>
+      <td>ZERO</td>
+      <td>ZERO</td>
+      <td>LOW</td>
+      <td>NORMAL</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>NORMAL</td>
+      <td>NORMAL</td>
+      <td>False</td>
+      <td>LOW</td>
+      <td>LOW</td>
+      <td>HIGH</td>
+      <td>HIGH</td>
+      <td>HIGH</td>
+      <td>HIGH</td>
+      <td>NORMAL</td>
+      <td>...</td>
+      <td>False</td>
+      <td>HIGH</td>
+      <td>False</td>
+      <td>NORMAL</td>
+      <td>NORMAL</td>
+      <td>LOW</td>
+      <td>ZERO</td>
+      <td>ZERO</td>
+      <td>LOW</td>
+      <td>NORMAL</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>NORMAL</td>
+      <td>NORMAL</td>
+      <td>False</td>
+      <td>LOW</td>
+      <td>LOW</td>
+      <td>NORMAL</td>
+      <td>HIGH</td>
+      <td>HIGH</td>
+      <td>HIGH</td>
+      <td>NORMAL</td>
+      <td>...</td>
+      <td>False</td>
+      <td>HIGH</td>
+      <td>False</td>
+      <td>NORMAL</td>
+      <td>LOW</td>
+      <td>LOW</td>
+      <td>ZERO</td>
+      <td>ZERO</td>
+      <td>LOW</td>
+      <td>NORMAL</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 37 columns</p>
+</div></div>
+</div>
+<p>Convert all the outcomes into numeric values.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">alarmnp</span> <span class="o">=</span> <span class="n">alarmdf</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="n">alarmnp</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20000</span><span class="p">)]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">convertToNumeric</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="n">npdf</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    <span class="nb">vars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">:</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="nb">vars</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="n">states</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">alarmdf</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">npdf</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">states</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">alarmdf</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">numdf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">npdf</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">numdf</span>
+
+<span class="n">numalarmdf</span> <span class="o">=</span> <span class="n">convertToNumeric</span><span class="p">(</span><span class="n">alarmdf</span><span class="p">)</span>
+
+<span class="n">cards_row</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">11</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">12</span> <span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">13</span> <span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">14</span> <span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">15</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">16</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">17</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">18</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">19</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">20</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">21</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">22</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">23</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">24</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">25</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">26</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">27</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">28</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">29</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">30</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">31</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">32</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">33</span> <span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">34</span> <span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">35</span> <span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">36</span> <span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+<span class="n">numalarmdf</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">numalarmdf</span><span class="p">)]</span> <span class="o">=</span> <span class="n">cards_row</span>
+<span class="n">target_row</span> <span class="o">=</span> <span class="mi">20000</span>
+<span class="c1"># Move target row to first element of list.</span>
+<span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">target_row</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">numalarmdf</span><span class="p">))</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">target_row</span><span class="p">]</span>
+<span class="n">numalarmdf</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+<span class="n">numalarmdf_cards</span> <span class="o">=</span> <span class="n">numalarmdf</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">numalarmdf_cards</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">alarmdf</span><span class="o">.</span><span class="n">columns</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="MCMC-sampling">
+<h2>MCMC sampling<a class="headerlink" href="#MCMC-sampling" title="Link to this heading"></a></h2>
+<p>We run the PC algorithm to estimate a CPDAG that is used to restrict the possible context variables.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">pcgraph</span> <span class="o">=</span> <span class="n">pc</span><span class="p">(</span><span class="n">numalarmdf_cards</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="s2">&quot;chisq&quot;</span><span class="p">,</span> <span class="n">node_names</span><span class="o">=</span><span class="n">numalarmdf_cards</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="n">poss_cvars</span> <span class="o">=</span> <span class="n">ctl</span><span class="o">.</span><span class="n">causallearn_graph_to_posscvars</span><span class="p">(</span><span class="n">pcgraph</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">numalarmdf_cards</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="c1">#print(&quot;Possible context variables per node:&quot;, poss_cvars)</span>
+
+<span class="n">score_table</span><span class="p">,</span> <span class="n">context_scores</span><span class="p">,</span> <span class="n">context_counts</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">order_score_tables</span><span class="p">(</span><span class="n">numalarmdf_cards</span><span class="p">,</span>
+                                                                    <span class="n">max_cvars</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                                                                    <span class="n">alpha_tot</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                                                                    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;BDeu&quot;</span><span class="p">,</span>
+                                                                    <span class="n">poss_cvars</span><span class="o">=</span><span class="n">poss_cvars</span><span class="p">)</span>
+
+<span class="n">orders</span><span class="p">,</span> <span class="n">scores</span> <span class="o">=</span> <span class="n">ctl</span><span class="o">.</span><span class="n">gibbs_order_sampler</span><span class="p">(</span><span class="mi">5000</span><span class="p">,</span> <span class="n">score_table</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Phase 1 (PC) + Phase 2 (Gibbs order sampler) time in seconds:&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Depth=4, working on node 36: 100%|██████████| 37/37 [00:00&lt;00:00, 920.63it/s]
+Context score tables: 100%|██████████| 37/37 [00:00&lt;00:00, 83.79it/s]
+Creating #stagings tables: 100%|██████████| 37/37 [00:00&lt;00:00, 4829.89it/s]
+Order score tables: 100%|██████████| 37/37 [00:00&lt;00:00, 880.83it/s]
+Gibbs order sampler: 100%|██████████| 5000/5000 [00:01&lt;00:00, 2572.43it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Phase 1 (PC) + Phase 2 (Gibbs order sampler) time in seconds: 5.439443588256836
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># optimal variable ordering</span>
+<span class="n">alarmmaporder</span> <span class="o">=</span> <span class="n">orders</span><span class="p">[</span><span class="n">scores</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">scores</span><span class="p">))]</span>
+<span class="c1">#print(alarmmaporder)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Phase 3: exact staging search, given the MAP order. This cell produces the</span>
+<span class="c1"># final learned CStree; `start` is still the timer from the Phase 1+2 cell,</span>
+<span class="c1"># so this prints the end-to-end time for all three phases of Algorithm 1.</span>
+<span class="n">alarmopttree</span> <span class="o">=</span> <span class="n">ctl</span><span class="o">.</span><span class="n">_optimal_cstree_given_order</span><span class="p">(</span><span class="n">alarmmaporder</span><span class="p">,</span> <span class="n">context_scores</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Full pipeline (Phases 1-3) time in seconds:&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Full pipeline (Phases 1-3) time in seconds: 5.5076282024383545
+</pre></div></div>
+</div>
+</section>
+<section id="LDAG-representation">
+<h2>LDAG representation<a class="headerlink" href="#LDAG-representation" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">LDAG</span> <span class="o">=</span> <span class="n">alarmopttree</span><span class="o">.</span><span class="n">to_LDAG</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">agraph</span> <span class="o">=</span> <span class="n">LDAG</span><span class="o">.</span><span class="n">plot_graphviz</span><span class="p">(</span>
+    <span class="n">nodesep</span><span class="o">=</span><span class="s2">&quot;0.06&quot;</span><span class="p">,</span> <span class="n">ranksep</span><span class="o">=</span><span class="s2">&quot;0.1&quot;</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="s2">&quot;0.02,0.01&quot;</span><span class="p">,</span>
+    <span class="n">no_constraint_edges</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;ACO2&quot;</span><span class="p">,</span> <span class="s2">&quot;CCHL&quot;</span><span class="p">)],</span>
+<span class="p">)</span>
+<span class="n">agraph</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="s2">&quot;source_alarm_ldag_repr_13_0.pdf&quot;</span><span class="p">)</span>
+
+<span class="c1"># Losslessly crop to the drawing&#39;s ink bounding box (+3pt margin) by rewriting</span>
+<span class="c1"># the page box in place -- no re-rendering, so the embedded 10pt font is</span>
+<span class="c1"># untouched. Requires ghostscript on PATH (`nix-shell -p ghostscript` if not</span>
+<span class="c1"># already available) and the `pikepdf` package.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pikepdf</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">crop_to_content</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="mf">3.0</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="p">[</span><span class="s2">&quot;gs&quot;</span><span class="p">,</span> <span class="s2">&quot;-q&quot;</span><span class="p">,</span> <span class="s2">&quot;-dBATCH&quot;</span><span class="p">,</span> <span class="s2">&quot;-dNOPAUSE&quot;</span><span class="p">,</span> <span class="s2">&quot;-sDEVICE=bbox&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">],</span>
+        <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">line</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span> <span class="k">if</span> <span class="n">l</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%%</span><span class="s2">HiResBoundingBox:&quot;</span><span class="p">)][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+    <span class="n">box</span> <span class="o">=</span> <span class="n">pikepdf</span><span class="o">.</span><span class="n">Array</span><span class="p">([</span><span class="n">x0</span> <span class="o">-</span> <span class="n">margin</span><span class="p">,</span> <span class="n">y0</span> <span class="o">-</span> <span class="n">margin</span><span class="p">,</span> <span class="n">x1</span> <span class="o">+</span> <span class="n">margin</span><span class="p">,</span> <span class="n">y1</span> <span class="o">+</span> <span class="n">margin</span><span class="p">])</span>
+    <span class="n">pdf</span> <span class="o">=</span> <span class="n">pikepdf</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">allow_overwriting_input</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">pdf</span><span class="o">.</span><span class="n">pages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">MediaBox</span> <span class="o">=</span> <span class="n">box</span>
+    <span class="n">pdf</span><span class="o">.</span><span class="n">pages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">CropBox</span> <span class="o">=</span> <span class="n">box</span>
+    <span class="n">pdf</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+
+<span class="n">crop_to_content</span><span class="p">(</span><span class="s2">&quot;source_alarm_ldag_repr_13_0.pdf&quot;</span><span class="p">)</span>
+<span class="n">agraph</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/source_alarm_ldag_repr_14_0.svg" src="../_images/source_alarm_ldag_repr_14_0.svg" />
+</div>
+</div>
+</section>
+<section id="Baseline:-plain-DAG-(PC-only),-SHD-vs.-the-true-ALARM-network">
+<h2>Baseline: plain DAG (PC only), SHD vs. the true ALARM network<a class="headerlink" href="#Baseline:-plain-DAG-(PC-only),-SHD-vs.-the-true-ALARM-network" title="Link to this heading"></a></h2>
+<p>As a non-CSI baseline, we compare a plain DAG learned by PC alone (no CSlearn context-specific refinement) against the true ALARM network structure, and compare that SHD to the SHD of CSlearn’s LDAG (converted from its learned CStree, as above) against the same ground truth.</p>
+<p>The true ALARM network structure is fetched from the bnlearn repository via <code class="docutils literal notranslate"><span class="pre">pgmpy</span></code>; its node names are relabeled to the abbreviated variable codes used throughout this notebook (matching the descriptions in the accompanying variable table).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pgmpy.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_example_model</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cslearn.evaluate</span><span class="w"> </span><span class="kn">import</span> <span class="n">shd_edges</span>
+
+<span class="c1"># Maps bnlearn&#39;s full node names to the abbreviated codes used in this</span>
+<span class="c1"># notebook (see the variable table in the paper&#39;s supplement for the</span>
+<span class="c1"># descriptions).</span>
+<span class="n">long_to_abbrev</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;CVP&quot;</span><span class="p">:</span> <span class="s2">&quot;CVP&quot;</span><span class="p">,</span> <span class="s2">&quot;PCWP&quot;</span><span class="p">:</span> <span class="s2">&quot;PCWP&quot;</span><span class="p">,</span> <span class="s2">&quot;HISTORY&quot;</span><span class="p">:</span> <span class="s2">&quot;HIST&quot;</span><span class="p">,</span> <span class="s2">&quot;TPR&quot;</span><span class="p">:</span> <span class="s2">&quot;TPR&quot;</span><span class="p">,</span> <span class="s2">&quot;BP&quot;</span><span class="p">:</span> <span class="s2">&quot;BP&quot;</span><span class="p">,</span> <span class="s2">&quot;CO&quot;</span><span class="p">:</span> <span class="s2">&quot;CO&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HRBP&quot;</span><span class="p">:</span> <span class="s2">&quot;HRBP&quot;</span><span class="p">,</span> <span class="s2">&quot;HREKG&quot;</span><span class="p">:</span> <span class="s2">&quot;HREK&quot;</span><span class="p">,</span> <span class="s2">&quot;HRSAT&quot;</span><span class="p">:</span> <span class="s2">&quot;HRSA&quot;</span><span class="p">,</span> <span class="s2">&quot;PAP&quot;</span><span class="p">:</span> <span class="s2">&quot;PAP&quot;</span><span class="p">,</span> <span class="s2">&quot;SAO2&quot;</span><span class="p">:</span> <span class="s2">&quot;SAO2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FIO2&quot;</span><span class="p">:</span> <span class="s2">&quot;FIO2&quot;</span><span class="p">,</span> <span class="s2">&quot;PRESS&quot;</span><span class="p">:</span> <span class="s2">&quot;PRSS&quot;</span><span class="p">,</span> <span class="s2">&quot;EXPCO2&quot;</span><span class="p">:</span> <span class="s2">&quot;ECO2&quot;</span><span class="p">,</span> <span class="s2">&quot;MINVOL&quot;</span><span class="p">:</span> <span class="s2">&quot;MINV&quot;</span><span class="p">,</span> <span class="s2">&quot;MINVOLSET&quot;</span><span class="p">:</span> <span class="s2">&quot;MVS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HYPOVOLEMIA&quot;</span><span class="p">:</span> <span class="s2">&quot;HYP&quot;</span><span class="p">,</span> <span class="s2">&quot;LVFAILURE&quot;</span><span class="p">:</span> <span class="s2">&quot;LVF&quot;</span><span class="p">,</span> <span class="s2">&quot;ANAPHYLAXIS&quot;</span><span class="p">:</span> <span class="s2">&quot;APL&quot;</span><span class="p">,</span> <span class="s2">&quot;INSUFFANESTH&quot;</span><span class="p">:</span> <span class="s2">&quot;ANES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PULMEMBOLUS&quot;</span><span class="p">:</span> <span class="s2">&quot;PMB&quot;</span><span class="p">,</span> <span class="s2">&quot;INTUBATION&quot;</span><span class="p">:</span> <span class="s2">&quot;INT&quot;</span><span class="p">,</span> <span class="s2">&quot;KINKEDTUBE&quot;</span><span class="p">:</span> <span class="s2">&quot;KINK&quot;</span><span class="p">,</span> <span class="s2">&quot;DISCONNECT&quot;</span><span class="p">:</span> <span class="s2">&quot;DISC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LVEDVOLUME&quot;</span><span class="p">:</span> <span class="s2">&quot;LVV&quot;</span><span class="p">,</span> <span class="s2">&quot;STROKEVOLUME&quot;</span><span class="p">:</span> <span class="s2">&quot;STKV&quot;</span><span class="p">,</span> <span class="s2">&quot;CATECHOL&quot;</span><span class="p">:</span> <span class="s2">&quot;CCHL&quot;</span><span class="p">,</span> <span class="s2">&quot;ERRLOWOUTPUT&quot;</span><span class="p">:</span> <span class="s2">&quot;ERLO&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HR&quot;</span><span class="p">:</span> <span class="s2">&quot;HR&quot;</span><span class="p">,</span> <span class="s2">&quot;ERRCAUTER&quot;</span><span class="p">:</span> <span class="s2">&quot;ERCA&quot;</span><span class="p">,</span> <span class="s2">&quot;SHUNT&quot;</span><span class="p">:</span> <span class="s2">&quot;SHNT&quot;</span><span class="p">,</span> <span class="s2">&quot;PVSAT&quot;</span><span class="p">:</span> <span class="s2">&quot;PVS&quot;</span><span class="p">,</span> <span class="s2">&quot;ARTCO2&quot;</span><span class="p">:</span> <span class="s2">&quot;ACO2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VENTALV&quot;</span><span class="p">:</span> <span class="s2">&quot;VALV&quot;</span><span class="p">,</span> <span class="s2">&quot;VENTLUNG&quot;</span><span class="p">:</span> <span class="s2">&quot;VLNG&quot;</span><span class="p">,</span> <span class="s2">&quot;VENTTUBE&quot;</span><span class="p">:</span> <span class="s2">&quot;VTUB&quot;</span><span class="p">,</span> <span class="s2">&quot;VENTMACH&quot;</span><span class="p">:</span> <span class="s2">&quot;VMCH&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">true_alarm_model</span> <span class="o">=</span> <span class="n">get_example_model</span><span class="p">(</span><span class="s2">&quot;alarm&quot;</span><span class="p">)</span>
+<span class="n">true_edges</span> <span class="o">=</span> <span class="p">{(</span><span class="n">long_to_abbrev</span><span class="p">[</span><span class="n">u</span><span class="p">],</span> <span class="n">long_to_abbrev</span><span class="p">[</span><span class="n">v</span><span class="p">])</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">true_alarm_model</span><span class="o">.</span><span class="n">edges</span><span class="p">()}</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;True ALARM network: </span><span class="si">{</span><span class="n">true_alarm_model</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span><span class="si">}</span><span class="s2"> nodes, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">true_edges</span><span class="p">)</span><span class="si">}</span><span class="s2"> edges&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+True ALARM network: 37 nodes, 46 edges
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pc_dag_df</span> <span class="o">=</span> <span class="n">ctl</span><span class="o">.</span><span class="n">causallearn_graph_to_dag</span><span class="p">(</span><span class="n">pcgraph</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">numalarmdf_cards</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="s2">&quot;pc&quot;</span><span class="p">)</span>
+<span class="n">pc_edges</span> <span class="o">=</span> <span class="p">{(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">pc_dag_df</span><span class="o">.</span><span class="n">index</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pc_dag_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">pc_dag_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">}</span>
+
+<span class="n">cslearn_edges</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">LDAG</span><span class="o">.</span><span class="n">edges</span><span class="p">())</span>
+
+<span class="n">pc_shd</span> <span class="o">=</span> <span class="n">shd_edges</span><span class="p">(</span><span class="n">pc_edges</span><span class="p">,</span> <span class="n">true_edges</span><span class="p">)</span>
+<span class="n">cslearn_shd</span> <span class="o">=</span> <span class="n">shd_edges</span><span class="p">(</span><span class="n">cslearn_edges</span><span class="p">,</span> <span class="n">true_edges</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PC-only DAG:   </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">pc_edges</span><span class="p">)</span><span class="si">}</span><span class="s2"> edges, SHD vs. true = </span><span class="si">{</span><span class="n">pc_shd</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CSlearn&#39;s LDAG: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">cslearn_edges</span><span class="p">)</span><span class="si">}</span><span class="s2"> edges, SHD vs. true = </span><span class="si">{</span><span class="n">cslearn_shd</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">TP</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cslearn_edges</span> <span class="o">&amp;</span> <span class="n">true_edges</span><span class="p">)</span>
+<span class="n">FP</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cslearn_edges</span> <span class="o">-</span> <span class="n">true_edges</span><span class="p">)</span>
+<span class="n">n_nodes</span> <span class="o">=</span> <span class="n">true_alarm_model</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span>
+<span class="n">n_offdiag</span> <span class="o">=</span> <span class="n">n_nodes</span> <span class="o">*</span> <span class="n">n_nodes</span> <span class="o">-</span> <span class="n">n_nodes</span>
+<span class="n">TN</span> <span class="o">=</span> <span class="n">n_offdiag</span> <span class="o">-</span> <span class="n">TP</span> <span class="o">-</span> <span class="n">FP</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">true_edges</span> <span class="o">-</span> <span class="n">cslearn_edges</span><span class="p">)</span>
+<span class="n">accuracy</span> <span class="o">=</span> <span class="p">(</span><span class="n">TP</span> <span class="o">+</span> <span class="n">TN</span><span class="p">)</span> <span class="o">/</span> <span class="n">n_offdiag</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CSlearn&#39;s LDAG: TP=</span><span class="si">{</span><span class="n">TP</span><span class="si">}</span><span class="s2">, FP=</span><span class="si">{</span><span class="n">FP</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CSlearn&#39;s LDAG: TP/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">true_edges</span><span class="p">)</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">TP</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">true_edges</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, &quot;</span>
+      <span class="sa">f</span><span class="s2">&quot;FP/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">true_edges</span><span class="p">)</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">FP</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">true_edges</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CSlearn&#39;s LDAG (unlabeled) accuracy: </span><span class="si">{</span><span class="n">accuracy</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+PC-only DAG:   44 edges, SHD vs. true = 5
+CSlearn&#39;s LDAG: 42 edges, SHD vs. true = 5
+CSlearn&#39;s LDAG: TP=41, FP=1
+CSlearn&#39;s LDAG: TP/46=0.891, FP/46=0.022
+CSlearn&#39;s LDAG (unlabeled) accuracy: 0.995
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Verify the manuscript&#39;s edge-label / CSI-relation counts against this run.</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">contexts</span> <span class="o">=</span> <span class="n">alarmopttree</span><span class="o">.</span><span class="n">to_LDAG</span><span class="p">(</span><span class="n">return_contexts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">n_labeled_edges</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">LDAG</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;label&#39;</span><span class="p">))</span>
+<span class="n">n_csi_relations</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">contexts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;labeled edges: </span><span class="si">{</span><span class="n">n_labeled_edges</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CSI relations: </span><span class="si">{</span><span class="n">n_csi_relations</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+labeled edges: 11
+CSI relations: 15
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Human-readable dump of every labeled edge&#39;s CSI relations, for</span>
+<span class="c1"># transcribing Table &#39;CSI relations learned for ALARM data set&#39; in the</span>
+<span class="c1"># paper&#39;s supplement.</span>
+<span class="n">state_names</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">alarmdf</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">alarmdf</span><span class="o">.</span><span class="n">columns</span><span class="p">}</span>
+<span class="n">var_index</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">numalarmdf_cards</span><span class="o">.</span><span class="n">columns</span><span class="p">)}</span>
+
+<span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">),</span> <span class="n">relations</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">contexts</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+    <span class="n">lbl</span> <span class="o">=</span> <span class="n">LDAG</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">][</span><span class="s1">&#39;label&#39;</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;L_</span><span class="se">{{</span><span class="si">{</span><span class="n">var_index</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">var_index</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="si">}</span><span class="se">}}</span><span class="s2"> = </span><span class="si">{</span><span class="n">lbl</span><span class="si">}</span><span class="s2">   (</span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">relation</span> <span class="ow">in</span> <span class="n">relations</span><span class="p">:</span>
+        <span class="n">numeric</span> <span class="o">=</span> <span class="s1">&#39; &amp; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;X_</span><span class="si">{</span><span class="n">var_index</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="si">}</span><span class="s1">=</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">relation</span><span class="p">)</span>
+        <span class="n">named</span> <span class="o">=</span> <span class="s1">&#39; &amp; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1">=</span><span class="si">{</span><span class="n">state_names</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">val</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">relation</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    X_</span><span class="si">{</span><span class="n">var_index</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="si">}</span><span class="s2"> indep X_</span><span class="si">{</span><span class="n">var_index</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">numeric</span><span class="si">}</span><span class="s2">   |   </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2"> indep </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">named</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+L_{32,26} = [[0], [1]]   (ACO2 -&gt; CCHL)
+    X_26 indep X_32 | X_3=0   |   CCHL indep ACO2 | TPR=LOW
+    X_26 indep X_32 | X_3=1   |   CCHL indep ACO2 | TPR=NORMAL
+L_{32,13} = [[2], [3]]   (ACO2 -&gt; ECO2)
+    X_13 indep X_32 | X_34=2   |   ECO2 indep ACO2 | VLNG=HIGH
+    X_13 indep X_32 | X_34=3   |   ECO2 indep ACO2 | VLNG=NORMAL
+L_{23,35} = [[2], [3]]   (DISC -&gt; VTUB)
+    X_35 indep X_23 | X_36=2   |   VTUB indep DISC | VMCH=LOW
+    X_35 indep X_23 | X_36=3   |   VTUB indep DISC | VMCH=ZERO
+L_{29,7} = [[2]]   (ERCA -&gt; HREK)
+    X_7 indep X_29 | X_28=2   |   HREK indep ERCA | HR=LOW
+L_{29,8} = [[2]]   (ERCA -&gt; HRSA)
+    X_8 indep X_29 | X_28=2   |   HRSA indep ERCA | HR=LOW
+L_{11,31} = [[2], [3]]   (FIO2 -&gt; PVS)
+    X_31 indep X_11 | X_33=2   |   PVS indep FIO2 | VALV=LOW
+    X_31 indep X_11 | X_33=3   |   PVS indep FIO2 | VALV=NORMAL
+L_{16,24} = [[1]]   (HYP -&gt; LVV)
+    X_24 indep X_16 | X_17=1   |   LVV indep HYP | LVF=True
+L_{16,25} = [[1]]   (HYP -&gt; STKV)
+    X_25 indep X_16 | X_17=1   |   STKV indep HYP | LVF=True
+L_{21,14} = [[3]]   (INT -&gt; MINV)
+    X_14 indep X_21 | X_34=3   |   MINV indep INT | VLNG=NORMAL
+L_{21,30} = [[1]]   (INT -&gt; SHNT)
+    X_30 indep X_21 | X_20=1   |   SHNT indep INT | PMB=True
+L_{30,10} = [[1]]   (SHNT -&gt; SAO2)
+    X_10 indep X_30 | X_31=1   |   SAO2 indep SHNT | PVS=LOW
+</pre></div></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sachs_ldag_repr.html" class="btn btn-neutral float-left" title="Sachs et al. 2005" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../license.html" class="btn btn-neutral float-right" title="License" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Anonymous.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,826 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cstree &mdash; cslearn 1.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=bb516dca"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="learning" href="cslearn.learning.html" />
+    <link rel="prev" title="Reference" href="cslearn.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            cslearn
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="cslearn.html">Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">cstree</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cslearn.cstree.CStree"><code class="docutils literal notranslate"><span class="pre">CStree</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.csi_relations"><code class="docutils literal notranslate"><span class="pre">CStree.csi_relations()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.csi_relations_per_level"><code class="docutils literal notranslate"><span class="pre">CStree.csi_relations_per_level()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.estimate_stage_parameters"><code class="docutils literal notranslate"><span class="pre">CStree.estimate_stage_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.fit"><code class="docutils literal notranslate"><span class="pre">CStree.fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.get_stage"><code class="docutils literal notranslate"><span class="pre">CStree.get_stage()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.plot"><code class="docutils literal notranslate"><span class="pre">CStree.plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.pmf"><code class="docutils literal notranslate"><span class="pre">CStree.pmf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.pmf_log"><code class="docutils literal notranslate"><span class="pre">CStree.pmf_log()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.predict"><code class="docutils literal notranslate"><span class="pre">CStree.predict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.sample"><code class="docutils literal notranslate"><span class="pre">CStree.sample()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.sample_stage_parameters"><code class="docutils literal notranslate"><span class="pre">CStree.sample_stage_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.stage_proportion"><code class="docutils literal notranslate"><span class="pre">CStree.stage_proportion()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.to_LDAG"><code class="docutils literal notranslate"><span class="pre">CStree.to_LDAG()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.to_df"><code class="docutils literal notranslate"><span class="pre">CStree.to_df()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.to_joint_distribution"><code class="docutils literal notranslate"><span class="pre">CStree.to_joint_distribution()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.to_minimal_context_agraphs"><code class="docutils literal notranslate"><span class="pre">CStree.to_minimal_context_agraphs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.to_minimal_context_csis"><code class="docutils literal notranslate"><span class="pre">CStree.to_minimal_context_csis()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.to_minimal_context_graphs"><code class="docutils literal notranslate"><span class="pre">CStree.to_minimal_context_graphs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cslearn.cstree.CStree.update_stages"><code class="docutils literal notranslate"><span class="pre">CStree.update_stages()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#cslearn.cstree.df_to_cstree"><code class="docutils literal notranslate"><span class="pre">df_to_cstree()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cslearn.cstree.plot"><code class="docutils literal notranslate"><span class="pre">plot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cslearn.cstree.sample_cstree"><code class="docutils literal notranslate"><span class="pre">sample_cstree()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cslearn.cstree.write_minimal_context_graphs_to_files"><code class="docutils literal notranslate"><span class="pre">write_minimal_context_graphs_to_files()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cslearn.learning.html">learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cslearn.dependence.html">dependence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cslearn.scoring.html">scoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cslearn.evaluate.html">evaluate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cslearn.ldag.html">ldag</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Example notebooks</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Project info</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cslearn</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="cslearn.html">Reference</a></li>
+      <li class="breadcrumb-item active">cstree</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/cslearn.cstree.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-cslearn.cstree">
+<span id="cstree"></span><h1>cstree<a class="headerlink" href="#module-cslearn.cstree" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cslearn.cstree.</span></span><span class="sig-name descname"><span class="pre">CStree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cards</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class representing a CStree, see [1]. It is initialized by a list of cardinalities of the variables at each level and a list of labels. The labels are optional and defaults (None) to [0,1,…,p-1].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cards</strong> (<em>list</em>) – A list of integers representing the cardinality of each level (indexed from 0).</p></li>
+<li><p><strong>labels</strong> (<em>list</em><em>, </em><em>optional</em>) – A list of strings or integers representing the labels of each level. Defaults to [0,1,…,p-1].</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] E. Duarte and L. Solus. Representation of context-specific causal models with observational and interventional data, 2021, <a class="reference external" href="https://arxiv.org/abs/2101.09271">https://arxiv.org/abs/2101.09271</a>.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Figure 1. from (Duarte &amp; Solus 2022)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.stage</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">st</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">CStree</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">update_stages</span><span class="p">({</span>
+<span class="gp">... </span>    <span class="mi">0</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">}},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}],</span>
+<span class="gp">... </span>    <span class="mi">1</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;green&quot;</span><span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">}},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}],</span>
+<span class="gp">... </span>    <span class="mi">2</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;orange&quot;</span><span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">}},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">sample_stage_parameters</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.csi_relations">
+<span class="sig-name descname"><span class="pre">csi_relations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.csi_relations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.csi_relations" title="Link to this definition"></a></dt>
+<dd><p>Returns the context specific indepencende (CSI) relations for the CStree.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">cslearn.dependence</span><span class="w"> </span><span class="kn">import</span> <span class="n">Context</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">sample_cstree</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">max_cvars</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">prob_cvar</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">prop_nonsingleton</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">Context</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">csi_relations</span><span class="p">())</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.csi_relations_per_level">
+<span class="sig-name descname"><span class="pre">csi_relations_per_level</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.csi_relations_per_level"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.csi_relations_per_level" title="Link to this definition"></a></dt>
+<dd><p>Get the context specific independence relations per level.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The CSI relations per level. The keys are the levels, and the values are lists of CSI relations.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">sample_cstree</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">max_cvars</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">prob_cvar</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">prop_nonsingleton</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">csi_relations_per_level</span><span class="p">())</span>
+<span class="go">[0, 1, 2, 3]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.estimate_stage_parameters">
+<span class="sig-name descname"><span class="pre">estimate_stage_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'BDeu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_tot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.estimate_stage_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.estimate_stage_parameters" title="Link to this definition"></a></dt>
+<dd><p>Estimate the parameters of the stages of the CStree under a Dirichlet model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pd.DataFrame</em>) – A pandas dataframe with the data.</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – The estimation method. Currently only “BDeu” [2] is implemented.</p></li>
+<li><p><strong>alpha_tot</strong> (<em>float</em>) – Total Dirichlet pseudo-count, split proportionally
+across stages by their size.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Reference:</dt><dd><p>[2] C. Hughes, P. Strong, and A. Shenvi. Score equivalence for staged trees, 2023,
+<a class="reference external" href="https://arxiv.org/abs/2206.15322">https://arxiv.org/abs/2206.15322</a></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">sample_cstree</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">max_cvars</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">prob_cvar</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">prop_nonsingleton</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">sample_stage_parameters</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">estimate_stage_parameters</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">alpha_tot</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;BDeu&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">abs</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">stages</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">probs</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-9</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gibbs_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poss_cvars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grasp_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grasp_score</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'local_score_BDeu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_cvars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_tot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'BDeu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_as</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.fit" title="Link to this definition"></a></dt>
+<dd><p>Learn a CStree from data using GRaSP + Gibbs order sampling (CSlearn).</p>
+<p>Runs the three-phase CSlearn pipeline:
+1. DAG pre-screening via GRaSP (or uses caller-supplied <code class="docutils literal notranslate"><span class="pre">poss_cvars</span></code>).
+2. Gibbs order MCMC to find the MAP variable ordering.
+3. Exact staging search to find the optimal CStree for that ordering.</p>
+<p>Updates <code class="docutils literal notranslate"><span class="pre">self</span></code> in place and returns it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pd.DataFrame</em>) – Training data; first column may be cardinalities
+(matching the format returned by <a class="reference internal" href="#cslearn.cstree.CStree.sample" title="cslearn.cstree.CStree.sample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample()</span></code></a>).</p></li>
+<li><p><strong>gibbs_samples</strong> (<em>int</em>) – Number of Gibbs iterations for order sampling.
+Defaults to 10000.</p></li>
+<li><p><strong>poss_cvars</strong> (<em>dict</em><em>, </em><em>optional</em>) – Pre-computed dict mapping each variable
+label to its list of possible context variables. If <code class="docutils literal notranslate"><span class="pre">None</span></code>
+(default), GRaSP is run on <code class="docutils literal notranslate"><span class="pre">data</span></code> to produce this dict.</p></li>
+<li><p><strong>grasp_depth</strong> (<em>int</em>) – GRaSP search depth. Defaults to 3.</p></li>
+<li><p><strong>grasp_score</strong> (<em>str</em>) – Scoring function for GRaSP. Defaults to
+<code class="docutils literal notranslate"><span class="pre">&quot;local_score_BDeu&quot;</span></code>.</p></li>
+<li><p><strong>max_cvars</strong> (<em>int</em>) – Maximum context-set size β. Defaults to 2.</p></li>
+<li><p><strong>alpha_tot</strong> (<em>float</em>) – Total BDeu pseudo-count. Defaults to 1.0.</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – Scoring method, currently only <code class="docutils literal notranslate"><span class="pre">&quot;BDeu&quot;</span></code> is supported.</p></li>
+<li><p><strong>save_as</strong> (<em>str</em>) – If non-empty, save intermediate results (<code class="docutils literal notranslate"><span class="pre">poss_cvars</span></code>,
+score tables, learned tree, …) to <code class="docutils literal notranslate"><span class="pre">{save_as}-&lt;name&gt;.pkl</span></code> files.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">self</span></code>, updated with the learned structure and parameters.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#cslearn.cstree.CStree" title="cslearn.cstree.CStree">CStree</a></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">sample_cstree</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">max_cvars</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">prob_cvar</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">sample_stage_parameters</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">redirect_stdout</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()):</span>  <span class="c1"># hide GRaSP progress</span>
+<span class="gp">... </span>    <span class="n">learned</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">CStree</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">cards</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">learned</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">CStree</span><span class="p">)</span> <span class="ow">and</span> <span class="n">learned</span><span class="o">.</span><span class="n">stages</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.get_stage">
+<span class="sig-name descname"><span class="pre">get_stage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.get_stage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.get_stage" title="Link to this definition"></a></dt>
+<dd><p>Get the stage of a node in the CStree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>node</strong> (<em>tuple</em><em> or </em><em>list</em>) – A node in the CStree. It could be e.g. (0, 1, 0, 1).</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">sample_cstree</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">max_cvars</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">prob_cvar</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">prop_nonsingleton</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stage</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">get_stage</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">in</span> <span class="n">stage</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">full</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.plot" title="Link to this definition"></a></dt>
+<dd><p>Plot the CStree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>full</strong> (<em>bool</em>) – If True, the complete tree is drawn with all nodes.
+Defaults to False, in which case only nodes visited during
+sampling are shown (pass <code class="docutils literal notranslate"><span class="pre">full=True</span></code> for a fresh tree with
+no sampling history).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A pygraphviz graph.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pygraphviz.agraph.AGraph</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Given a parameterised <code class="docutils literal notranslate"><span class="pre">tree</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">agraph</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">agraph</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="s2">&quot;cstree.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.pmf">
+<span class="sig-name descname"><span class="pre">pmf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.pmf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.pmf" title="Link to this definition"></a></dt>
+<dd><p>Calculate the probability mass function of a given outcome.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>list</em>) – Outcome values, one per variable. Order follows <code class="docutils literal notranslate"><span class="pre">label_order</span></code>
+if provided, otherwise <code class="docutils literal notranslate"><span class="pre">self.labels</span></code>.</p></li>
+<li><p><strong>label_order</strong> (<em>list</em><em>, </em><em>optional</em>) – Permutation of <code class="docutils literal notranslate"><span class="pre">self.labels</span></code> describing
+the order of values in <code class="docutils literal notranslate"><span class="pre">x</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">self.labels</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The probability mass of the outcome.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.pmf_log">
+<span class="sig-name descname"><span class="pre">pmf_log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.pmf_log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.pmf_log" title="Link to this definition"></a></dt>
+<dd><p>Calculate the log probability mass function of a given outcome.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>list</em>) – A list of values representing the outcome.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The log probability mass of the outcome.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partial_observations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_probs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.predict" title="Link to this definition"></a></dt>
+<dd><p>Predict the most likely completion of partially-observed rows.</p>
+<p>Given a CStree over random variables <span class="math notranslate nohighlight">\(X_{[p]}\)</span> and a DataFrame
+of partial observations, returns the MAP completion of the unobserved
+variables for each row.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>partial_observations</strong> – DataFrame whose columns are the labels of the
+observed variables and whose rows are individual observations.
+Pass a single-row DataFrame with no columns
+(<code class="docutils literal notranslate"><span class="pre">pd.DataFrame(index=[0])</span></code>) to predict all variables
+unconditionally.</p></li>
+<li><p><strong>return_probs</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, append a <code class="docutils literal notranslate"><span class="pre">PROB</span></code> column containing the
+normalized conditional probability of the MAP completion.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with one column per predicted variable (in label order).
+If <code class="docutils literal notranslate"><span class="pre">return_probs=True</span></code>, a <code class="docutils literal notranslate"><span class="pre">PROB</span></code> column is appended.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">22</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">22</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">sample_cstree</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">max_cvars</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">prob_cvar</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">prop_nonsingleton</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">sample_stage_parameters</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pred</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">]}))</span>  <span class="c1"># observe X0 = 1, predict the rest</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="go">[1, 2, 3]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.sample">
+<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.sample" title="Link to this definition"></a></dt>
+<dd><p>Draws random samples from the CStree. It also dynamically generates nodes in the underlying tree and associated parameters on the fly in order to avoid creating the whole
+tree, which is O(2^p) (if singeltone stages are allowed), just to sample data. This is also useful when plotting the tree, as it will only contain the nodes that are actually used in the sampling.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – number of random samples.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A pandas dataframe containing the data. The header contains labels of the
+variables and row 0 contains the cardinalities. The other rows contain the samples.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">sample_cstree</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">max_cvars</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">prob_cvar</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">prop_nonsingleton</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">sample_stage_parameters</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># cardinalities row + 5 samples</span>
+<span class="go">(6, 4)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="go">[2, 2, 2, 2]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.sample_stage_parameters">
+<span class="sig-name descname"><span class="pre">sample_stage_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.sample_stage_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.sample_stage_parameters" title="Link to this definition"></a></dt>
+<dd><p>Set the parameters of the stages of the CStree to be random samples
+from a Dirichlet distribution with hyper parameter alpha.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>alpha</strong> (<em>float</em>) – The hyper parameter for the Dirichlet distribution.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">sample_cstree</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">max_cvars</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">prob_cvar</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">prop_nonsingleton</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">sample_stage_parameters</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">stages</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">probs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.stage_proportion">
+<span class="sig-name descname"><span class="pre">stage_proportion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Stage</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.stage_proportion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.stage_proportion" title="Link to this definition"></a></dt>
+<dd><p>The proportion of the outcome space this stage represents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stage</strong> (<em>st.Stage</em>) – A stage of this CStree.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A number between 0 and 1.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.stage</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">st</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">CStree</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">stage_proportion</span><span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">Stage</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">},</span> <span class="mi">1</span><span class="p">]))</span>
+<span class="go">0.25</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.to_LDAG">
+<span class="sig-name descname"><span class="pre">to_LDAG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_contexts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.to_LDAG"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.to_LDAG" title="Link to this definition"></a></dt>
+<dd><p>Return the LDAG representation of the CStree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>return_contexts</strong> – if True, also return a dict mapping each edge to
+its CSI relations as <code class="docutils literal notranslate"><span class="pre">(variable,</span> <span class="pre">value)</span></code> pairs, rather than
+just the bare context values the edge’s own <code class="docutils literal notranslate"><span class="pre">&quot;label&quot;</span></code>
+attribute carries. Useful for building a human-readable
+context table.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A DAG whose edges carry CSI-relation labels. Node labels
+match <code class="docutils literal notranslate"><span class="pre">self.labels</span></code>. If <code class="docutils literal notranslate"><span class="pre">return_contexts</span></code> is True, returns a
+<code class="docutils literal notranslate"><span class="pre">(LDAG,</span> <span class="pre">contexts)</span></code> tuple instead, where <code class="docutils literal notranslate"><span class="pre">contexts</span></code> maps each
+edge to a list of its CSI relations, each relation a list of
+<code class="docutils literal notranslate"><span class="pre">(variable,</span> <span class="pre">value)</span></code> pairs.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nx.DiGraph</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.to_df">
+<span class="sig-name descname"><span class="pre">to_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">write_probs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.to_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.to_df" title="Link to this definition"></a></dt>
+<dd><p>Converts the CStree to a Pandas dataframe.
+The labels of the dataframe are the labels of the levels/variables in the CStree.
+The first row contains the cardinalities of the variables.
+The other rows contain the stages of the CStree. E.g. row number 3 contains the level 1 stage with context X2=0, etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>write_probs</strong> (<em>bool</em>) – If True, the probabilities of the stages are written to the dataframe. Defaults to False.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A Pandas dataframe with the stages of the CStree.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>df (pd.DataFrame)</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">sample_cstree</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">max_cvars</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">prob_cvar</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">prop_nonsingleton</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="go">[0, 1, 2, 3]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>  <span class="c1"># first row is the cardinalities</span>
+<span class="go">[2, 2, 2, 2]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.to_joint_distribution">
+<span class="sig-name descname"><span class="pre">to_joint_distribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_outcomes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.to_joint_distribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.to_joint_distribution" title="Link to this definition"></a></dt>
+<dd><p>Return the joint distribution of the CStree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>label_order</strong> (<em>list</em><em>, </em><em>optional</em>) – A list of labels from self.labels in the desired order. Defaults to None which means self.labels.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The joint distribution of the CStree.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Pandas Dataframe</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">sample_cstree</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">max_cvars</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">prob_cvar</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">prop_nonsingleton</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">sample_stage_parameters</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">to_joint_distribution</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># 2**4 outcomes, plus prob / log_prob columns</span>
+<span class="go">(16, 6)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;prob&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="mf">1.0</span><span class="p">))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.to_minimal_context_agraphs">
+<span class="sig-name descname"><span class="pre">to_minimal_context_agraphs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dot'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.to_minimal_context_agraphs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.to_minimal_context_agraphs" title="Link to this definition"></a></dt>
+<dd><p>This returns a dict   of minimal context DAGs as pgraphviz graphs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>layout</strong> (<em>str</em><em>, </em><em>optional</em>) – Graphviz engine. Defaults to “dot”.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>pygraphviz graphs</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pygraphviz.agraph.AGraph</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.to_minimal_context_csis">
+<span class="sig-name descname"><span class="pre">to_minimal_context_csis</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.to_minimal_context_csis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.to_minimal_context_csis" title="Link to this definition"></a></dt>
+<dd><p>This returns a dict of minimal context CSIs.</p>
+<p class="rubric">Example</p>
+<p>For the CStree of Figure 1 in Duarte &amp; Solus (2021), the minimal
+context CSIs are <code class="docutils literal notranslate"><span class="pre">X1</span> <span class="pre">⊥</span> <span class="pre">X3</span> <span class="pre">|</span> <span class="pre">X2=0</span></code>, <code class="docutils literal notranslate"><span class="pre">X2</span> <span class="pre">⊥</span> <span class="pre">X4</span> <span class="pre">|</span> <span class="pre">X1,</span> <span class="pre">X3=0</span></code> and
+<code class="docutils literal notranslate"><span class="pre">X2</span> <span class="pre">⊥</span> <span class="pre">X4</span> <span class="pre">|</span> <span class="pre">X3,</span> <span class="pre">X1=0</span></code> (see
+<a class="reference internal" href="cslearn.dependence.html#cslearn.dependence.minimal_csis" title="cslearn.dependence.minimal_csis"><code class="xref py py-func docutils literal notranslate"><span class="pre">cslearn.dependence.minimal_csis()</span></code></a> for a runnable example).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.to_minimal_context_graphs">
+<span class="sig-name descname"><span class="pre">to_minimal_context_graphs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.to_minimal_context_graphs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.to_minimal_context_graphs" title="Link to this definition"></a></dt>
+<dd><p>This returns a dict of minimal context NetworkX DAGs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The keys are the contexts, and the values are the NetworkX DAGs.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>For the CStree of Figure 1 in Duarte &amp; Solus (2021), the minimal
+context graphs have edge sets:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">X2</span><span class="o">=</span><span class="mi">0</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;X1&#39;</span><span class="p">,</span> <span class="s1">&#39;X4&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;X3&#39;</span><span class="p">,</span> <span class="s1">&#39;X4&#39;</span><span class="p">)]</span>
+<span class="n">X3</span><span class="o">=</span><span class="mi">0</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;X1&#39;</span><span class="p">,</span> <span class="s1">&#39;X2&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;X1&#39;</span><span class="p">,</span> <span class="s1">&#39;X4&#39;</span><span class="p">)]</span>
+<span class="n">X1</span><span class="o">=</span><span class="mi">0</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;X2&#39;</span><span class="p">,</span> <span class="s1">&#39;X3&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;X3&#39;</span><span class="p">,</span> <span class="s1">&#39;X4&#39;</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>(see <a class="reference internal" href="cslearn.dependence.html#cslearn.dependence.csi_relations_to_dags" title="cslearn.dependence.csi_relations_to_dags"><code class="xref py py-func docutils literal notranslate"><span class="pre">cslearn.dependence.csi_relations_to_dags()</span></code></a> for a runnable
+construction of that tree).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cslearn.cstree.CStree.update_stages">
+<span class="sig-name descname"><span class="pre">update_stages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#CStree.update_stages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.CStree.update_stages" title="Link to this definition"></a></dt>
+<dd><p>Update/set the stages of the CStree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stages</strong> (<em>dict</em>) – A dictionary of stage dicts. The keys are the levels, and the values are lists of dicts representing stages. The dicts representing stages should have the following keys: “context” and “color”. The “context” should have a dict as value, where the keys are the levels and the values are the values of the variables at that level. The “color” key is optional but should have a string as value, representing the color of the stage.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>The CStree of Figure 1 in Duarte &amp; Solus (2021):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">CStree</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;X&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">update_stages</span><span class="p">({</span>
+<span class="gp">... </span>    <span class="mi">0</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">}},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}],</span>
+<span class="gp">... </span>    <span class="mi">1</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;green&quot;</span><span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">}},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}],</span>
+<span class="gp">... </span>    <span class="mi">2</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;orange&quot;</span><span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">}},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">stages</span><span class="p">)</span>
+<span class="go">[-1, 0, 1, 2, 3]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cslearn.cstree.df_to_cstree">
+<span class="sig-prename descclassname"><span class="pre">cslearn.cstree.</span></span><span class="sig-name descname"><span class="pre">df_to_cstree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_probs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#df_to_cstree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.df_to_cstree" title="Link to this definition"></a></dt>
+<dd><p>Convert a dataframe to a CStree. The dataframe should have the following format:
+The labels should be the level labels.
+The first row should be the cardinalities, the second row should be the first stage, the third row the second stage etc. (see <a class="reference internal" href="#cslearn.cstree.CStree.to_df" title="cslearn.cstree.CStree.to_df"><code class="xref py py-meth docutils literal notranslate"><span class="pre">cslearn.cstree.CStree.to_df()</span></code></a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>Pandas DataFrame</em>) – The dataframe to convert.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A CStree.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#cslearn.cstree.CStree" title="cslearn.cstree.CStree">CStree</a></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p><code class="docutils literal notranslate"><span class="pre">df_to_cstree</span></code> is the inverse of <a class="reference internal" href="#cslearn.cstree.CStree.to_df" title="cslearn.cstree.CStree.to_df"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CStree.to_df()</span></code></a>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">sample_cstree</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">max_cvars</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">prob_cvar</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">prop_nonsingleton</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">roundtrip</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">df_to_cstree</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">to_df</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">roundtrip</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">to_df</span><span class="p">())</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cslearn.cstree.plot">
+<span class="sig-prename descclassname"><span class="pre">cslearn.cstree.</span></span><span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.plot" title="Link to this definition"></a></dt>
+<dd><p>Plots a graph using graphviz. Creates a pygraphviz graph from a NetworkX graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>graph</strong> (<em>nx.Graph</em>) – The graph to plot.</p></li>
+<li><p><strong>layout</strong> (<em>str</em><em>, </em><em>optional</em>) – Graphviz layout engine. Defaults to “dot”.</p></li>
+<li><p><strong>fontsize</strong> (<em>int</em><em>, </em><em>optional</em>) – Font size (pt) for graph/node/edge labels.
+Defaults to 10 (graphviz’s own default is 14pt).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A pygraphviz graph.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pygraphviz.agraph.AGraph</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cslearn.cstree.sample_cstree">
+<span class="sig-prename descclassname"><span class="pre">cslearn.cstree.</span></span><span class="sig-name descname"><span class="pre">sample_cstree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cards</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_cvars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prob_cvar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop_nonsingleton</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#cslearn.cstree.CStree" title="cslearn.cstree.CStree"><span class="pre">CStree</span></a></span></span><a class="reference internal" href="../_modules/cslearn/cstree.html#sample_cstree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.sample_cstree" title="Link to this definition"></a></dt>
+<dd><p>Sample a random CStree with given cardinalities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cards</strong> (<em>list</em>) – cardinalities of the levels.</p></li>
+<li><p><strong>max_cvars</strong> (<em>int</em>) – maximum number of context variables.</p></li>
+<li><p><strong>prob_cvar</strong> (<em>float</em>) – probability a potential context variable (in the algorithm) will a context variable.</p></li>
+<li><p><strong>prop_nonsingleton</strong> (<em>float</em>) – proportion of non-singleton stages. Defaults to 1.0, meaning no singletons, which is also what the algorithms in this library are designed for.</p></li>
+<li><p><strong>labels</strong> (<em>list</em><em>, </em><em>optional</em>) – A list of strings or integers representing the labels of each level. Defaults to None which means [0,1,…,p-1].</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A CStree.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#cslearn.cstree.CStree" title="cslearn.cstree.CStree">CStree</a></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">sample_cstree</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">max_cvars</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">prob_cvar</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">prop_nonsingleton</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">CStree</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">cards</span>
+<span class="go">[2, 2, 2, 2]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cslearn.cstree.write_minimal_context_graphs_to_files">
+<span class="sig-prename descclassname"><span class="pre">cslearn.cstree.</span></span><span class="sig-name descname"><span class="pre">write_minimal_context_graphs_to_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context_dags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mygraphs'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cslearn/cstree.html#write_minimal_context_graphs_to_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cslearn.cstree.write_minimal_context_graphs_to_files" title="Link to this definition"></a></dt>
+<dd><p>Write minimal context graphs to files.</p>
+<p>Each context graph is written to a separate file; the context is included
+in the filename and as a figure label.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context_dags</strong> (<em>dict</em>) – A dictionary of context graphs. The keys are the
+contexts, and the values are the graphs.</p></li>
+<li><p><strong>prefix</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename prefix. Defaults to “mygraphs”.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>Given a fitted <code class="docutils literal notranslate"><span class="pre">tree</span></code>, write one PNG per minimal-context graph:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gs</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">to_minimal_context_graphs</span><span class="p">()</span>
+<span class="n">write_minimal_context_graphs_to_files</span><span class="p">(</span><span class="n">gs</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;mygraphs&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="cslearn.html" class="btn btn-neutral float-left" title="Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cslearn.learning.html" class="btn btn-neutral float-right" title="learning" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Anonymous.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

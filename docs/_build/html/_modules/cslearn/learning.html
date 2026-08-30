@@ -1,0 +1,720 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cslearn.learning &mdash; cslearn 1.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=bb516dca"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            cslearn
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/cslearn.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/examples.html">Example notebooks</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Project info</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">cslearn</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">cslearn.learning</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for cslearn.learning</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">permutations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.cstree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.scoring</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.stage</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">stl</span>
+
+
+<div class="viewcode-block" id="all_stagings">
+<a class="viewcode-back" href="../../source/cslearn.learning.html#cslearn.learning.all_stagings">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">all_stagings</span><span class="p">(</span><span class="n">cards</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">level</span><span class="p">,</span> <span class="n">max_cvars</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">poss_cvars</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a generator over all stagings at a given level of a CStree with given variable cardinalities.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cards (list[int]): List of cardinalities of the variables. Should be at least of length level+1. E.g.: l=2, cards=[2,2,2,2]</span>
+<span class="sd">        level (int): The level of the stage (visually, this is where the nodes are colored).</span>
+<span class="sd">        max_cvars (int, optional): The maximum number of context variables . Defaults to 1. Max is 2.</span>
+<span class="sd">        poss_cvars (list, optional): The possible context variables. Defaults to None, meaning no restrictions.</span>
+<span class="sd">    Raises:</span>
+<span class="sd">        NotImplementedError: Exception if max_cvars &gt; 2.</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        generator: generator over all stagings of a given level.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">        &gt;&gt;&gt; import cslearn.learning as ctl</span>
+<span class="sd">        &gt;&gt;&gt; cards = [2]*3</span>
+<span class="sd">        &gt;&gt;&gt; stagings = ctl.all_stagings(cards, 1, max_cvars=2) # all stagings at level 1</span>
+<span class="sd">        &gt;&gt;&gt; for i, staging in enumerate(stagings):</span>
+<span class="sd">        ...     print(&quot;staging {}:&quot;.format(i))</span>
+<span class="sd">        ...     for stage in staging:</span>
+<span class="sd">        ...         print(stage)</span>
+<span class="sd">        staging 0:</span>
+<span class="sd">        [{0, 1}, {0, 1}]</span>
+<span class="sd">        staging 1:</span>
+<span class="sd">        [0, {0, 1}]</span>
+<span class="sd">        [1, {0, 1}]</span>
+<span class="sd">        staging 2:</span>
+<span class="sd">        [0, 0]</span>
+<span class="sd">        [0, 1]</span>
+<span class="sd">        [1, {0, 1}]</span>
+<span class="sd">        staging 3:</span>
+<span class="sd">        [0, {0, 1}]</span>
+<span class="sd">        [1, 0]</span>
+<span class="sd">        [1, 1]</span>
+<span class="sd">        staging 4:</span>
+<span class="sd">        [0, 0]</span>
+<span class="sd">        [0, 1]</span>
+<span class="sd">        [1, 0]</span>
+<span class="sd">        [1, 1]</span>
+<span class="sd">        staging 5:</span>
+<span class="sd">        [{0, 1}, 0]</span>
+<span class="sd">        [{0, 1}, 1]</span>
+<span class="sd">        staging 6:</span>
+<span class="sd">        [0, 0]</span>
+<span class="sd">        [1, 0]</span>
+<span class="sd">        [{0, 1}, 1]</span>
+<span class="sd">        staging 7:</span>
+<span class="sd">        [{0, 1}, 0]</span>
+<span class="sd">        [0, 1]</span>
+<span class="sd">        [1, 1]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">assert</span> <span class="n">level</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">cards</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">max_cvars</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">cslearn.double_cvar_stagings</span><span class="w"> </span><span class="kn">import</span> <span class="n">codim_max2_boxes</span>
+
+        <span class="k">if</span> <span class="n">level</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>  <span class="c1"># This is an imaginary level -1, it has no stages.</span>
+            <span class="k">yield</span> <span class="p">[</span><span class="n">stl</span><span class="o">.</span><span class="n">Stage</span><span class="p">([])]</span>
+            <span class="k">return</span>
+        <span class="k">for</span> <span class="n">staging_list</span> <span class="ow">in</span> <span class="n">codim_max2_boxes</span><span class="p">(</span>
+            <span class="n">cards</span><span class="p">[:</span> <span class="n">level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">splittable_coords</span><span class="o">=</span><span class="n">poss_cvars</span><span class="p">,</span> <span class="n">max1cvar</span><span class="o">=</span><span class="p">(</span><span class="n">max_cvars</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="n">staging</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">stage_list</span> <span class="ow">in</span> <span class="n">staging_list</span><span class="p">:</span>
+                <span class="c1"># Fix repr bug</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stage_list</span><span class="p">,</span> <span class="nb">set</span><span class="p">):</span>
+                    <span class="n">stage_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">stage_list</span><span class="p">]</span>
+
+                <span class="c1"># Could set colors here but that takes time maybe.</span>
+                <span class="n">stage</span> <span class="o">=</span> <span class="n">stl</span><span class="o">.</span><span class="n">Stage</span><span class="p">(</span><span class="n">stage_list</span><span class="p">)</span>
+                <span class="n">staging</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">staging</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;max_cvars &gt; 2 not implemented yet&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="n_stagings">
+<a class="viewcode-back" href="../../source/cslearn.learning.html#cslearn.learning.n_stagings">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">n_stagings</span><span class="p">(</span><span class="n">cards</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">max_cvars</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the number of possible stagings at a given level of a CStree with given variable cardinalities.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cards (list): List of cardinalities of the variables.</span>
+<span class="sd">        level (int): The level in the CStree.</span>
+<span class="sd">        max_cvars (int, optional): The maximum number of context variables per variable. Defaults to 1.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.learning as ctl</span>
+<span class="sd">        &gt;&gt;&gt; cards = [2]*4</span>
+<span class="sd">        &gt;&gt;&gt; ctl.n_stagings(cards, 2, max_cvars=2)</span>
+<span class="sd">        28</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">stagings</span> <span class="o">=</span> <span class="n">all_stagings</span><span class="p">(</span><span class="n">cards</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">max_cvars</span><span class="o">=</span><span class="n">max_cvars</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">stagings</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_optimal_staging_at_level</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">context_scores</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">max_cvars</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">poss_cvars</span><span class="o">=</span><span class="p">[]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the optimal staging at a given level.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        order (list): The order of the variables. data (pandas DataFrame): The</span>
+<span class="sd">        data as a pandas DataFrame.</span>
+<span class="sd">        level (int): The level of the CStree.</span>
+<span class="sd">        max_cvars (int, optional): Max context variables. Defaults to 1.</span>
+<span class="sd">        alpha_tot (float, optional): The Dirichlet hyper parameter total pseudo</span>
+<span class="sd">        counts. Defaults to None.</span>
+<span class="sd">        method (str, optional): Parameter prior type.</span>
+<span class="sd">        Defaults to &quot;BDeu&quot;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: (optimal staging, optimal score)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cards</span> <span class="o">=</span> <span class="p">[</span><span class="n">context_scores</span><span class="p">[</span><span class="s2">&quot;cards&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">order</span><span class="p">]</span>
+
+    <span class="n">var</span> <span class="o">=</span> <span class="n">order</span><span class="p">[</span><span class="n">level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">poss_cvars_inds</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">order</span><span class="p">)</span> <span class="k">if</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">poss_cvars</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">level</span><span class="p">]</span>
+
+    <span class="c1"># BUG: here it is actually []. But is gives all...</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">poss_cvars_inds</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">stagings</span> <span class="o">=</span> <span class="n">all_stagings</span><span class="p">(</span><span class="n">cards</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">max_cvars</span><span class="p">,</span> <span class="n">poss_cvars</span><span class="o">=</span><span class="n">poss_cvars_inds</span><span class="p">)</span>
+    <span class="c1"># If the posible cvars is empty, then all variables are in the same</span>
+    <span class="c1"># stage/color.</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stagings</span> <span class="o">=</span> <span class="p">[[</span><span class="n">stl</span><span class="o">.</span><span class="n">Stage</span><span class="p">([</span><span class="nb">set</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">cards</span><span class="p">[</span><span class="n">l</span><span class="p">]))</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">cards</span><span class="p">[:</span> <span class="n">level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]])]]</span>
+    <span class="n">max_staging</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">max_staging_score</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+    <span class="k">for</span> <span class="n">staging</span> <span class="ow">in</span> <span class="n">stagings</span><span class="p">:</span>
+        <span class="n">staging_score</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">stage</span> <span class="ow">in</span> <span class="n">staging</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stage</span><span class="o">.</span><span class="n">level</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">staging_score</span> <span class="o">=</span> <span class="n">context_scores</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">][</span><span class="s2">&quot;None&quot;</span><span class="p">]</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># here we (=I) anyway extract just the context, so the stage format is a bit redundant.</span>
+            <span class="n">stage_context</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">_stage_to_context_key</span><span class="p">(</span><span class="n">stage</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">stage_context</span> <span class="ow">in</span> <span class="n">context_scores</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">]:</span>
+                <span class="n">score</span> <span class="o">=</span> <span class="n">context_scores</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">][</span><span class="n">stage_context</span><span class="p">]</span>
+            <span class="n">staging_score</span> <span class="o">+=</span> <span class="n">score</span>
+
+        <span class="c1"># Update the max score and the max staging</span>
+        <span class="k">if</span> <span class="n">staging_score</span> <span class="o">&gt;</span> <span class="n">max_staging_score</span><span class="p">:</span>
+            <span class="n">max_staging_score</span> <span class="o">=</span> <span class="n">staging_score</span>
+            <span class="n">max_staging</span> <span class="o">=</span> <span class="n">staging</span>
+
+    <span class="k">return</span> <span class="n">max_staging</span><span class="p">,</span> <span class="n">max_staging_score</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_optimal_cstree_given_order</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">context_scores</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the optimal CStree for a given order.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        order (list): The order of the variables.</span>
+<span class="sd">        data (pandas DataFrame): The data as a pandas DataFrame.</span>
+<span class="sd">        max_cvars (int, optional): Max context variables. Defaults to 1.</span>
+<span class="sd">        alpha_tot (float, optional): The Dirichlet hyper parameter total pseudo</span>
+<span class="sd">        counts. Defaults to 1.0.</span>
+<span class="sd">        method (str, optional): Parameter prior type. Defaults to &quot;BDeu&quot;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+    <span class="n">stages</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">stages</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">stl</span><span class="o">.</span><span class="n">Stage</span><span class="p">([],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>  <span class="c1"># dont stage the last level</span>
+        <span class="n">max_staging</span><span class="p">,</span> <span class="n">max_staging_score</span> <span class="o">=</span> <span class="n">_optimal_staging_at_level</span><span class="p">(</span>
+            <span class="n">order</span><span class="p">,</span>
+            <span class="n">context_scores</span><span class="p">,</span>
+            <span class="n">level</span><span class="p">,</span>
+            <span class="n">max_cvars</span><span class="o">=</span><span class="n">context_scores</span><span class="p">[</span><span class="s2">&quot;max_cvars&quot;</span><span class="p">],</span>
+            <span class="n">poss_cvars</span><span class="o">=</span><span class="n">context_scores</span><span class="p">[</span><span class="s2">&quot;poss_cvars&quot;</span><span class="p">][</span><span class="n">order</span><span class="p">[</span><span class="n">level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]],</span>
+        <span class="p">)</span>
+        <span class="n">stages</span><span class="p">[</span><span class="n">level</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_staging</span>
+
+    <span class="c1"># Create CStree</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">CStree</span><span class="p">([</span><span class="n">context_scores</span><span class="p">[</span><span class="s2">&quot;cards&quot;</span><span class="p">][</span><span class="n">var</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">order</span><span class="p">])</span>
+    <span class="n">tree</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">order</span>
+
+    <span class="c1"># Color each stage in the optimal staging. Singletons are black.</span>
+    <span class="c1"># This should be done somewhere else probably.</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;peru&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blueviolet&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;orange&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;navy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rebeccapurple&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;darkseagreen&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;darkslategray&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lightslategray&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;aquamarine&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lightgoldenrodyellow&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;cornsilk&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;azure&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;chocolate&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;red&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;darkolivegreen&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">level</span><span class="p">,</span> <span class="n">staging</span> <span class="ow">in</span> <span class="n">stages</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">stage</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">staging</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">level</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="p">((</span><span class="n">level</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">stage</span><span class="o">.</span><span class="n">list_repr</span><span class="p">])):</span>
+                <span class="n">stage</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">stage</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="mi">15</span><span class="p">]</span>
+    <span class="n">tree</span><span class="o">.</span><span class="n">update_stages</span><span class="p">(</span><span class="n">stages</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tree</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_optimal_order</span><span class="p">(</span><span class="n">score_table</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the optimal variable order by exhaustive search over all permutations.</span>
+
+<span class="sd">    The score of an order is the score of the maximal-scoring CStree it can</span>
+<span class="sd">    contain, read off the precomputed ``score_table`` (see</span>
+<span class="sd">    :func:`cslearn.scoring.order_score_tables`).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        score_table (dict): Precomputed order-score table.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: ``(optimal_orders, max_score)``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">score_table</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">perms</span> <span class="o">=</span> <span class="n">permutations</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+    <span class="n">optimal_orders</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">max_score</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+    <span class="c1"># iterate over all permutations</span>
+    <span class="k">for</span> <span class="n">perm</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">perms</span><span class="p">):</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">perm</span><span class="p">)</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">score_order</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">score_table</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">score</span> <span class="o">&gt;</span> <span class="n">max_score</span><span class="p">:</span>
+            <span class="n">max_score</span> <span class="o">=</span> <span class="n">score</span>
+            <span class="n">optimal_orders</span> <span class="o">=</span> <span class="n">order</span>
+
+    <span class="k">return</span> <span class="n">optimal_orders</span><span class="p">,</span> <span class="n">max_score</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_relocate_node_in_order</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">new_pos</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Relocate a node in an order.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        order (list): The order of the variables.</span>
+<span class="sd">        node (str): The node to relocate.</span>
+<span class="sd">        new_pos (int): The new position of the node.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: The new order.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">order</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+    <span class="n">order</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">new_pos</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">order</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_move_up</span><span class="p">(</span><span class="n">node_index</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">orderscore</span><span class="p">,</span> <span class="n">node_scores</span><span class="p">,</span> <span class="n">score_table</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Move a node up in an order.&quot;&quot;&quot;</span>
+    <span class="n">order</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">node_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">node_index</span><span class="p">))</span>
+
+    <span class="n">tmp1</span> <span class="o">=</span> <span class="n">node_scores</span><span class="p">[</span><span class="n">node_index</span><span class="p">]</span>
+    <span class="n">tmp2</span> <span class="o">=</span> <span class="n">node_scores</span><span class="p">[</span><span class="n">node_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">node1</span> <span class="o">=</span> <span class="n">order</span><span class="p">[</span><span class="n">node_index</span><span class="p">]</span>
+    <span class="n">node2</span> <span class="o">=</span> <span class="n">order</span><span class="p">[</span><span class="n">node_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">active_cvars1</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">order</span><span class="p">[:</span><span class="n">node_index</span><span class="p">]</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">score_table</span><span class="p">[</span><span class="s2">&quot;poss_cvars&quot;</span><span class="p">][</span><span class="n">node1</span><span class="p">]]</span>
+    <span class="n">active_cvars2</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">order</span><span class="p">[:</span> <span class="n">node_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">score_table</span><span class="p">[</span><span class="s2">&quot;poss_cvars&quot;</span><span class="p">][</span><span class="n">node2</span><span class="p">]]</span>
+
+    <span class="n">pred1</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">_list_to_score_key</span><span class="p">(</span><span class="n">active_cvars1</span><span class="p">)</span>
+    <span class="n">pred2</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">_list_to_score_key</span><span class="p">(</span><span class="n">active_cvars2</span><span class="p">)</span>
+
+    <span class="n">node_scores</span><span class="p">[</span><span class="n">node_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">score_table</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">][</span><span class="n">order</span><span class="p">[</span><span class="n">node_index</span><span class="p">]][</span><span class="n">pred1</span><span class="p">]</span>
+    <span class="n">node_scores</span><span class="p">[</span><span class="n">node_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">score_table</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">][</span><span class="n">order</span><span class="p">[</span><span class="n">node_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]][</span><span class="n">pred2</span><span class="p">]</span>
+
+    <span class="n">orderscore</span> <span class="o">+=</span> <span class="n">node_scores</span><span class="p">[</span><span class="n">node_index</span><span class="p">]</span> <span class="o">+</span> <span class="n">node_scores</span><span class="p">[</span><span class="n">node_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">tmp1</span> <span class="o">-</span> <span class="n">tmp2</span>
+
+    <span class="k">return</span> <span class="n">orderscore</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_move_down</span><span class="p">(</span><span class="n">node_index</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">orderscore</span><span class="p">,</span> <span class="n">node_scores</span><span class="p">,</span> <span class="n">score_table</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Move the node at ``node_index`` one position earlier in ``order``, updating scores in place.&quot;&quot;&quot;</span>
+    <span class="n">tmp1</span> <span class="o">=</span> <span class="n">node_scores</span><span class="p">[</span><span class="n">node_index</span><span class="p">]</span>
+    <span class="n">tmp2</span> <span class="o">=</span> <span class="n">node_scores</span><span class="p">[</span><span class="n">node_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">order</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">node_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">node_index</span><span class="p">))</span>
+
+    <span class="n">active_cvars1</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">order</span><span class="p">[:</span><span class="n">node_index</span><span class="p">]</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">score_table</span><span class="p">[</span><span class="s2">&quot;poss_cvars&quot;</span><span class="p">][</span><span class="n">order</span><span class="p">[</span><span class="n">node_index</span><span class="p">]]]</span>
+    <span class="n">active_cvars2</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">order</span><span class="p">[:</span> <span class="n">node_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">score_table</span><span class="p">[</span><span class="s2">&quot;poss_cvars&quot;</span><span class="p">][</span><span class="n">order</span><span class="p">[</span><span class="n">node_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]]]</span>
+
+    <span class="n">pred1</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">_list_to_score_key</span><span class="p">(</span><span class="n">active_cvars1</span><span class="p">)</span>
+    <span class="n">pred2</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">_list_to_score_key</span><span class="p">(</span><span class="n">active_cvars2</span><span class="p">)</span>
+
+    <span class="n">node_scores</span><span class="p">[</span><span class="n">node_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">score_table</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">][</span><span class="n">order</span><span class="p">[</span><span class="n">node_index</span><span class="p">]][</span><span class="n">pred1</span><span class="p">]</span>
+    <span class="n">node_scores</span><span class="p">[</span><span class="n">node_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">score_table</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">][</span><span class="n">order</span><span class="p">[</span><span class="n">node_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]][</span><span class="n">pred2</span><span class="p">]</span>
+
+    <span class="n">orderscore</span> <span class="o">+=</span> <span class="n">node_scores</span><span class="p">[</span><span class="n">node_index</span><span class="p">]</span> <span class="o">+</span> <span class="n">node_scores</span><span class="p">[</span><span class="n">node_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">tmp1</span> <span class="o">-</span> <span class="n">tmp2</span>
+
+    <span class="k">return</span> <span class="n">orderscore</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_move_node</span><span class="p">(</span><span class="n">node_index_from</span><span class="p">,</span> <span class="n">node_index_to</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">orderscore</span><span class="p">,</span> <span class="n">node_scores</span><span class="p">,</span> <span class="n">score_table</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Move a node up in an order and update the node scores.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        node_index_from (int): The index of the node to move.</span>
+<span class="sd">        node_index_to (int): The index to move the node to.</span>
+<span class="sd">        order (list): The order of the variables.</span>
+<span class="sd">        orderscore (float): The score of the order.</span>
+<span class="sd">        node_scores (list): The scores of the nodes.</span>
+<span class="sd">        data (pandas.DataFrame): The data.</span>
+<span class="sd">        max_cvars (int, optional): The maximum number of context variables. Defaults to 2.</span>
+<span class="sd">        alpha_tot (float, optional): The total alpha. Defaults to 1.</span>
+<span class="sd">        method (str, optional): The scoring method. Defaults to &quot;BDeu&quot;.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">node_index_from</span> <span class="o">&lt;</span> <span class="n">node_index_to</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">node_index_from</span><span class="p">,</span> <span class="n">node_index_to</span><span class="p">):</span>
+            <span class="n">orderscore</span> <span class="o">=</span> <span class="n">_move_up</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">orderscore</span><span class="p">,</span> <span class="n">node_scores</span><span class="p">,</span> <span class="n">score_table</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">node_index_from</span><span class="p">,</span> <span class="n">node_index_to</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">orderscore</span> <span class="o">=</span> <span class="n">_move_down</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">orderscore</span><span class="p">,</span> <span class="n">node_scores</span><span class="p">,</span> <span class="n">score_table</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">orderscore</span>
+
+
+<div class="viewcode-block" id="gibbs_order_sampler">
+<a class="viewcode-back" href="../../source/cslearn.learning.html#cslearn.learning.gibbs_order_sampler">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gibbs_order_sampler</span><span class="p">(</span><span class="n">iterations</span><span class="p">,</span> <span class="n">score_table</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gibbs order sampler for the posterior distribution over variable orderings.</span>
+
+<span class="sd">    At each iteration a random variable is selected and relocated to a new</span>
+<span class="sd">    position drawn from the conditional posterior given all other positions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        iterations (int): Number of Gibbs iterations.</span>
+<span class="sd">        score_table (dict): Pre-computed order score table from</span>
+<span class="sd">            :func:`cslearn.scoring.order_score_tables`. Must contain keys</span>
+<span class="sd">            ``&quot;scores&quot;`` and ``&quot;poss_cvars&quot;``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: ``(orders, scores)`` — a list of sampled orderings (one per</span>
+<span class="sd">        iteration plus the initial state) and a list of their log-posterior</span>
+<span class="sd">        scores.</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">        &gt;&gt;&gt; import cslearn.learning as ctl</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.scoring as sc</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; import random</span>
+<span class="sd">        &gt;&gt;&gt; np.random.seed(1)</span>
+<span class="sd">        &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">        &gt;&gt;&gt; tree = ct.sample_cstree([2,2,2,2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)</span>
+<span class="sd">        &gt;&gt;&gt; tree.sample_stage_parameters(1.0)</span>
+<span class="sd">        &gt;&gt;&gt; df = tree.sample(500)</span>
+<span class="sd">        &gt;&gt;&gt; score_table, context_scores, _ = sc.order_score_tables(</span>
+<span class="sd">        ...     df, max_cvars=2, alpha_tot=1.0, method=&quot;BDeu&quot;, poss_cvars=None)</span>
+<span class="sd">        &gt;&gt;&gt; orders, scores = ctl.gibbs_order_sampler(5000, score_table)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Score table for all noded in all positions in the order</span>
+
+    <span class="n">order_trajectory</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">score_table</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">])</span>
+
+    <span class="c1"># list(data.columns.values)  # list(range(p))</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">score_table</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">node_scores</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">p</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+        <span class="c1"># possible parents to string</span>
+        <span class="n">subset_str</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">_list_to_score_key</span><span class="p">(</span><span class="n">order</span><span class="p">[:</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="n">subset_str</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">_list_to_score_key</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">order</span><span class="p">[:</span><span class="n">i</span><span class="p">])</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">score_table</span><span class="p">[</span><span class="s2">&quot;poss_cvars&quot;</span><span class="p">][</span><span class="n">order</span><span class="p">[</span><span class="n">i</span><span class="p">]])))</span>
+        <span class="n">node_scores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">score_table</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">][</span><span class="n">order</span><span class="p">[</span><span class="n">i</span><span class="p">]][</span><span class="n">subset_str</span><span class="p">]</span>
+
+    <span class="n">score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">node_scores</span><span class="p">)</span>
+
+    <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">score</span><span class="p">)</span>
+    <span class="n">order_trajectory</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">iterations</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Gibbs order sampler&quot;</span><span class="p">):</span>
+        <span class="c1"># pick a random node</span>
+        <span class="n">node_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+        <span class="c1"># calculate the neighborhood scores</span>
+        <span class="n">prop_probs</span> <span class="o">=</span> <span class="n">_get_relocation_neighborhood</span><span class="p">(</span>
+            <span class="n">order_trajectory</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">node_index</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">node_scores</span><span class="p">,</span> <span class="n">score_table</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Select at random from the proposal distribution</span>
+        <span class="n">new_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">prop_probs</span><span class="p">))),</span> <span class="n">p</span><span class="o">=</span><span class="n">prop_probs</span><span class="p">)</span>
+
+        <span class="n">neworder</span> <span class="o">=</span> <span class="n">order_trajectory</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">orderscore</span> <span class="o">=</span> <span class="n">_move_node</span><span class="p">(</span><span class="n">node_index</span><span class="p">,</span> <span class="n">new_pos</span><span class="p">,</span> <span class="n">neworder</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">node_scores</span><span class="p">,</span> <span class="n">score_table</span><span class="p">)</span>
+
+        <span class="n">order_trajectory</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">neworder</span><span class="p">)</span>
+        <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">orderscore</span><span class="p">)</span>  <span class="c1"># O(p)</span>
+
+    <span class="k">return</span> <span class="n">order_trajectory</span><span class="p">,</span> <span class="n">scores</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_relocation_neighborhood</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">node_index</span><span class="p">,</span> <span class="n">orderscore</span><span class="p">,</span> <span class="n">node_scores</span><span class="p">,</span> <span class="n">score_table</span><span class="p">):</span>
+    <span class="c1"># Move to the right</span>
+    <span class="c1"># [1,2,3,i,4,5] =&gt; [1,2,3,4,i,5]</span>
+
+    <span class="n">neig_log_scores</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+    <span class="n">neig_log_scores</span><span class="p">[</span><span class="n">node_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">orderscore</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">node_index</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">orderscore</span> <span class="o">=</span> <span class="n">_move_up</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">orderscore</span><span class="p">,</span> <span class="n">node_scores</span><span class="p">,</span> <span class="n">score_table</span><span class="p">)</span>
+        <span class="n">neig_log_scores</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">orderscore</span>
+
+    <span class="c1"># Move all the way back. But dont relocate the nodes that have already been</span>
+    <span class="c1"># relocated.</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">orderscore</span> <span class="o">=</span> <span class="n">_move_down</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">orderscore</span><span class="p">,</span> <span class="n">node_scores</span><span class="p">,</span> <span class="n">score_table</span><span class="p">)</span>
+        <span class="n">neig_log_scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">orderscore</span>
+
+    <span class="c1"># move back to where we started</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">node_index</span><span class="p">):</span>
+        <span class="n">orderscore</span> <span class="o">=</span> <span class="n">_move_up</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">orderscore</span><span class="p">,</span> <span class="n">node_scores</span><span class="p">,</span> <span class="n">score_table</span><span class="p">)</span>
+        <span class="n">neig_log_scores</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">orderscore</span>
+
+    <span class="n">log_tot_neigh_scores</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">_logsumexp</span><span class="p">(</span><span class="n">neig_log_scores</span><span class="p">)</span>
+    <span class="n">log_probs</span> <span class="o">=</span> <span class="n">neig_log_scores</span> <span class="o">-</span> <span class="n">log_tot_neigh_scores</span>
+
+    <span class="n">prop_probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_probs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">prop_probs</span>
+
+
+<div class="viewcode-block" id="find_optimal_cstree">
+<a class="viewcode-back" href="../../source/cslearn.learning.html#cslearn.learning.find_optimal_cstree">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_optimal_cstree</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">max_cvars</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">alpha_tot</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;BDeu&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the optimal CStree for the data by exhaustive order search.</span>
+
+<span class="sd">    Enumerates all p! variable orderings, scores each one, then finds the</span>
+<span class="sd">    optimal staging for the best ordering. Feasible only for small p (≤ ~7).</span>
+<span class="sd">    For larger p, use :meth:`cslearn.cstree.CStree.fit`, which replaces</span>
+<span class="sd">    exhaustive order search with Gibbs MCMC and optionally uses a GRaSP-derived</span>
+<span class="sd">    CPDAG to constrain the parent sets.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (pd.DataFrame): Training data.</span>
+<span class="sd">        max_cvars (int, optional): Maximum context-set size β. Defaults to 1.</span>
+<span class="sd">        alpha_tot (float, optional): Total BDeu pseudo-count. Defaults to 1.</span>
+<span class="sd">        method (str, optional): Scoring method. Defaults to ``&quot;BDeu&quot;``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        CStree: The MAP CStree (structure only, no parameters estimated).</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import random</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.learning as ctl</span>
+<span class="sd">        &gt;&gt;&gt; np.random.seed(0)</span>
+<span class="sd">        &gt;&gt;&gt; random.seed(0)</span>
+<span class="sd">        &gt;&gt;&gt; tree = ct.sample_cstree([2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)</span>
+<span class="sd">        &gt;&gt;&gt; tree.sample_stage_parameters(1.0)</span>
+<span class="sd">        &gt;&gt;&gt; df = tree.sample(200)</span>
+<span class="sd">        &gt;&gt;&gt; learned = ctl.find_optimal_cstree(df, max_cvars=2)</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(learned, ct.CStree)</span>
+<span class="sd">        True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">score_table</span><span class="p">,</span> <span class="n">context_scores</span><span class="p">,</span> <span class="n">context_counts</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">order_score_tables</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">max_cvars</span><span class="o">=</span><span class="n">max_cvars</span><span class="p">,</span> <span class="n">alpha_tot</span><span class="o">=</span><span class="n">alpha_tot</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span>
+    <span class="p">)</span>
+
+    <span class="n">opt_order</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_find_optimal_order</span><span class="p">(</span><span class="n">score_table</span><span class="p">)</span>
+
+    <span class="n">opttree</span> <span class="o">=</span> <span class="n">_optimal_cstree_given_order</span><span class="p">(</span><span class="n">opt_order</span><span class="p">,</span> <span class="n">context_scores</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">opttree</span></div>
+
+
+
+<div class="viewcode-block" id="causallearn_graph_to_posscvars">
+<a class="viewcode-back" href="../../source/cslearn.learning.html#cslearn.learning.causallearn_graph_to_posscvars">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">causallearn_graph_to_posscvars</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="s2">&quot;pc&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This function merely converts a graph estimated by causallearn to a dictionary of possible context variables.</span>
+<span class="sd">    The possible context variables are the parents of each node in the graph.</span>
+<span class="sd">    These are used when calculating scores in :meth:`cslearn.scoring.order_score_tables()`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        graph: A graph object returned by a causallearn algorithm (PC, GRaSP,</span>
+<span class="sd">            or GES). The expected format depends on ``alg``.</span>
+<span class="sd">        labels (list): Variable labels in the same order as the graph nodes.</span>
+<span class="sd">        alg (str): Which algorithm produced ``graph``. One of ``&quot;pc&quot;``,</span>
+<span class="sd">            ``&quot;grasp&quot;``, or ``&quot;ges&quot;``. Defaults to ``&quot;pc&quot;``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Mapping from each variable label to a list of its possible</span>
+<span class="sd">        context variables (i.e. variables that could be parents or</span>
+<span class="sd">        undirected neighbours in the CPDAG).</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import random</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from causallearn.search.ConstraintBased.PC import pc</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.learning as ctl</span>
+<span class="sd">        &gt;&gt;&gt; np.random.seed(1)</span>
+<span class="sd">        &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">        &gt;&gt;&gt; tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)</span>
+<span class="sd">        &gt;&gt;&gt; tree.sample_stage_parameters(1.0)</span>
+<span class="sd">        &gt;&gt;&gt; df = tree.sample(500)</span>
+<span class="sd">        &gt;&gt;&gt; pcgraph = pc(df[1:].values, 0.05, &quot;chisq&quot;, node_names=df.columns)</span>
+<span class="sd">        &gt;&gt;&gt; poss_cvars = ctl.causallearn_graph_to_posscvars(pcgraph, labels=df.columns)</span>
+<span class="sd">        &gt;&gt;&gt; sorted(poss_cvars) == sorted(df.columns)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; all(isinstance(v, list) for v in poss_cvars.values())</span>
+<span class="sd">        True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">poss_cvars</span> <span class="o">=</span> <span class="p">{</span><span class="n">l</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">alg</span> <span class="o">==</span> <span class="s2">&quot;pc&quot;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">graph</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">poss_cvars</span><span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">alg</span> <span class="o">==</span> <span class="s2">&quot;grasp&quot;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">graph</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">poss_cvars</span><span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">alg</span> <span class="o">==</span> <span class="s2">&quot;ges&quot;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">graph</span><span class="p">[</span><span class="s2">&quot;G&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">poss_cvars</span><span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">poss_cvars</span></div>
+
+
+
+<div class="viewcode-block" id="causallearn_graph_to_dag">
+<a class="viewcode-back" href="../../source/cslearn.learning.html#cslearn.learning.causallearn_graph_to_dag">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">causallearn_graph_to_dag</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="s2">&quot;pc&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a causallearn graph to a DAG adjacency matrix.</span>
+
+<span class="sd">    Handles both directed and undirected edges in the CPDAG returned by PC,</span>
+<span class="sd">    GRaSP, or GES: directed edges are kept as-is; undirected edges are</span>
+<span class="sd">    oriented via :class:`pgmpy.base.PDAG`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        graph: A graph object returned by a causallearn algorithm (PC, GRaSP,</span>
+<span class="sd">            or GES). The expected format depends on ``alg``.</span>
+<span class="sd">        labels (list): Variable labels in the same order as the graph nodes.</span>
+<span class="sd">        alg (str): Which algorithm produced ``graph``. One of ``&quot;pc&quot;``,</span>
+<span class="sd">            ``&quot;grasp&quot;``, or ``&quot;ges&quot;``. Defaults to ``&quot;pc&quot;``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pd.DataFrame: Adjacency matrix of the resulting DAG with variable</span>
+<span class="sd">        labels as both row and column names. Entry ``[i, j] == 1`` means</span>
+<span class="sd">        there is an edge from variable ``i`` to variable ``j``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">alg</span> <span class="o">==</span> <span class="s2">&quot;pc&quot;</span><span class="p">:</span>
+        <span class="n">adj</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">graph</span>
+    <span class="k">if</span> <span class="n">alg</span> <span class="o">==</span> <span class="s2">&quot;grasp&quot;</span><span class="p">:</span>
+        <span class="n">adj</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">graph</span>
+    <span class="k">if</span> <span class="n">alg</span> <span class="o">==</span> <span class="s2">&quot;ges&quot;</span><span class="p">:</span>
+        <span class="n">adj</span> <span class="o">=</span> <span class="n">graph</span><span class="p">[</span><span class="s2">&quot;G&quot;</span><span class="p">]</span>
+
+    <span class="c1"># pgmpy is only needed for this CPDAG orientation helper, not for the core</span>
+    <span class="c1"># learning pipeline, so it is imported lazily and kept an optional dependency.</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pgmpy.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">PDAG</span>
+
+    <span class="c1"># convert to DAG</span>
+    <span class="n">directed_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">adj</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">adj</span><span class="o">.</span><span class="n">T</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">undirected_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">adj</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">adj</span><span class="o">.</span><span class="n">T</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">directed_ebunch</span> <span class="o">=</span> <span class="p">[(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">directed_mask</span><span class="p">)]</span>
+    <span class="n">undirected_ebunch</span> <span class="o">=</span> <span class="p">[(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">undirected_mask</span><span class="p">)]</span>
+    <span class="n">cpdag</span> <span class="o">=</span> <span class="n">PDAG</span><span class="p">(</span><span class="n">directed_ebunch</span><span class="p">,</span> <span class="n">undirected_ebunch</span><span class="p">)</span>
+    <span class="n">dag</span> <span class="o">=</span> <span class="n">cpdag</span><span class="o">.</span><span class="n">to_dag</span><span class="p">()</span>
+
+    <span class="c1"># reformant into nx graph and relabel</span>
+    <span class="n">nx_dag</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">(</span><span class="n">dag</span><span class="o">.</span><span class="n">edges</span><span class="p">())</span>
+    <span class="n">nx_dag</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)))</span>
+
+    <span class="n">relabeler</span> <span class="o">=</span> <span class="p">{</span><span class="n">old</span><span class="p">:</span> <span class="n">new</span> <span class="k">for</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">labels</span><span class="p">)}</span>
+    <span class="n">nx_dag</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">relabel_nodes</span><span class="p">(</span><span class="n">nx_dag</span><span class="p">,</span> <span class="n">relabeler</span><span class="p">)</span>
+
+    <span class="c1"># create a dataframe with the adjacency matrix and the labels</span>
+    <span class="n">dag_df</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">to_pandas_adjacency</span><span class="p">(</span><span class="n">nx_dag</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dag_df</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Anonymous.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

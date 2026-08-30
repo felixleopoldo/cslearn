@@ -1,0 +1,1584 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cslearn.cstree &mdash; cslearn 1.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=bb516dca"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            cslearn
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/cslearn.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/examples.html">Example notebooks</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Project info</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">cslearn</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">cslearn.cstree</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for cslearn.cstree</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">product</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">causallearn.search.PermutationBased.GRaSP</span><span class="w"> </span><span class="kn">import</span> <span class="n">grasp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.ldag</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ldag</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.stage</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">st</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cslearn</span><span class="w"> </span><span class="kn">import</span> <span class="n">dependence</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="write_minimal_context_graphs_to_files">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.write_minimal_context_graphs_to_files">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_minimal_context_graphs_to_files</span><span class="p">(</span><span class="n">context_dags</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;mygraphs&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write minimal context graphs to files.</span>
+
+<span class="sd">    Each context graph is written to a separate file; the context is included</span>
+<span class="sd">    in the filename and as a figure label.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        context_dags (dict): A dictionary of context graphs. The keys are the</span>
+<span class="sd">            contexts, and the values are the graphs.</span>
+<span class="sd">        prefix (str, optional): Filename prefix. Defaults to &quot;mygraphs&quot;.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        Given a fitted ``tree``, write one PNG per minimal-context graph::</span>
+
+<span class="sd">            gs = tree.to_minimal_context_graphs()</span>
+<span class="sd">            write_minimal_context_graphs_to_files(gs, prefix=&quot;mygraphs&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">context_dags</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">agraph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">nx_agraph</span><span class="o">.</span><span class="n">to_agraph</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">agraph</span><span class="o">.</span><span class="n">graph_attr</span><span class="p">[</span><span class="s2">&quot;fontsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">agraph</span><span class="o">.</span><span class="n">node_attr</span><span class="p">[</span><span class="s2">&quot;fontsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">agraph</span><span class="o">.</span><span class="n">edge_attr</span><span class="p">[</span><span class="s2">&quot;fontsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">agraph</span><span class="o">.</span><span class="n">layout</span><span class="p">(</span><span class="s2">&quot;dot&quot;</span><span class="p">)</span>
+        <span class="n">agraph</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.png&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="s1">&#39;-Glabel=&quot;&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;&quot;   &#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="plot">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.plot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="s2">&quot;dot&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plots a graph using graphviz. Creates a pygraphviz graph from a NetworkX graph.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        graph (nx.Graph): The graph to plot.</span>
+<span class="sd">        layout (str, optional): Graphviz layout engine. Defaults to &quot;dot&quot;.</span>
+<span class="sd">        fontsize (int, optional): Font size (pt) for graph/node/edge labels.</span>
+<span class="sd">            Defaults to 10 (graphviz&#39;s own default is 14pt).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pygraphviz.agraph.AGraph: A pygraphviz graph.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">agraph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">nx_agraph</span><span class="o">.</span><span class="n">to_agraph</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+    <span class="n">agraph</span><span class="o">.</span><span class="n">graph_attr</span><span class="p">[</span><span class="s2">&quot;fontsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fontsize</span>
+    <span class="n">agraph</span><span class="o">.</span><span class="n">node_attr</span><span class="p">[</span><span class="s2">&quot;fontsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fontsize</span>
+    <span class="n">agraph</span><span class="o">.</span><span class="n">edge_attr</span><span class="p">[</span><span class="s2">&quot;fontsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fontsize</span>
+    <span class="n">agraph</span><span class="o">.</span><span class="n">layout</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">agraph</span></div>
+
+
+
+<div class="viewcode-block" id="CStree">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CStree</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class representing a CStree, see [1]. It is initialized by a list of cardinalities of the variables at each level and a list of labels. The labels are optional and defaults (None) to [0,1,...,p-1].</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cards (list): A list of integers representing the cardinality of each level (indexed from 0).</span>
+<span class="sd">        labels (list, optional): A list of strings or integers representing the labels of each level. Defaults to [0,1,...,p-1].</span>
+<span class="sd">    References:</span>
+<span class="sd">        [1] E. Duarte and L. Solus. Representation of context-specific causal models with observational and interventional data, 2021, https://arxiv.org/abs/2101.09271.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; # Figure 1. from (Duarte &amp; Solus 2022)</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.stage as st</span>
+<span class="sd">        &gt;&gt;&gt; tree = ct.CStree([2, 2, 2, 2], labels=[&quot;X&quot;+str(i) for i in range(1, 5)])</span>
+<span class="sd">        &gt;&gt;&gt; tree.update_stages({</span>
+<span class="sd">        ...     0: [{&quot;context&quot;: {0: 0}},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 1}}],</span>
+<span class="sd">        ...     1: [{&quot;context&quot;: {1: 0}, &quot;color&quot;: &quot;green&quot;},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 0, 1: 1}},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 1, 1: 1}}],</span>
+<span class="sd">        ...     2: [{&quot;context&quot;: {0: 0, 2: 0}, &quot;color&quot;: &quot;blue&quot;},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 0, 2: 1}, &quot;color&quot;: &quot;orange&quot;},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 1, 2: 0}, &quot;color&quot;: &quot;red&quot;},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 1, 1: 1, 2: 1}},</span>
+<span class="sd">        ...         {&quot;context&quot;: {0: 1, 1: 0, 2: 1}}]})</span>
+<span class="sd">        &gt;&gt;&gt; tree.sample_stage_parameters()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cards</span><span class="o">=</span><span class="p">[],</span> <span class="n">labels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tree</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stages</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cards</span> <span class="o">=</span> <span class="n">cards</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cards</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span>
+
+        <span class="c1"># self.colors = list(set(mcolors.cnames.keys()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">colors</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;peru&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;blueviolet&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;orange&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;navy&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;rebeccapurple&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;darkseagreen&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;aquamarine&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;goldenrodyellow&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;cornsilk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;azure&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;chocolate&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;red&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;darkolivegreen&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;chartreuse&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;turquoise&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;olive&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;crimson&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;goldenrod&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;orchid&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;firebrick&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lawngreen&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;deeppink&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;wheat&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;teal&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mediumseagreen&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;salmon&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;palegreen&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;navajowhite&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;yellowgreen&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mediumaquamarine&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;darkcyan&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dodgerblue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;brown&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;powderblue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mistyrose&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;violet&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;darkslategrey&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;midnightblue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;aliceblue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dimgrey&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;palegoldenrod&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;black&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;darkgrey&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;olivedrab&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;linen&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lightblue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;thistle&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;greenyellow&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;indianred&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;khaki&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lightslategrey&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;slateblue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;purple&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;deepskyblue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;magenta&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;yellow&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ivory&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;darkorchid&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mediumpurple&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;snow&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dimgray&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;palevioletred&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;darkslateblue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;sandybrown&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lightgray&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lemonchiffon&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;gray&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;silver&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;aqua&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tomato&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lightyellow&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;seagreen&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;darkmagenta&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;beige&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;cornflowerblue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;peachpuff&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ghostwhite&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;cyan&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lightcoral&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;hotpink&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lightpink&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lightskyblue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;slategrey&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tan&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;oldlace&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;steelblue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;springgreen&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;fuchsia&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lime&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;papayawhip&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mediumblue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mediumspringgreen&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;darkorange&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lightgreen&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;slategray&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;white&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;saddlebrown&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mediumturquoise&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;paleturquoise&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;darkblue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;plum&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lightseagreen&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lightgrey&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;blanchedalmond&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lavenderblush&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;darkkhaki&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;gainsboro&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lightsalmon&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;darkturquoise&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;moccasin&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;darkgoldenrod&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mediumorchid&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;honeydew&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mediumslateblue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;maroon&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;forestgreen&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;darkgray&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;floralwhite&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;darkgreen&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lightcyan&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;darksalmon&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pink&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;royalblue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;sienna&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;green&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;orangered&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;bisque&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;antiquewhite&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;rosybrown&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;whitesmoke&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;darkred&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;burlywood&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;skyblue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mediumvioletred&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mintcream&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;limegreen&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lightsteelblue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;grey&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;coral&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;indigo&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;gold&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;cadetblue&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color_no</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stages</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)}</span>
+
+<div class="viewcode-block" id="CStree.stage_proportion">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.stage_proportion">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stage_proportion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="n">st</span><span class="o">.</span><span class="n">Stage</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The proportion of the outcome space this stage represents.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            stage (st.Stage): A stage of this CStree.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: A number between 0 and 1.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">            &gt;&gt;&gt; import cslearn.stage as st</span>
+<span class="sd">            &gt;&gt;&gt; tree = ct.CStree([2, 2, 2, 2])</span>
+<span class="sd">            &gt;&gt;&gt; tree.stage_proportion(st.Stage([0, {0, 1}, 1]))</span>
+<span class="sd">            0.25</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">prop</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stage</span><span class="o">.</span><span class="n">list_repr</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">set</span><span class="p">):</span>
+                <span class="n">prop</span> <span class="o">*=</span> <span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">prop</span></div>
+
+
+<div class="viewcode-block" id="CStree.update_stages">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.update_stages">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_stages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stages</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update/set the stages of the CStree.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            stages (dict): A dictionary of stage dicts. The keys are the levels, and the values are lists of dicts representing stages. The dicts representing stages should have the following keys: &quot;context&quot; and &quot;color&quot;. The &quot;context&quot; should have a dict as value, where the keys are the levels and the values are the values of the variables at that level. The &quot;color&quot; key is optional but should have a string as value, representing the color of the stage.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            The CStree of Figure 1 in Duarte &amp; Solus (2021):</span>
+
+<span class="sd">            &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">            &gt;&gt;&gt; tree = ct.CStree([2, 2, 2, 2], labels=[&quot;X&quot; + str(i) for i in range(1, 5)])</span>
+<span class="sd">            &gt;&gt;&gt; tree.update_stages({</span>
+<span class="sd">            ...     0: [{&quot;context&quot;: {0: 0}},</span>
+<span class="sd">            ...         {&quot;context&quot;: {0: 1}}],</span>
+<span class="sd">            ...     1: [{&quot;context&quot;: {1: 0}, &quot;color&quot;: &quot;green&quot;},</span>
+<span class="sd">            ...         {&quot;context&quot;: {0: 0, 1: 1}},</span>
+<span class="sd">            ...         {&quot;context&quot;: {0: 1, 1: 1}}],</span>
+<span class="sd">            ...     2: [{&quot;context&quot;: {0: 0, 2: 0}, &quot;color&quot;: &quot;blue&quot;},</span>
+<span class="sd">            ...         {&quot;context&quot;: {0: 0, 2: 1}, &quot;color&quot;: &quot;orange&quot;},</span>
+<span class="sd">            ...         {&quot;context&quot;: {0: 1, 2: 0}, &quot;color&quot;: &quot;red&quot;},</span>
+<span class="sd">            ...         {&quot;context&quot;: {0: 1, 1: 1, 2: 1}},</span>
+<span class="sd">            ...         {&quot;context&quot;: {0: 1, 1: 0, 2: 1}}]})</span>
+<span class="sd">            &gt;&gt;&gt; sorted(tree.stages)</span>
+<span class="sd">            [-1, 0, 1, 2, 3]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># This should be filled with Stage objects.</span>
+        <span class="n">stages_to_add</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">stages</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+
+        <span class="c1"># If there are dicts, we convert them to Stages.</span>
+        <span class="c1"># Stages are updated to contain a cardinality list, inherited from the</span>
+        <span class="c1"># CStree.</span>
+        <span class="k">for</span> <span class="n">lev</span><span class="p">,</span> <span class="n">list_of_stage_repr</span> <span class="ow">in</span> <span class="n">stages</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># it can be either a Stage of a dict that should be converted to a</span>
+            <span class="c1"># stage.</span>
+
+            <span class="k">for</span> <span class="n">stage_repr</span> <span class="ow">in</span> <span class="n">list_of_stage_repr</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stage_repr</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="c1"># If its a dict, we convert it to a stage.</span>
+                    <span class="n">stage_list_repr</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lev</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">stage_repr</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">]:</span>
+                            <span class="n">stage_list_repr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stage_repr</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">][</span><span class="n">l</span><span class="p">])</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">stage_list_repr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">[</span><span class="n">l</span><span class="p">])))</span>
+                    <span class="c1"># Create a stage from the stage_list_repr</span>
+                    <span class="n">s</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">Stage</span><span class="p">(</span><span class="n">stage_list_repr</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="s2">&quot;color&quot;</span> <span class="ow">in</span> <span class="n">stage_repr</span><span class="p">:</span>
+                        <span class="n">s</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">stage_repr</span><span class="p">[</span><span class="s2">&quot;color&quot;</span><span class="p">]</span>
+
+                    <span class="n">s</span><span class="o">.</span><span class="n">cards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cards</span>
+                    <span class="n">stages_to_add</span><span class="p">[</span><span class="n">lev</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Just add the stage and set the cards</span>
+                    <span class="n">stage_repr</span><span class="o">.</span><span class="n">cards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cards</span>
+                    <span class="n">stages_to_add</span><span class="p">[</span><span class="n">lev</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stage_repr</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">stages</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">stages_to_add</span><span class="p">)</span>
+        <span class="k">if</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stages</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stages</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">st</span><span class="o">.</span><span class="n">Stage</span><span class="p">([],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="CStree.get_stage">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.get_stage">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_stage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the stage of a node in the CStree.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            node (tuple or list): A node in the CStree. It could be e.g. (0, 1, 0, 1).</span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; import random</span>
+<span class="sd">            &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">            &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">            &gt;&gt;&gt; np.random.seed(1)</span>
+<span class="sd">            &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">            &gt;&gt;&gt; tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)</span>
+<span class="sd">            &gt;&gt;&gt; stage = tree.get_stage((0, 0))</span>
+<span class="sd">            &gt;&gt;&gt; (0, 0) in stage</span>
+<span class="sd">            True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">stages</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="n">lev</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+        <span class="n">stage</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">lev</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stages</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stages</span><span class="p">[</span><span class="n">lev</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+                    <span class="n">stage</span> <span class="o">=</span> <span class="n">s</span>
+                    <span class="k">break</span>
+
+        <span class="k">if</span> <span class="n">stage</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No stage found for </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+
+        <span class="k">assert</span> <span class="n">stage</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">stage</span></div>
+
+
+<div class="viewcode-block" id="CStree.to_df">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.to_df">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">write_probs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts the CStree to a Pandas dataframe.</span>
+<span class="sd">        The labels of the dataframe are the labels of the levels/variables in the CStree.</span>
+<span class="sd">        The first row contains the cardinalities of the variables.</span>
+<span class="sd">        The other rows contain the stages of the CStree. E.g. row number 3 contains the level 1 stage with context X2=0, etc.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            write_probs (bool): If True, the probabilities of the stages are written to the dataframe. Defaults to False.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            df (pd.DataFrame): A Pandas dataframe with the stages of the CStree.</span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; import random</span>
+<span class="sd">            &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">            &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">            &gt;&gt;&gt; np.random.seed(1)</span>
+<span class="sd">            &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">            &gt;&gt;&gt; tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)</span>
+<span class="sd">            &gt;&gt;&gt; df = tree.to_df()</span>
+<span class="sd">            &gt;&gt;&gt; list(df.columns)</span>
+<span class="sd">            [0, 1, 2, 3]</span>
+<span class="sd">            &gt;&gt;&gt; df.iloc[0].tolist()  # first row is the cardinalities</span>
+<span class="sd">            [2, 2, 2, 2]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># cardinalities header</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span> <span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">)}</span>
+        <span class="n">max_card</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">write_probs</span><span class="p">:</span>
+            <span class="n">labs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;PROB_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_card</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">labs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">labs</span><span class="p">)</span>
+        <span class="n">dfstmp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="n">stages</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stages</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">stages</span><span class="p">:</span>
+                <span class="n">dftmp</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">to_df</span><span class="p">(</span><span class="n">labs</span><span class="p">,</span> <span class="n">max_card</span><span class="o">=</span><span class="n">max_card</span><span class="p">,</span> <span class="n">write_probs</span><span class="o">=</span><span class="n">write_probs</span><span class="p">)</span>
+                <span class="n">dfstmp</span> <span class="o">+=</span> <span class="p">[</span><span class="n">dftmp</span><span class="p">]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">]</span> <span class="o">+</span> <span class="n">dfstmp</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="CStree.sample_stage_parameters">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.sample_stage_parameters">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_stage_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the parameters of the stages of the CStree to be random samples</span>
+<span class="sd">        from a Dirichlet distribution with hyper parameter alpha.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            alpha (float): The hyper parameter for the Dirichlet distribution.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; import random</span>
+<span class="sd">            &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">            &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">            &gt;&gt;&gt; np.random.seed(1)</span>
+<span class="sd">            &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">            &gt;&gt;&gt; t = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)</span>
+<span class="sd">            &gt;&gt;&gt; t.sample_stage_parameters()</span>
+<span class="sd">            &gt;&gt;&gt; t.stages[0][0].probs is not None</span>
+<span class="sd">            True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">lev</span><span class="p">,</span> <span class="n">stages</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stages</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">stage</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stages</span><span class="p">):</span>
+                <span class="n">probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">dirichlet</span><span class="p">([</span><span class="n">alpha</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">[</span><span class="n">lev</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+                <span class="n">stage</span><span class="o">.</span><span class="n">probs</span> <span class="o">=</span> <span class="n">probs</span>
+                <span class="k">if</span> <span class="n">stage</span><span class="o">.</span><span class="n">color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># Set color from stage if possible</span>
+                    <span class="n">stage</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="CStree.estimate_stage_parameters">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.estimate_stage_parameters">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">estimate_stage_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;BDeu&quot;</span><span class="p">,</span> <span class="n">alpha_tot</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimate the parameters of the stages of the CStree under a Dirichlet model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (pd.DataFrame): A pandas dataframe with the data.</span>
+<span class="sd">            method (str): The estimation method. Currently only &quot;BDeu&quot; [2] is implemented.</span>
+<span class="sd">            alpha_tot (float): Total Dirichlet pseudo-count, split proportionally</span>
+<span class="sd">                across stages by their size.</span>
+
+<span class="sd">        Reference:</span>
+<span class="sd">            [2] C. Hughes, P. Strong, and A. Shenvi. Score equivalence for staged trees, 2023,</span>
+<span class="sd">            https://arxiv.org/abs/2206.15322</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; import random</span>
+<span class="sd">            &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">            &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">            &gt;&gt;&gt; np.random.seed(1)</span>
+<span class="sd">            &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">            &gt;&gt;&gt; t = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)</span>
+<span class="sd">            &gt;&gt;&gt; t.sample_stage_parameters()</span>
+<span class="sd">            &gt;&gt;&gt; df = t.sample(500)</span>
+<span class="sd">            &gt;&gt;&gt; t.estimate_stage_parameters(df, alpha_tot=1.0, method=&quot;BDeu&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; abs(sum(t.stages[0][0].probs) - 1.0) &lt; 1e-9</span>
+<span class="sd">            True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.scoring</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>
+
+        <span class="c1"># Set stage probabilities</span>
+        <span class="k">for</span> <span class="n">lev</span><span class="p">,</span> <span class="n">stages</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stages</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">lev</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">stage_counts</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">_counts_at_level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lev</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">stage</span> <span class="ow">in</span> <span class="n">stages</span><span class="p">:</span>
+                <span class="n">probs</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">_estimate_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">,</span> <span class="n">stage_counts</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">alpha_tot</span><span class="p">)</span>
+                <span class="n">stage</span><span class="o">.</span><span class="n">probs</span> <span class="o">=</span> <span class="n">probs</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_tree_probs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This is dependent on if one has sampled from the tree already.</span>
+<span class="sd">        I.e., if a probablity is already set for an edge, it</span>
+<span class="sd">        should not be overwritten.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># First create the tree.</span>
+        <span class="c1"># This has to do with that, if we allow for singleton stages, we need to</span>
+        <span class="c1"># make sure it is not too big sort of.</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_tree</span><span class="p">()</span>
+
+        <span class="c1"># Check if the node is part part of a context (stage?)</span>
+        <span class="c1"># if so we may overwrite probs. Otherwise, generate new ones.</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">children</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">successors</span><span class="p">(</span><span class="n">node</span><span class="p">)))</span>
+            <span class="n">probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">dirichlet</span><span class="p">([</span><span class="n">alpha</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="p">)])</span>
+            <span class="c1"># Seems like a stage at level l holds the probtable for the</span>
+            <span class="c1"># variabel at level l+1.</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ch</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">children</span><span class="p">):</span>
+                <span class="n">stage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stage</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">stage</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># No singleton stages allowed!</span>
+                    <span class="n">prob</span> <span class="o">=</span> <span class="n">stage</span><span class="o">.</span><span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="n">ch</span><span class="p">][</span><span class="s2">&quot;cond_prob&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="n">ch</span><span class="p">][</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">prob</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="n">ch</span><span class="p">][</span><span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stage</span><span class="o">.</span><span class="n">color</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stage</span><span class="o">.</span><span class="n">color</span>
+                <span class="k">else</span><span class="p">:</span>  <span class="c1"># This should never happen as all nodes should be part of a stage.</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="n">ch</span><span class="p">][</span><span class="s2">&quot;cond_prob&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="n">ch</span><span class="p">][</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_stage_no</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the stage number of a node in a level of the cstree.</span>
+<span class="sd">        This is used when coloring the nodes.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            node (tuple): A node in the CStree.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lev</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">stages</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stages</span><span class="p">[</span><span class="n">lev</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">stage_dict</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stages</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">stage_dict</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">i</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tree</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+
+        <span class="c1"># All the levels of the first variable.</span>
+        <span class="n">tovisit</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">tovisit</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Visit/create node in the tree</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">tovisit</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">lev</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># added -1</span>
+            <span class="n">fr</span> <span class="o">=</span> <span class="n">node</span><span class="p">[:</span><span class="n">lev</span><span class="p">]</span>
+            <span class="n">to</span> <span class="o">=</span> <span class="n">node</span>
+            <span class="n">stage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stage</span><span class="p">(</span><span class="n">fr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">fr</span><span class="p">,</span> <span class="n">to</span><span class="p">)</span>  <span class="c1"># check if exists first</span>
+
+            <span class="k">if</span> <span class="n">stage</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># No singleton stages allowed!</span>
+                <span class="k">if</span> <span class="n">stage</span><span class="o">.</span><span class="n">probs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># The last digit/element in the node is the variable value</span>
+                    <span class="n">prob</span> <span class="o">=</span> <span class="n">stage</span><span class="o">.</span><span class="n">probs</span><span class="p">[</span><span class="n">to</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">[</span><span class="n">fr</span><span class="p">][</span><span class="n">to</span><span class="p">][</span><span class="s2">&quot;cond_prob&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">[</span><span class="n">fr</span><span class="p">][</span><span class="n">to</span><span class="p">][</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">prob</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">[</span><span class="n">fr</span><span class="p">][</span><span class="n">to</span><span class="p">][</span><span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stage</span><span class="o">.</span><span class="n">color</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">fr</span><span class="p">][</span><span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stage</span><span class="o">.</span><span class="n">color</span>
+
+            <span class="k">if</span> <span class="n">fr</span> <span class="o">==</span> <span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">fr</span><span class="p">][</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ø&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">to</span><span class="p">][</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="c1"># Add more nodes to visit</span>
+            <span class="k">if</span> <span class="n">lev</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">[</span><span class="n">lev</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]):</span>
+                    <span class="n">tovisit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">to</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">,))</span>
+
+    <span class="c1"># Here is the only place we need labels/orders.</span>
+<div class="viewcode-block" id="CStree.to_minimal_context_graphs">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.to_minimal_context_graphs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_minimal_context_graphs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This returns a dict of minimal context NetworkX DAGs.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The keys are the contexts, and the values are the NetworkX DAGs.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            For the CStree of Figure 1 in Duarte &amp; Solus (2021), the minimal</span>
+<span class="sd">            context graphs have edge sets::</span>
+
+<span class="sd">                X2=0: [(&#39;X1&#39;, &#39;X4&#39;), (&#39;X3&#39;, &#39;X4&#39;)]</span>
+<span class="sd">                X3=0: [(&#39;X1&#39;, &#39;X2&#39;), (&#39;X1&#39;, &#39;X4&#39;)]</span>
+<span class="sd">                X1=0: [(&#39;X2&#39;, &#39;X3&#39;), (&#39;X3&#39;, &#39;X4&#39;)]</span>
+
+<span class="sd">            (see :func:`cslearn.dependence.csi_relations_to_dags` for a runnable</span>
+<span class="sd">            construction of that tree).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">minl_csis_by_context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_minimal_context_csis</span><span class="p">()</span>
+        <span class="n">cdags</span> <span class="o">=</span> <span class="n">dependence</span><span class="o">.</span><span class="n">csi_relations_to_dags</span><span class="p">(</span><span class="n">minl_csis_by_context</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cdags</span></div>
+
+
+<div class="viewcode-block" id="CStree.to_minimal_context_agraphs">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.to_minimal_context_agraphs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_minimal_context_agraphs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="s2">&quot;dot&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This returns a dict   of minimal context DAGs as pgraphviz graphs.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            layout (str, optional): Graphviz engine. Defaults to &quot;dot&quot;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">           pygraphviz.agraph.AGraph: pygraphviz graphs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">graphs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_minimal_context_graphs</span><span class="p">()</span>
+        <span class="n">agraphs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">graph</span> <span class="ow">in</span> <span class="n">graphs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">agraphs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">nx_agraph</span><span class="o">.</span><span class="n">to_agraph</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+            <span class="n">agraphs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">graph_attr</span><span class="p">[</span><span class="s2">&quot;fontsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+            <span class="n">agraphs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">node_attr</span><span class="p">[</span><span class="s2">&quot;fontsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+            <span class="n">agraphs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">edge_attr</span><span class="p">[</span><span class="s2">&quot;fontsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+            <span class="n">agraphs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">layout</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">agraphs</span></div>
+
+
+<div class="viewcode-block" id="CStree.to_minimal_context_csis">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.to_minimal_context_csis">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_minimal_context_csis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This returns a dict of minimal context CSIs.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            For the CStree of Figure 1 in Duarte &amp; Solus (2021), the minimal</span>
+<span class="sd">            context CSIs are ``X1 ⊥ X3 | X2=0``, ``X2 ⊥ X4 | X1, X3=0`` and</span>
+<span class="sd">            ``X2 ⊥ X4 | X3, X1=0`` (see</span>
+<span class="sd">            :func:`cslearn.dependence.minimal_csis` for a runnable example).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Stages&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stages</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;level </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">val</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Getting csi rels per level&quot;</span><span class="p">)</span>
+        <span class="n">rels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">csi_relations_per_level</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;CSI relations per level&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">rel</span> <span class="ow">in</span> <span class="n">rels</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;level </span><span class="si">{}</span><span class="s2">: &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rel</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;the CSI&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;cards: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">cards</span><span class="p">))</span>
+
+        <span class="n">paired_csis</span> <span class="o">=</span> <span class="n">dependence</span><span class="o">.</span><span class="n">_csis_by_levels_2_by_pairs</span><span class="p">(</span><span class="n">rels</span><span class="p">,</span> <span class="n">cards</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">)</span>  <span class="c1"># this could still be per level?</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">###### Paired_csis&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">paired_csis</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> ######### minl cslisist&quot;</span><span class="p">)</span>
+        <span class="c1"># The pairs may change during the process this is why we have by pairs.</span>
+        <span class="c1"># However, the level part</span>
+        <span class="c1"># should always remain the same actually, so may this is not be needed.</span>
+        <span class="n">minl_csislists</span> <span class="o">=</span> <span class="n">dependence</span><span class="o">.</span><span class="n">minimal_csis</span><span class="p">(</span><span class="n">paired_csis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">)</span>  <span class="c1"># this could be by level still?</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">minl_csislists</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> ############### get minl csis in list format&quot;</span><span class="p">)</span>
+        <span class="n">minl_csis</span> <span class="o">=</span> <span class="n">dependence</span><span class="o">.</span><span class="n">_csi_lists_to_csis_by_level</span><span class="p">(</span>
+            <span class="n">minl_csislists</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span>
+        <span class="p">)</span>  <span class="c1"># this would not be needed</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">minl_csislists</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">minl_csislists</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">pair</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">key</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pair</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;#### minimal csis&quot;</span><span class="p">)</span>
+        <span class="n">minl_csis_by_context</span> <span class="o">=</span> <span class="n">dependence</span><span class="o">.</span><span class="n">_rels_by_level_2_by_context</span><span class="p">(</span><span class="n">minl_csis</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">minl_csis_by_context</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">pair</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">minl_csis_by_context</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">csi</span> <span class="ow">in</span> <span class="n">val</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">csi</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">minl_csis_by_context</span></div>
+
+
+<div class="viewcode-block" id="CStree.csi_relations_per_level">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.csi_relations_per_level">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">csi_relations_per_level</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the context specific independence relations per level.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The CSI relations per level. The keys are the levels, and the values are lists of CSI relations.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; import random</span>
+<span class="sd">            &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">            &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">            &gt;&gt;&gt; np.random.seed(1)</span>
+<span class="sd">            &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">            &gt;&gt;&gt; tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)</span>
+<span class="sd">            &gt;&gt;&gt; sorted(tree.csi_relations_per_level())</span>
+<span class="sd">            [0, 1, 2, 3]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="n">l</span><span class="p">:</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">to_csi</span><span class="p">()</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">stages</span><span class="p">]</span> <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="n">stages</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stages</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="CStree.csi_relations">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.csi_relations">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">csi_relations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the context specific indepencende (CSI) relations for the CStree.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; import random</span>
+<span class="sd">            &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">            &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">            &gt;&gt;&gt; from cslearn.dependence import Context</span>
+<span class="sd">            &gt;&gt;&gt; np.random.seed(1)</span>
+<span class="sd">            &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">            &gt;&gt;&gt; tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)</span>
+<span class="sd">            &gt;&gt;&gt; all(isinstance(k, Context) for k in tree.csi_relations())</span>
+<span class="sd">            True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">csi_rels</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">stage_list</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stages</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">stage</span> <span class="ow">in</span> <span class="n">stage_list</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">stage</span><span class="o">.</span><span class="n">is_singleton</span><span class="p">():</span>
+                    <span class="c1"># As these dont encode any independence relations.</span>
+                    <span class="k">continue</span>
+                <span class="n">csi_rel</span> <span class="o">=</span> <span class="n">stage</span><span class="o">.</span><span class="n">to_csi</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">csi_rel</span><span class="o">.</span><span class="n">context</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">csi_rels</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">csi_rels</span><span class="p">[</span><span class="n">csi_rel</span><span class="o">.</span><span class="n">context</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">csi_rel</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">csi_rels</span><span class="p">[</span><span class="n">csi_rel</span><span class="o">.</span><span class="n">context</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">csi_rel</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">csi_rels</span></div>
+
+
+<div class="viewcode-block" id="CStree.sample">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.sample">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Draws random samples from the CStree. It also dynamically generates nodes in the underlying tree and associated parameters on the fly in order to avoid creating the whole</span>
+<span class="sd">        tree, which is O(2^p) (if singeltone stages are allowed), just to sample data. This is also useful when plotting the tree, as it will only contain the nodes that are actually used in the sampling.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n (int): number of random samples.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.DataFrame: A pandas dataframe containing the data. The header contains labels of the</span>
+<span class="sd">            variables and row 0 contains the cardinalities. The other rows contain the samples.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; import random</span>
+<span class="sd">            &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">            &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">            &gt;&gt;&gt; np.random.seed(1)</span>
+<span class="sd">            &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">            &gt;&gt;&gt; tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)</span>
+<span class="sd">            &gt;&gt;&gt; tree.sample_stage_parameters()</span>
+<span class="sd">            &gt;&gt;&gt; df = tree.sample(5)</span>
+<span class="sd">            &gt;&gt;&gt; df.shape  # cardinalities row + 5 samples</span>
+<span class="sd">            (6, 4)</span>
+<span class="sd">            &gt;&gt;&gt; df.iloc[0].tolist()</span>
+<span class="sd">            [2, 2, 2, 2]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># TODO: Check that the stage parameters are set.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tree</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+        <span class="n">xs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">xs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">)</span>  <span class="c1"># cardinalities at the first row</span>
+
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="p">()</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">:</span>
+                <span class="c1"># Create tree dynamically if isnt already crated.</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">out_edges</span><span class="p">(</span><span class="n">node</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">lev</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+                    <span class="n">edges</span> <span class="o">=</span> <span class="p">[(</span><span class="n">node</span><span class="p">,</span> <span class="n">node</span> <span class="o">+</span> <span class="p">(</span><span class="n">ind</span><span class="p">,))</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">[</span><span class="n">lev</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])]</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span>
+
+                    <span class="c1"># We set the parametres at to whats specifies in the stage.</span>
+                    <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stage</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                    <span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># not singleton</span>
+                        <span class="n">probs</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">probs</span>
+                        <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># Color if the color isnt set already</span>
+                            <span class="n">s</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">color_no</span><span class="p">]</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">color_no</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                        <span class="n">color</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">color</span>
+
+                    <span class="c1"># Hope this gets in the right order</span>
+                    <span class="n">edges</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">out_edges</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+
+                    <span class="c1"># Set parameters</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">edges</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="s2">&quot;cond_prob&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">color</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">color</span>
+
+                        <span class="c1"># Coloring the child too</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">:</span>
+                            <span class="n">child_stage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stage</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">child_stage</span><span class="o">.</span><span class="n">color</span>
+
+                        <span class="c1"># We should color all children here.</span>
+
+                <span class="n">edges</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">out_edges</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+
+                <span class="n">probabilities</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="s2">&quot;cond_prob&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">]</span>
+
+                <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">edges</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">probabilities</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="n">ind</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># This is a typle like (0,1,1,0)</span>
+                <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>  <span class="c1"># Take the last element, 0, above</span>
+
+            <span class="n">xs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span>
+        <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="CStree.plot">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.plot">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot the CStree.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            full (bool): If True, the complete tree is drawn with all nodes.</span>
+<span class="sd">                Defaults to False, in which case only nodes visited during</span>
+<span class="sd">                sampling are shown (pass ``full=True`` for a fresh tree with</span>
+<span class="sd">                no sampling history).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pygraphviz.agraph.AGraph: A pygraphviz graph.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            Given a parameterised ``tree``::</span>
+
+<span class="sd">                agraph = tree.plot(full=True)</span>
+<span class="sd">                agraph.draw(&quot;cstree.png&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># If no samples has been drawn, create the full tree.</span>
+        <span class="k">if</span> <span class="n">full</span><span class="p">:</span>  <span class="c1"># or (self.tree is None):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_tree</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Use plot(full=True) to draw the full tree.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">agraph</span> <span class="o">=</span> <span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">)</span>
+        <span class="c1"># agraph.node_attr[&quot;shape&quot;] = &quot;circle&quot;</span>
+
+        <span class="c1">###############################################################</span>
+        <span class="c1">### This is a hack to plot labels. Just an invisible graph. ###</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">lab</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">):</span>
+            <span class="n">agraph</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">lab</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
+
+        <span class="n">agraph</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
+        <span class="n">agraph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">lab</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">agraph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
+
+        <span class="n">agraph</span><span class="o">.</span><span class="n">layout</span><span class="p">(</span><span class="s2">&quot;dot&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">agraph</span></div>
+
+
+<div class="viewcode-block" id="CStree.predict">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.predict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">partial_observations</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+        <span class="n">return_probs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict the most likely completion of partially-observed rows.</span>
+
+<span class="sd">        Given a CStree over random variables :math:`X_{[p]}` and a DataFrame</span>
+<span class="sd">        of partial observations, returns the MAP completion of the unobserved</span>
+<span class="sd">        variables for each row.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            partial_observations: DataFrame whose columns are the labels of the</span>
+<span class="sd">                observed variables and whose rows are individual observations.</span>
+<span class="sd">                Pass a single-row DataFrame with no columns</span>
+<span class="sd">                (``pd.DataFrame(index=[0])``) to predict all variables</span>
+<span class="sd">                unconditionally.</span>
+<span class="sd">            return_probs: If ``True``, append a ``PROB`` column containing the</span>
+<span class="sd">                normalized conditional probability of the MAP completion.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame with one column per predicted variable (in label order).</span>
+<span class="sd">            If ``return_probs=True``, a ``PROB`` column is appended.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; import random</span>
+<span class="sd">            &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">            &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">            &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">            &gt;&gt;&gt; np.random.seed(22)</span>
+<span class="sd">            &gt;&gt;&gt; random.seed(22)</span>
+<span class="sd">            &gt;&gt;&gt; t = ct.sample_cstree([3, 2, 2, 3], max_cvars=2, prob_cvar=0.5, prop_nonsingleton=1)</span>
+<span class="sd">            &gt;&gt;&gt; t.sample_stage_parameters(alpha=2)</span>
+<span class="sd">            &gt;&gt;&gt; pred = t.predict(pd.DataFrame({0: [1]}))  # observe X0 = 1, predict the rest</span>
+<span class="sd">            &gt;&gt;&gt; list(pred.columns)</span>
+<span class="sd">            [1, 2, 3]</span>
+<span class="sd">            &gt;&gt;&gt; len(pred)</span>
+<span class="sd">            1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">partial_labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">partial_observations</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="n">to_predict_labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="k">if</span> <span class="n">l</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">partial_labels</span><span class="p">]</span>
+
+        <span class="c1"># Corner case: all variables are observed — return observations unchanged.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">to_predict_labels</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">partial_observations</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">return_probs</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="s2">&quot;PROB&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="n">label_order</span> <span class="o">=</span> <span class="n">partial_labels</span> <span class="o">+</span> <span class="n">to_predict_labels</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">pmf</span><span class="p">(</span><span class="n">outcome</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmf</span><span class="p">(</span><span class="n">outcome</span><span class="p">,</span> <span class="n">label_order</span><span class="p">)</span>
+
+        <span class="n">outcome_completions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">l</span><span class="p">)])</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">to_predict_labels</span><span class="p">)))</span>
+
+        <span class="n">num_preds</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">partial_observations</span><span class="p">)</span>
+        <span class="n">preds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">num_preds</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">to_predict_labels</span><span class="p">)),</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">return_probs</span><span class="p">:</span>
+            <span class="n">probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">num_preds</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+
+        <span class="n">obs_iter</span> <span class="o">=</span> <span class="n">partial_observations</span><span class="o">.</span><span class="n">values</span> <span class="k">if</span> <span class="n">partial_labels</span> <span class="k">else</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_preds</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">partial</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">obs_iter</span><span class="p">):</span>
+            <span class="n">outcomes</span> <span class="o">=</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">partial</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">outcome_completions</span><span class="p">)</span>
+            <span class="n">preds</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">outcomes</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">pmf</span><span class="p">)[</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">to_predict_labels</span><span class="p">)</span> <span class="p">:]</span>
+            <span class="k">if</span> <span class="n">return_probs</span><span class="p">:</span>
+                <span class="n">outcomes</span> <span class="o">=</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">partial</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">outcome_completions</span><span class="p">)</span>
+                <span class="n">outcome_probs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">pmf</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">))</span>
+                <span class="n">probs</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">outcome_probs</span><span class="p">)</span> <span class="o">/</span> <span class="nb">sum</span><span class="p">(</span><span class="n">outcome_probs</span><span class="p">)</span>
+
+        <span class="n">preds_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">to_predict_labels</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">return_probs</span><span class="p">:</span>
+            <span class="n">preds_df</span><span class="p">[</span><span class="s2">&quot;PROB&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">probs</span>
+        <span class="k">return</span> <span class="n">preds_df</span></div>
+
+
+<div class="viewcode-block" id="CStree.fit">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+        <span class="n">gibbs_samples</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+        <span class="n">poss_cvars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">grasp_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">grasp_score</span><span class="o">=</span><span class="s2">&quot;local_score_BDeu&quot;</span><span class="p">,</span>
+        <span class="n">max_cvars</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">alpha_tot</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">method</span><span class="o">=</span><span class="s2">&quot;BDeu&quot;</span><span class="p">,</span>
+        <span class="n">save_as</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Learn a CStree from data using GRaSP + Gibbs order sampling (CSlearn).</span>
+
+<span class="sd">        Runs the three-phase CSlearn pipeline:</span>
+<span class="sd">        1. DAG pre-screening via GRaSP (or uses caller-supplied ``poss_cvars``).</span>
+<span class="sd">        2. Gibbs order MCMC to find the MAP variable ordering.</span>
+<span class="sd">        3. Exact staging search to find the optimal CStree for that ordering.</span>
+
+<span class="sd">        Updates ``self`` in place and returns it.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (pd.DataFrame): Training data; first column may be cardinalities</span>
+<span class="sd">                (matching the format returned by :meth:`sample`).</span>
+<span class="sd">            gibbs_samples (int): Number of Gibbs iterations for order sampling.</span>
+<span class="sd">                Defaults to 10000.</span>
+<span class="sd">            poss_cvars (dict, optional): Pre-computed dict mapping each variable</span>
+<span class="sd">                label to its list of possible context variables. If ``None``</span>
+<span class="sd">                (default), GRaSP is run on ``data`` to produce this dict.</span>
+<span class="sd">            grasp_depth (int): GRaSP search depth. Defaults to 3.</span>
+<span class="sd">            grasp_score (str): Scoring function for GRaSP. Defaults to</span>
+<span class="sd">                ``&quot;local_score_BDeu&quot;``.</span>
+<span class="sd">            max_cvars (int): Maximum context-set size β. Defaults to 2.</span>
+<span class="sd">            alpha_tot (float): Total BDeu pseudo-count. Defaults to 1.0.</span>
+<span class="sd">            method (str): Scoring method, currently only ``&quot;BDeu&quot;`` is supported.</span>
+<span class="sd">            save_as (str): If non-empty, save intermediate results (``poss_cvars``,</span>
+<span class="sd">                score tables, learned tree, …) to ``{save_as}-&lt;name&gt;.pkl`` files.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            CStree: ``self``, updated with the learned structure and parameters.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; import contextlib</span>
+<span class="sd">            &gt;&gt;&gt; import io</span>
+<span class="sd">            &gt;&gt;&gt; import random</span>
+<span class="sd">            &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">            &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">            &gt;&gt;&gt; np.random.seed(0)</span>
+<span class="sd">            &gt;&gt;&gt; random.seed(0)</span>
+<span class="sd">            &gt;&gt;&gt; tree = ct.sample_cstree([2, 2, 2], max_cvars=1, prob_cvar=0.5)</span>
+<span class="sd">            &gt;&gt;&gt; tree.sample_stage_parameters()</span>
+<span class="sd">            &gt;&gt;&gt; df = tree.sample(200)</span>
+<span class="sd">            &gt;&gt;&gt; with contextlib.redirect_stdout(io.StringIO()):  # hide GRaSP progress</span>
+<span class="sd">            ...     learned = ct.CStree(tree.cards).fit(df)</span>
+<span class="sd">            &gt;&gt;&gt; isinstance(learned, ct.CStree) and learned.stages is not None</span>
+<span class="sd">            True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.learning</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ctl</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">cslearn.scoring</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>
+
+        <span class="k">if</span> <span class="n">poss_cvars</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># estimate possible context variables and create score tables</span>
+            <span class="n">graph</span> <span class="o">=</span> <span class="n">grasp</span><span class="p">(</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+                <span class="n">score_func</span><span class="o">=</span><span class="n">grasp_score</span><span class="p">,</span>
+                <span class="n">depth</span><span class="o">=</span><span class="n">grasp_depth</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">poss_cvars</span> <span class="o">=</span> <span class="n">ctl</span><span class="o">.</span><span class="n">causallearn_graph_to_posscvars</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="s2">&quot;grasp&quot;</span><span class="p">)</span>
+
+        <span class="n">score_table</span><span class="p">,</span> <span class="n">context_scores</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">order_score_tables</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">max_cvars</span><span class="o">=</span><span class="n">max_cvars</span><span class="p">,</span>
+            <span class="n">alpha_tot</span><span class="o">=</span><span class="n">alpha_tot</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+            <span class="n">poss_cvars</span><span class="o">=</span><span class="n">poss_cvars</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># run Gibbs sampler to get MAP order</span>
+        <span class="n">orders</span><span class="p">,</span> <span class="n">scores</span> <span class="o">=</span> <span class="n">ctl</span><span class="o">.</span><span class="n">gibbs_order_sampler</span><span class="p">(</span><span class="n">gibbs_samples</span><span class="p">,</span> <span class="n">score_table</span><span class="p">)</span>
+        <span class="n">map_order</span> <span class="o">=</span> <span class="n">orders</span><span class="p">[</span><span class="n">scores</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">scores</span><span class="p">))]</span>
+
+        <span class="c1"># estimate CStree and stage params</span>
+        <span class="n">opt_tree</span> <span class="o">=</span> <span class="n">ctl</span><span class="o">.</span><span class="n">_optimal_cstree_given_order</span><span class="p">(</span><span class="n">map_order</span><span class="p">,</span> <span class="n">context_scores</span><span class="p">)</span>
+        <span class="n">opt_tree</span><span class="o">.</span><span class="n">estimate_stage_parameters</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">alpha_tot</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;BDeu&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">save_as</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">to_saves</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">poss_cvars</span><span class="p">,</span>
+                <span class="n">score_table</span><span class="p">,</span>
+                <span class="n">context_scores</span><span class="p">,</span>
+                <span class="n">orders</span><span class="p">,</span>
+                <span class="n">scores</span><span class="p">,</span>
+                <span class="n">opt_tree</span><span class="p">,</span>
+            <span class="p">]</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s2">&quot;poss_cvars&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;score_table&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;context_scores&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;orders&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;scores&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;opt_tree&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+            <span class="k">for</span> <span class="n">to_save</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">to_saves</span><span class="p">,</span> <span class="n">names</span><span class="p">):</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">save_as</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">to_save</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+        <span class="n">old_labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">opt_tree</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">old_labels</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">old_labels</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="CStree.to_LDAG">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.to_LDAG">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_LDAG</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">return_contexts</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the LDAG representation of the CStree.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            return_contexts: if True, also return a dict mapping each edge to</span>
+<span class="sd">                its CSI relations as ``(variable, value)`` pairs, rather than</span>
+<span class="sd">                just the bare context values the edge&#39;s own ``&quot;label&quot;``</span>
+<span class="sd">                attribute carries. Useful for building a human-readable</span>
+<span class="sd">                context table.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            nx.DiGraph: A DAG whose edges carry CSI-relation labels. Node labels</span>
+<span class="sd">            match ``self.labels``. If ``return_contexts`` is True, returns a</span>
+<span class="sd">            ``(LDAG, contexts)`` tuple instead, where ``contexts`` maps each</span>
+<span class="sd">            edge to a list of its CSI relations, each relation a list of</span>
+<span class="sd">            ``(variable, value)`` pairs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span>
+        <span class="c1"># convert variable names to integer values for purposes of finding LDAG representation</span>
+        <span class="c1"># These are later converted back to the variable names using an option in plotLDAG</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+
+        <span class="n">num_nodes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+        <span class="n">adjMat</span> <span class="o">=</span> <span class="n">ldag</span><span class="o">.</span><span class="n">_getDAGmap</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">ldag</span><span class="o">.</span><span class="n">_collectLabels</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+        <span class="n">LDAG</span> <span class="o">=</span> <span class="n">ldag</span><span class="o">.</span><span class="n">LDAG</span><span class="p">(</span><span class="n">adjMat</span><span class="p">)</span>
+        <span class="n">varorder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span>
+
+        <span class="n">newEdges</span> <span class="o">=</span> <span class="n">ldag</span><span class="o">.</span><span class="n">_updateEdges</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">varorder</span><span class="p">)</span>
+        <span class="n">newLabels</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">newEdges</span><span class="p">)</span>
+        <span class="n">labelkeys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">labelkeys</span><span class="p">)):</span>
+            <span class="n">newLabels</span><span class="p">[</span><span class="n">newEdges</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">labelkeys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+
+        <span class="n">newVertices</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">):</span>
+            <span class="n">newVertices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">varorder</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="n">LDAG</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">relabel_nodes</span><span class="p">(</span><span class="n">LDAG</span><span class="p">,</span> <span class="n">newVertices</span><span class="p">)</span>
+        <span class="n">nx</span><span class="o">.</span><span class="n">set_edge_attributes</span><span class="p">(</span><span class="n">LDAG</span><span class="p">,</span> <span class="n">newLabels</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">return_contexts</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">LDAG</span>
+
+        <span class="n">contexts</span> <span class="o">=</span> <span class="n">ldag</span><span class="o">.</span><span class="n">_collectLabels</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">keep_vars</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">contextEdges</span> <span class="o">=</span> <span class="n">ldag</span><span class="o">.</span><span class="n">_updateEdges</span><span class="p">(</span><span class="n">contexts</span><span class="p">,</span> <span class="n">varorder</span><span class="p">)</span>
+        <span class="n">contextkeys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">contexts</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">namedContexts</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">contextkeys</span><span class="p">)):</span>
+            <span class="n">relations</span> <span class="o">=</span> <span class="n">contexts</span><span class="p">[</span><span class="n">contextkeys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+            <span class="n">namedContexts</span><span class="p">[</span><span class="n">contextEdges</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">[(</span><span class="n">varorder</span><span class="p">[</span><span class="n">var_idx</span><span class="p">],</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">var_idx</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">relation</span><span class="p">]</span> <span class="k">for</span> <span class="n">relation</span> <span class="ow">in</span> <span class="n">relations</span>
+            <span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">LDAG</span><span class="p">,</span> <span class="n">namedContexts</span></div>
+
+
+<div class="viewcode-block" id="CStree.pmf">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.pmf">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pmf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">label_order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the probability mass function of a given outcome.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (list): Outcome values, one per variable. Order follows ``label_order``</span>
+<span class="sd">                if provided, otherwise ``self.labels``.</span>
+<span class="sd">            label_order (list, optional): Permutation of ``self.labels`` describing</span>
+<span class="sd">                the order of values in ``x``. Defaults to ``self.labels``.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: The probability mass of the outcome.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">label_order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">label_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="n">label_order</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">l</span><span class="p">)]</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">]</span>
+
+        <span class="n">prob</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">stage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stage</span><span class="p">(</span><span class="n">x</span><span class="p">[:</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">prob</span> <span class="o">*=</span> <span class="n">stage</span><span class="o">.</span><span class="n">probs</span><span class="p">[</span><span class="n">val</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">prob</span></div>
+
+
+<div class="viewcode-block" id="CStree.pmf_log">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.pmf_log">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pmf_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">label_order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the log probability mass function of a given outcome.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (list): A list of values representing the outcome.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: The log probability mass of the outcome.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">label_order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">label_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span>
+
+        <span class="c1"># relabel the outcome</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="n">label_order</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">l</span><span class="p">)]</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">]</span>
+
+        <span class="n">log_prob</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">stage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stage</span><span class="p">(</span><span class="n">x</span><span class="p">[:</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">stage</span><span class="o">.</span><span class="n">probs</span><span class="p">[</span><span class="n">val</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+            <span class="n">log_prob</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">stage</span><span class="o">.</span><span class="n">probs</span><span class="p">[</span><span class="n">val</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">log_prob</span></div>
+
+
+<div class="viewcode-block" id="CStree.to_joint_distribution">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.CStree.to_joint_distribution">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_joint_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label_order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_outcomes</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the joint distribution of the CStree.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            label_order (list, optional): A list of labels from self.labels in the desired order. Defaults to None which means self.labels.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Pandas Dataframe: The joint distribution of the CStree.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; import random</span>
+<span class="sd">            &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">            &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">            &gt;&gt;&gt; np.random.seed(1)</span>
+<span class="sd">            &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">            &gt;&gt;&gt; tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)</span>
+<span class="sd">            &gt;&gt;&gt; tree.sample_stage_parameters()</span>
+<span class="sd">            &gt;&gt;&gt; df = tree.to_joint_distribution()</span>
+<span class="sd">            &gt;&gt;&gt; df.shape  # 2**4 outcomes, plus prob / log_prob columns</span>
+<span class="sd">            (16, 6)</span>
+<span class="sd">            &gt;&gt;&gt; bool(np.isclose(df[&quot;prob&quot;].sum(), 1.0))</span>
+<span class="sd">            True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">label_order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">label_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span>
+
+        <span class="c1"># Iterate over all possible outcomes and calculate the probability mass function.</span>
+        <span class="c1"># Store the outcomes together with the probabilities in a Pandas Dataframe.</span>
+        <span class="n">outcomes</span> <span class="o">=</span> <span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="n">card</span><span class="p">)</span> <span class="k">for</span> <span class="n">card</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">])</span>
+        <span class="n">n_outcomes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">)</span>
+
+        <span class="c1"># Create an empty dataframe with the correct column names</span>
+        <span class="n">df_outcomes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">label_order</span><span class="p">)</span>
+        <span class="c1"># store all the outcomes and probabilities</span>
+        <span class="n">pmfs</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">)</span>
+        <span class="n">pmfs_log</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">outcome</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">outcomes</span><span class="p">),</span> <span class="n">total</span><span class="o">=</span><span class="n">n_outcomes</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Calculating joint distribution&quot;</span><span class="p">):</span>
+            <span class="n">df_outcomes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">outcome</span>
+            <span class="n">pmfs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmf</span><span class="p">(</span><span class="n">outcome</span><span class="p">,</span> <span class="n">label_order</span><span class="p">)</span>
+            <span class="n">pmfs_log</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmf_log</span><span class="p">(</span><span class="n">outcome</span><span class="p">,</span> <span class="n">label_order</span><span class="p">)</span>
+
+        <span class="n">df_pmf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">pmfs</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;prob&quot;</span><span class="p">])</span>
+        <span class="n">df_pmf_log</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">pmfs_log</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;log_prob&quot;</span><span class="p">])</span>
+        <span class="c1"># join the two dataframes</span>
+        <span class="k">if</span> <span class="n">with_outcomes</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df_outcomes</span><span class="p">,</span> <span class="n">df_pmf</span><span class="p">,</span> <span class="n">df_pmf_log</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df_pmf</span><span class="p">,</span> <span class="n">df_pmf_log</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">df</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="sample_cstree">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.sample_cstree">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sample_cstree</span><span class="p">(</span>
+    <span class="n">cards</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">max_cvars</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">prob_cvar</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">prop_nonsingleton</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">labels</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CStree</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sample a random CStree with given cardinalities.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cards (list): cardinalities of the levels.</span>
+<span class="sd">        max_cvars (int): maximum number of context variables.</span>
+<span class="sd">        prob_cvar (float): probability a potential context variable (in the algorithm) will a context variable.</span>
+<span class="sd">        prop_nonsingleton (float): proportion of non-singleton stages. Defaults to 1.0, meaning no singletons, which is also what the algorithms in this library are designed for.</span>
+<span class="sd">        labels (list, optional): A list of strings or integers representing the labels of each level. Defaults to None which means [0,1,...,p-1].</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        CStree: A CStree.</span>
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import random</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">        &gt;&gt;&gt; np.random.seed(1)</span>
+<span class="sd">        &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">        &gt;&gt;&gt; tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(tree, ct.CStree)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; tree.cards</span>
+<span class="sd">        [2, 2, 2, 2]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cards</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
+    <span class="n">ct</span> <span class="o">=</span> <span class="n">CStree</span><span class="p">(</span><span class="n">cards</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+
+    <span class="n">stagings</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">level</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cards</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>  <span class="c1"># not the last level</span>
+        <span class="n">tmpstage</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">Stage</span><span class="p">([</span><span class="nb">set</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">cards</span><span class="p">[</span><span class="n">l</span><span class="p">]))</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)],</span> <span class="n">cards</span><span class="o">=</span><span class="n">cards</span><span class="p">)</span>
+
+        <span class="n">stage_space</span> <span class="o">=</span> <span class="p">[</span><span class="n">tmpstage</span><span class="p">]</span>
+
+        <span class="n">full_stage_space_size</span> <span class="o">=</span> <span class="n">stage_space</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+        <span class="n">singleton_space_size</span> <span class="o">=</span> <span class="n">full_stage_space_size</span>
+
+        <span class="c1"># Need to adjust the max_cvars for the low levels.</span>
+        <span class="n">mc</span> <span class="o">=</span> <span class="n">max_cvars</span>
+        <span class="k">if</span> <span class="n">level</span> <span class="o">&lt;</span> <span class="n">mc</span><span class="p">:</span>
+            <span class="n">mc</span> <span class="o">=</span> <span class="n">level</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># should allow for &quot;singleton&quot; stages at level 0 as this</span>
+            <span class="c1"># this correponds to the half of the space.</span>
+        <span class="c1"># in general, when the level is the liming factor, the number of stages</span>
+        <span class="c1"># should be as many as possible. Hence, mc = level +1</span>
+        <span class="c1"># It should not make abig difference. But in this way, we actually show</span>
+        <span class="c1"># all the stages expicitly, even when saving to file, without risking</span>
+        <span class="c1"># to blow up the space.</span>
+
+        <span class="n">minimal_stage_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span>
+            <span class="nb">sorted</span><span class="p">(</span><span class="n">cards</span><span class="p">[:</span> <span class="n">level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])[:</span><span class="o">-</span><span class="n">mc</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span>
+        <span class="p">)</span>  <span class="c1"># take the product of all cards, expept for the mc largest ones</span>
+
+        <span class="c1"># special case when the granularity is to coarse. Randomly add anyway?</span>
+        <span class="c1"># Setting the upper boudn likje this may generalize. However, the stage</span>
+        <span class="c1"># should not always be accepted.. prop_nonsingleton =</span>
+        <span class="c1"># max(prop_nonsingleton, minimal_stage_size / full_state_space_size)</span>
+
+        <span class="c1"># Allowing only non-singleton stages, this should never happen.</span>
+        <span class="k">if</span> <span class="n">prop_nonsingleton</span> <span class="o">&lt;</span> <span class="n">minimal_stage_size</span> <span class="o">/</span> <span class="n">full_stage_space_size</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;The size (proportion </span><span class="si">{}</span><span class="s2">) of a minimal is larger than </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">minimal_stage_size</span> <span class="o">/</span> <span class="n">full_stage_space_size</span><span class="p">,</span> <span class="n">prop_nonsingleton</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multinomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="n">prob_cvar</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">prob_cvar</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">stagings</span><span class="p">[</span><span class="n">level</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">if</span> <span class="n">b</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+                <span class="c1"># it should be the whole space to begin with</span>
+                <span class="n">stage_restr</span> <span class="o">=</span> <span class="n">stage_space</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">new_stage</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">sample_stage_restr_by_stage</span><span class="p">(</span><span class="n">stage_restr</span><span class="p">,</span> <span class="n">mc</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">cards</span><span class="p">)</span>
+                <span class="n">stagings</span><span class="p">[</span><span class="n">level</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_stage</span><span class="p">)</span>
+            <span class="k">continue</span>  <span class="c1"># cant add anything anyway so just go to the next level.</span>
+        <span class="n">stagings</span><span class="p">[</span><span class="n">level</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">while</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">singleton_space_size</span> <span class="o">/</span> <span class="n">full_stage_space_size</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">prop_nonsingleton</span><span class="p">:</span>
+            <span class="n">colored_size_old</span> <span class="o">=</span> <span class="n">full_stage_space_size</span> <span class="o">-</span> <span class="n">singleton_space_size</span>
+            <span class="c1"># Choose randomly a stage space</span>
+
+            <span class="n">space_int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stage_space</span><span class="p">))</span>
+            <span class="n">stage_restr</span> <span class="o">=</span> <span class="n">stage_space</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">space_int</span><span class="p">)</span>
+            <span class="n">new_stage</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">sample_stage_restr_by_stage</span><span class="p">(</span><span class="n">stage_restr</span><span class="p">,</span> <span class="n">mc</span><span class="p">,</span> <span class="n">prob_cvar</span><span class="p">,</span> <span class="n">cards</span><span class="p">)</span>
+
+            <span class="n">new_space</span> <span class="o">=</span> <span class="n">stage_restr</span> <span class="o">-</span> <span class="n">new_stage</span>  <span class="c1"># this is a list of substages after removal</span>
+            <span class="n">stage_space</span> <span class="o">+=</span> <span class="n">new_space</span>  <span class="c1"># adds a list of stages</span>
+            <span class="c1"># subtract the size of the sampled stage</span>
+            <span class="n">singleton_space_size</span> <span class="o">-=</span> <span class="n">new_stage</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+            <span class="n">colored_prop</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">singleton_space_size</span> <span class="o">/</span> <span class="n">full_stage_space_size</span>
+            <span class="c1"># Check it its over full after adding the new space</span>
+            <span class="k">if</span> <span class="n">colored_prop</span> <span class="o">&gt;</span> <span class="n">prop_nonsingleton</span><span class="p">:</span>
+                <span class="c1"># Check if it would be possible to add the smallest stage.</span>
+                <span class="c1"># Restore the old space and maybe try again</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">minimal_stage_size</span> <span class="o">+</span> <span class="n">colored_size_old</span><span class="p">)</span> <span class="o">/</span> <span class="n">full_stage_space_size</span> <span class="o">&lt;=</span> <span class="n">prop_nonsingleton</span><span class="p">:</span>
+                    <span class="n">stage_space</span> <span class="o">=</span> <span class="n">stage_space</span><span class="p">[:</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">new_space</span><span class="p">)]</span>
+                    <span class="n">stage_space</span> <span class="o">+=</span> <span class="p">[</span><span class="n">stage_restr</span><span class="p">]</span>
+                    <span class="n">singleton_space_size</span> <span class="o">+=</span> <span class="n">new_stage</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># This is when it is impossible to push in a new stages</span>
+                    <span class="c1"># since all are be too big.</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">stagings</span><span class="p">[</span><span class="n">level</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_stage</span><span class="p">)</span>
+
+    <span class="n">stagings</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">st</span><span class="o">.</span><span class="n">Stage</span><span class="p">([],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)]</span>
+
+    <span class="c1"># Color each stage in the optimal staging. Singletons are black.</span>
+    <span class="c1"># This should be done somewhere else probably.</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;peru&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blueviolet&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;orange&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;navy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rebeccapurple&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;darkseagreen&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;darkslategray&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lightslategray&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;aquamarine&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lightgoldenrodyellow&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;cornsilk&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;azure&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;chocolate&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;red&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;darkolivegreen&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">level</span><span class="p">,</span> <span class="n">staging</span> <span class="ow">in</span> <span class="n">stagings</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">stage</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">staging</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">level</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="p">((</span><span class="n">level</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">stage</span><span class="o">.</span><span class="n">list_repr</span><span class="p">])):</span>
+                <span class="n">stage</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">stage</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="n">ct</span><span class="o">.</span><span class="n">update_stages</span><span class="p">(</span><span class="n">stagings</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ct</span></div>
+
+
+
+<div class="viewcode-block" id="df_to_cstree">
+<a class="viewcode-back" href="../../source/cslearn.cstree.html#cslearn.cstree.df_to_cstree">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">df_to_cstree</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">read_probs</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a dataframe to a CStree. The dataframe should have the following format:</span>
+<span class="sd">    The labels should be the level labels.</span>
+<span class="sd">    The first row should be the cardinalities, the second row should be the first stage, the third row the second stage etc. (see :meth:`cslearn.cstree.CStree.to_df()`).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df (Pandas DataFrame): The dataframe to convert.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        CStree: A CStree.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        ``df_to_cstree`` is the inverse of :meth:`CStree.to_df`:</span>
+
+<span class="sd">        &gt;&gt;&gt; import random</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; import cslearn.cstree as ct</span>
+<span class="sd">        &gt;&gt;&gt; np.random.seed(1)</span>
+<span class="sd">        &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">        &gt;&gt;&gt; tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)</span>
+<span class="sd">        &gt;&gt;&gt; roundtrip = ct.df_to_cstree(tree.to_df())</span>
+<span class="sd">        &gt;&gt;&gt; roundtrip.to_df().equals(tree.to_df())</span>
+<span class="sd">        True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">collabs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+    <span class="c1"># Gets the number of varaibles.</span>
+    <span class="c1"># If no probs are given, then the number of variables is</span>
+    <span class="c1"># the number of columns.</span>
+    <span class="k">if</span> <span class="s2">&quot;PROB_0&quot;</span> <span class="ow">in</span> <span class="n">collabs</span><span class="p">:</span>
+        <span class="n">has_probs</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">nvars</span> <span class="o">=</span> <span class="n">collabs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;PROB_0&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">has_probs</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">nvars</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">collabs</span><span class="p">)</span>
+
+    <span class="n">cards</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="n">nvars</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>  <span class="c1"># [int(x[1]) for x in df.columns]</span>
+
+    <span class="n">stagings</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">cards</span><span class="p">))}</span>
+
+    <span class="n">cstree</span> <span class="o">=</span> <span class="n">CStree</span><span class="p">(</span><span class="n">cards</span><span class="p">)</span>
+    <span class="n">cstree</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[:</span><span class="n">nvars</span><span class="p">])</span>
+
+    <span class="n">color_ind</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:</span><span class="n">nvars</span><span class="p">]</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="n">stage_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">level</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="n">level</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">cards</span><span class="p">):</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
+                <span class="n">stage_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">cards</span><span class="p">[</span><span class="n">level</span><span class="p">])))</span>
+            <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
+                <span class="c1"># Reached stop mark &quot;-&quot;, so create a stage of stage_list.</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">Stage</span><span class="p">(</span><span class="n">stage_list</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">size</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># Singleton stage? Or maybe root stage?.</span>
+                    <span class="n">s</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">s</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">cstree</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="n">color_ind</span><span class="p">]</span>
+                    <span class="n">color_ind</span> <span class="o">=</span> <span class="p">(</span><span class="n">color_ind</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">cstree</span><span class="o">.</span><span class="n">colors</span><span class="p">)</span>
+                <span class="c1"># Now we reed the probabilities, if there are any</span>
+                <span class="k">if</span> <span class="n">has_probs</span><span class="p">:</span>
+                    <span class="n">s</span><span class="o">.</span><span class="n">probs</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nvars</span><span class="p">:]</span><span class="o">.</span><span class="n">values</span>
+
+                <span class="n">stagings</span><span class="p">[</span><span class="n">level</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">stage_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+
+    <span class="n">cstree</span><span class="o">.</span><span class="n">update_stages</span><span class="p">(</span><span class="n">stagings</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">cstree</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Anonymous.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
