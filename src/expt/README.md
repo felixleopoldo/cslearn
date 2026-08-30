@@ -71,8 +71,8 @@ module docstring). `_fit_legend` measures the legend's actual rendered
 width and backs off to fewer columns if it doesn't fit the reserved margin.
 
 Regenerating the figures needs no data download and no recomputation -- the
-plotting rules read the committed CSVs directly, each running in the pinned
-`cslearn-expt` container:
+plotting rules read the aggregated CSVs above directly, each running in the
+pinned `cslearn-expt` container:
 
 ```bash
 snakemake results/kl_divergence_dagbaselines.pdf results/kl_divergence_stagedtrees.pdf results/time.pdf \
