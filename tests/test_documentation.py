@@ -1,50 +1,25 @@
-import os
+"""Execute the ``python`` code blocks in ``README.md`` so the quick-start example
+stays runnable.
 
-import manuel.codeblock
-import manuel.doctest
-import manuel.ignore
-import manuel.testing
+The package's own ``>>>`` docstring examples are covered separately by
+``test_docstrings.py``.
+"""
+
+import re
+from pathlib import Path
+
 import pytest
 
+README = Path(__file__).resolve().parents[1] / "README.md"
 
-def make_manuel_suite(ns):
-    """
-    Prepare Manuel test suite.
-
-    Test functions are injected in the given namespace.
-    """
-
-    # Wrap function so pytest does not expect an spurious "self" fixture.
-    def _wrapped(func, name):
-        def wrapped():
-            return func()
-
-        wrapped.__name__ = name
-        return wrapped
-
-    # Collect documentation files
-    cd = os.path.dirname
-    path = cd(cd(__file__))
-    doc_path = os.path.join(path, "docs")
-    readme = os.path.join(path, "README.rst")
-    files = sorted(os.path.join(doc_path, f) for f in os.listdir(doc_path))
-    files = [f for f in files if f.endswith(".rst") or f.endswith(".txt")]
-    files.append(readme)
-
-    # Create manuel suite
-    m = manuel.ignore.Manuel()
-    m += manuel.doctest.Manuel()
-    m += manuel.codeblock.Manuel()
-
-    # Copy tests from the suite to the global namespace
-    suite = manuel.testing.TestSuite(m, *files)
-    for i, test in enumerate(suite):
-        name = "test_doc_%s" % i
-        ns[name] = pytest.mark.documentation(_wrapped(test.runTest, name))
-    return suite
+_BLOCKS = re.findall(r"```python\n(.*?)```", README.read_text(), flags=re.DOTALL)
 
 
-try:
-    make_manuel_suite(globals())
-except OSError:
-    print("Documentation files not found: disabling tests!")
+@pytest.mark.documentation
+@pytest.mark.parametrize("code", _BLOCKS, ids=[f"readme_block_{i}" for i in range(len(_BLOCKS))])
+def test_readme_python_block_runs(code):
+    exec(compile(code, str(README), "exec"), {"__name__": "__readme__"})
+
+
+def test_readme_has_a_python_block():
+    assert _BLOCKS, "README.md has no ```python code block to test"

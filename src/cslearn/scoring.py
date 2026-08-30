@@ -30,26 +30,12 @@ def _counts_at_level(cstree: ct.CStree, level: int, data):
         >>> import cslearn.scoring as sc
         >>> np.random.seed(1)
         >>> random.seed(1)
-        >>> tree = ct.sample_cstree([2,2,2,2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
-        >>> tree.to_df()
-           0  1  2  3
-        0  2  2  2  2
-        1  *  -  -  -
-        2  *  1  -  -
-        3  *  0  -  -
-        4  0  *  *  -
-        5  1  *  *  -
-        6  -  -  -  -
+        >>> tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
         >>> tree.sample_stage_parameters(alpha=1.0)
         >>> df = tree.sample(1000)
         >>> counts = sc._counts_at_level(tree, 2, df)
-        >>> for key, val in counts.items():
-        >>>    print("Stage: {}".format(key))
-        >>>    print("Counts: {}".format(val))
-        Stage: [{0, 1}, 0]; probs: [0.58753532 0.41246468]; color: blueviolet
-        Counts: {0: 184, 1: 146}
-        Stage: [{0, 1}, 1]; probs: [0.45616876 0.54383124]; color: peru
-        Counts: {0: 289, 1: 381}
+        >>> sum(sum(v.values()) for v in counts.values())  # one count per sample
+        1000
     """
     stage_counts = {}  # TODO: Maybe it should be context counts instead!
 
@@ -197,35 +183,19 @@ def _context_score_tables(
         >>> import numpy as np
         >>> import cslearn.cstree as ct
         >>> import cslearn.scoring as sc
-        >>> import pp
         >>> np.random.seed(1)
         >>> random.seed(1)
-        >>> tree = ct.sample_cstree([2,2,2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
+        >>> tree = ct.sample_cstree([2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
         >>> tree.sample_stage_parameters(alpha=1.0)
         >>> df = tree.sample(1000)
-        >>> context_scores, context_counts = sc.context_score_tables(df, strategy="posterior",
-        >>>                                                          max_cvars=1,
-        >>>                                                          poss_cvars=None,
-        >>>                                                          alpha_tot=1.0,
-        >>>                                                          method="BDeu")
-        >>> pp.pprint(context_scores)
-        Context score tables: 100%|██████████| 3/3 [00:00<00:00, 320.68it/s]
-        {'cards': {0: 2, 1: 2, 2: 2},
-        'scores': {0: {'1=0': -16.792280918610103,
-                        '1=1': -660.7109764001227,
-                        '2=0': -238.70011824545145,
-                        '2=1': -438.93117780248804,
-                        'None': -675.4564323010165},
-                    1: {'0=0': -54.16769454491233,
-                        '0=1': -53.46673897600048,
-                        '2=0': -33.2126022029158,
-                        '2=1': -74.90053928069584,
-                        'None': -105.58760850319653},
-                    2: {'0=0': -381.93689163806187,
-                        '0=1': -266.9232447908356,
-                        '1=0': -14.774052078307868,
-                        '1=1': -634.4367535840818,
-                        'None': -646.6852726819745}}}
+        >>> context_scores, context_counts = sc._context_score_tables(
+        ...     df, max_cvars=1, poss_cvars=None, alpha_tot=1.0, method="BDeu")
+        >>> sorted(context_scores)
+        ['cards', 'scores']
+        >>> context_scores["cards"]
+        {0: 2, 1: 2, 2: 2}
+        >>> sorted(context_scores["scores"][0])
+        ['1=0', '1=1', '2=0', '2=1', 'None']
     """
 
     labels = list(data.columns)
@@ -374,93 +344,25 @@ def order_score_tables(
         tuple: The order score tables, context score tables, and context counts.
 
     Example:
-
-        >>> import cslearn.learning as ctl
+        >>> import random
+        >>> import numpy as np
         >>> import cslearn.cstree as ct
         >>> import cslearn.scoring as sc
-        >>> import pp
-        >>> import numpy as np
-        >>> import random
         >>> np.random.seed(1)
         >>> random.seed(1)
-        >>>
-        >>> tree = ct.sample_cstree([2,2,2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1,
-        >>>                         labels=["X"+str(i) for i in range(1, 4)])
+        >>> tree = ct.sample_cstree(
+        ...     [2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1,
+        ...     labels=["X1", "X2", "X3"])
         >>> tree.sample_stage_parameters(1.0)
         >>> df = tree.sample(500)
-        >>> score_table, context_scores, context_counts = sc.order_score_tables(df,
-        >>>                                                                     max_cvars=1,
-        >>>                                                                     alpha_tot=1.0,
-        >>>                                                                     method="BDeu",
-        >>>                                                                     poss_cvars=None)
-        >>> print("Order score table:")
-        >>> pp.pprint(score_table)
-        >>> print("Context scores:")
-        >>> pp.pprint(context_scores)
-        >>> print("Context counts:")
-        >>> pp.pprint(context_counts)
-        Order score table:
-        {'max_cvars': 1,
-        'poss_cvars': {'X1': ['X2', 'X3'], 'X2': ['X1', 'X3'], 'X3': ['X2', 'X1']},
-        'scores': {'X1': {'None': -337.8948102114355,
-                        'X2': -338.07301225936493,
-                        'X2,X3': -337.66375682421136,
-                        'X3': -338.04776148301414},
-                    'X2': {'None': -68.29479077800046,
-                        'X1': -68.47299282592986,
-                        'X1,X3': -68.06642821338981,
-                        'X3': -68.4507053561074},
-                    'X3': {'None': -321.52156911602725,
-                        'X1': -321.67452038760587,
-                        'X1,X2': -321.27075455994964,
-                        'X2': -321.6774836941342}}}
-        Context scores:
-        {'cards': {'X1': 2, 'X2': 2, 'X3': 2},
-        'max_cvars': 1,
-        'poss_cvars': {'X1': ['X2', 'X3'], 'X2': ['X1', 'X3'], 'X3': ['X2', 'X1']},
-        'scores': {'X1': {'None': -336.7961979227674,
-                        'X2=0': -11.762075046683464,
-                        'X2=1': -327.19089667302535,
-                        'X3=0': -116.56072426147412,
-                        'X3=1': -222.1718285846568},
-                    'X2': {'None': -67.19617848933235,
-                        'X1=0': -36.38485547387102,
-                        'X1=1': -32.96809681240273,
-                        'X3=0': -17.62998621847001,
-                        'X3=1': -51.52630149961991},
-                    'X3': {'None': -320.42295682735914,
-                        'X1=0': -191.00840864197295,
-                        'X1=1': -131.3509031087497,
-                        'X2=0': -9.235342639991355,
-                        'X2=1': -313.14772341612536}}}
-        Context counts:
-        {'cards': {'X1': 2, 'X2': 2, 'X3': 2},
-        'var_counts': {'X1': {'None': {'context_vars': [], 'counts': {0: 307, 1: 193}},
-                            'X2=0': {'context_vars': ['X2'], 'counts': {0: 7, 1: 7}},
-                            'X2=1': {'context_vars': ['X2'],
-                                        'counts': {0: 300, 1: 186}},
-                            'X3=0': {'context_vars': ['X3'],
-                                        'counts': {0: 92, 1: 73}},
-                            'X3=1': {'context_vars': ['X3'],
-                                        'counts': {0: 215, 1: 120}}},
-                        'X2': {'None': {'context_vars': [], 'counts': {0: 14, 1: 486}},
-                            'X1=0': {'context_vars': ['X1'],
-                                        'counts': {0: 7, 1: 300}},
-                            'X1=1': {'context_vars': ['X1'],
-                                        'counts': {0: 7, 1: 186}},
-                            'X3=0': {'context_vars': ['X3'],
-                                        'counts': {0: 3, 1: 162}},
-                            'X3=1': {'context_vars': ['X3'],
-                                        'counts': {0: 11, 1: 324}}},
-                        'X3': {'None': {'context_vars': [], 'counts': {0: 165, 1: 335}},
-                            'X1=0': {'context_vars': ['X1'],
-                                        'counts': {0: 92, 1: 215}},
-                            'X1=1': {'context_vars': ['X1'],
-                                        'counts': {0: 73, 1: 120}},
-                            'X2=0': {'context_vars': ['X2'],
-                                        'counts': {0: 3, 1: 11}},
-                            'X2=1': {'context_vars': ['X2'],
-                                        'counts': {0: 162, 1: 324}}}}}
+        >>> score_table, context_scores, context_counts = sc.order_score_tables(
+        ...     df, max_cvars=1, alpha_tot=1.0, method="BDeu", poss_cvars=None)
+        >>> sorted(score_table)
+        ['max_cvars', 'poss_cvars', 'scores']
+        >>> score_table["max_cvars"]
+        1
+        >>> sorted(score_table["scores"])
+        ['X1', 'X2', 'X3']
     """
 
     labels = list(data.columns)
@@ -541,28 +443,22 @@ def score_order(order, order_scores):
         double: Score of an order.
 
     Example:
-
-        >>> import cslearn.learning as ctl
+        >>> import random
+        >>> import numpy as np
         >>> import cslearn.cstree as ct
         >>> import cslearn.scoring as sc
-        >>> import pp
-        >>> import numpy as np
-        >>> import random
         >>> np.random.seed(1)
         >>> random.seed(1)
-        >>>
-        >>> tree = ct.sample_cstree([2,2,2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1,
-        >>>                          labels=["X"+str(i) for i in range(1, 4)])
+        >>> tree = ct.sample_cstree(
+        ...     [2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1,
+        ...     labels=["X1", "X2", "X3"])
         >>> tree.sample_stage_parameters(1.0)
         >>> df = tree.sample(500)
-        >>> score_table, context_scores, context_counts = sc.order_score_tables(df,
-        >>>                                                                     max_cvars=1,
-        >>>                                                                     alpha_tot=1.0,
-        >>>                                                                     method="BDeu",
-        >>>                                                                     poss_cvars=None)
-        >>> sc.score_order(["X3","X2","X1"], score_table)
-        -727.636031296346
-
+        >>> score_table, _, _ = sc.order_score_tables(
+        ...     df, max_cvars=1, alpha_tot=1.0, method="BDeu", poss_cvars=None)
+        >>> s = sc.score_order(["X3", "X2", "X1"], score_table)
+        >>> isinstance(s, float) and s < 0
+        True
     """
     log_score = 0  # log score
     for level, var in enumerate(order):

@@ -1,4 +1,6 @@
+.PHONY: distr
+
 distr:
-	rm -r dist build
-	python setup.py bdist_wheel
+	rm -rf dist build
+	python -m build
 	twine upload dist/*

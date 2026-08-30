@@ -67,17 +67,22 @@ marker and linestyle carry method and n independently (see `palette.py`'s
 module docstring). `_fit_legend` measures the legend's actual rendered
 width and backs off to fewer columns if it doesn't fit the reserved margin.
 
-Regenerating all figures requires only Snakemake and Apptainer -- no data
-downloads or recomputation:
+Regenerating the figures needs no data downloads and no recomputation --
+the plotting rules read the committed CSVs directly. They only import
+`pandas`, `matplotlib`, and `seaborn`. If your Python environment already
+has those (`pip install cslearn[expt]` does), no container is needed:
 
 ```bash
 snakemake results/kl_divergence_dagbaselines.pdf results/kl_divergence_stagedtrees.pdf results/time.pdf \
   results/shd.pdf results/sensitivity.pdf results/runtime_phases.pdf \
-  --use-apptainer --cores 1 \
+  --cores 1 \
   --allowed-rules kl_plot_dagbaselines kl_plot_stagedtrees time_plot shd_plot sensitivity_plot runtime_phases_plot
 ```
 
-PDFs appear in `results/`.
+PDFs appear in `results/`. Add `--use-apptainer` only if you do not have
+`pandas`/`matplotlib`/`seaborn` available -- note that this pulls the full
+`cslearn-expt` container image (several GB) even though the plot scripts
+use none of its other contents.
 
 (`--allowed-rules` prevents Snakemake from tracing the full upstream
 simulation DAG when only the aggregated CSVs are available locally.)

@@ -227,22 +227,17 @@ def _optimal_cstree_given_order(order, context_scores):
 
 
 def _find_optimal_order(score_table):
-    """Find the optimal causal order for the data using exhaustive search of
-        the optimal order then the CStree having that order.
+    """Find the optimal variable order by exhaustive search over all permutations.
+
+    The score of an order is the score of the maximal-scoring CStree it can
+    contain, read off the precomputed ``score_table`` (see
+    :func:`cslearn.scoring.order_score_tables`).
 
     Args:
-        data (pandas DataFrame): The data as a pandas DataFrame.
-        strategy (str, optional): The scoring strategy to use. Defaults to "max" which mean that the score of an order is the score of the maximal scoring CStree it can contain.
-        max_cvars (int, optional): Max context variables. Defaults to 1.
-        alpha_tot (float, optional): The Dirichlet hyper
-        parameter total pseudo counts. Defaults to 1.
-        method (str, optional): Parameter prior type. Defaults to "BDeu".
-    Examples:
-        >>> import cslearn.learning as ctl
-        >>> optord, score = ctl.find_optimal_order(
-        >>> df, strategy="max", max_cvars=2, alpha_tot=1.0, method="BDeu")
-        >>> print("optimal order: {}, score {}".format(optord, score))
+        score_table (dict): Precomputed order-score table.
 
+    Returns:
+        tuple: ``(optimal_orders, max_score)``.
     """
     labels = list(score_table["scores"].keys())
     perms = permutations(labels)
@@ -471,18 +466,18 @@ def find_optimal_cstree(data, max_cvars=1, alpha_tot=1, method="BDeu"):
         CStree: The MAP CStree (structure only, no parameters estimated).
 
     Examples:
-        >>> import cslearn.learning as ctl
-        >>> import cslearn.cstree as ct
-        >>> import numpy as np
         >>> import random
-        >>> np.random.seed(1)
-        >>> random.seed(1)
-        >>> tree = ct.sample_cstree([2,2,2,2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
+        >>> import numpy as np
+        >>> import cslearn.cstree as ct
+        >>> import cslearn.learning as ctl
+        >>> np.random.seed(0)
+        >>> random.seed(0)
+        >>> tree = ct.sample_cstree([2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
         >>> tree.sample_stage_parameters(1.0)
-        >>> df = tree.sample(500)
-        >>> opttree = ctl.find_optimal_cstree(df, max_cvars=2, alpha_tot=1.0, method="BDeu")
-        >>> opttree.to_df()
-
+        >>> df = tree.sample(200)
+        >>> learned = ctl.find_optimal_cstree(df, max_cvars=2)
+        >>> isinstance(learned, ct.CStree)
+        True
     """
     score_table, context_scores, context_counts = sc.order_score_tables(
         data, max_cvars=max_cvars, alpha_tot=alpha_tot, method=method
@@ -513,23 +508,22 @@ def causallearn_graph_to_posscvars(graph, labels, alg="pc"):
         undirected neighbours in the CPDAG).
 
     Examples:
-        >>> import cslearn.learning as ctl
-        >>> import cslearn.cstree as ct
-        >>> from causallearn.search.ConstraintBased.PC import pc
-        >>> import numpy as np
         >>> import random
+        >>> import numpy as np
+        >>> from causallearn.search.ConstraintBased.PC import pc
+        >>> import cslearn.cstree as ct
+        >>> import cslearn.learning as ctl
         >>> np.random.seed(1)
         >>> random.seed(1)
-        >>>
-        >>> tree = ct.sample_cstree([2,2,2,2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
+        >>> tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
         >>> tree.sample_stage_parameters(1.0)
         >>> df = tree.sample(500)
         >>> pcgraph = pc(df[1:].values, 0.05, "chisq", node_names=df.columns)
         >>> poss_cvars = ctl.causallearn_graph_to_posscvars(pcgraph, labels=df.columns)
-        >>> print("Possible context variables per variable:", poss_cvars)
-        Depth=1, working on node 3: 100%|██████████| 4/4 [00:00<00:00, 1357.27it/s]
-        Possible context variables per variable: {0: [], 1: [2, 3], 2: [1], 3: [1]}
-
+        >>> sorted(poss_cvars) == sorted(df.columns)
+        True
+        >>> all(isinstance(v, list) for v in poss_cvars.values())
+        True
     """
     poss_cvars = {l: [] for l in labels}
 

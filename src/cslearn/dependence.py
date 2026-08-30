@@ -22,14 +22,11 @@ class Context:
         context (dict): A dictionary of the context. The keys are the levels and the values are the values of the (context) variables at the same level.
         labels (list, optional): A list of labels for the keys in the dict. Defaults to None.
     Examples:
-
-        >>> from cslearn.csi_relation import Context
-        >>> c = Context({0:0, 3:1})
-        >>> print(c)
-        >>> c = Context({0:0, 3:1}, labels=["X"+str(i) for i in range(0, 4)])
-        >>> print(c)
+        >>> from cslearn.dependence import Context
+        >>> print(Context({0: 0, 3: 1}))
         0=0, 3=1
-        X1=0, X4=1
+        >>> print(Context({0: 0, 3: 1}, labels=["X" + str(i) for i in range(4)]))
+        X0=0, X3=1
     """
 
     def __init__(self, context: dict, labels: list | None = None) -> None:
@@ -82,9 +79,8 @@ class CI:
         sep (set): The set of variables that separate a and b.
 
     Examples:
-        >>> from cslearn.csi_relation import CI
-        >>> ci = CI({1}, {2}, {4, 0}, labels=["X"+str(i) for i in range(1, 6)])
-        >>> print(ci)
+        >>> from cslearn.dependence import CI
+        >>> print(CI({1}, {2}, {4, 0}, labels=["X" + str(i) for i in range(1, 6)]))
         X2 ⊥ X3 | X1, X5
     """
 
@@ -234,12 +230,8 @@ def decomposition(ci: CI):
 
     Examples:
         >>> from cslearn.dependence import CI, decomposition
-        >>> ci = CI({1,2}, {3,4},{0})
-        >>> print(ci)
-        >>> dec = decomposition(ci)
-        >>> for d in dec:
-        >>>     print(d)
-        1, 2 ⊥ 3, 4 | 0
+        >>> for d in decomposition(CI({1, 2}, {3, 4}, {0})):
+        ...     print(d)
         1 ⊥ 3 | 0
         1 ⊥ 4 | 0
         2 ⊥ 3 | 0
@@ -266,8 +258,9 @@ def _powerset(iterable):
         list: List of all subsets.
 
     Example:
-        >>> powerset([1,2,3])
-        () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)
+        >>> from cslearn.dependence import _powerset
+        >>> list(_powerset([1, 2, 3]))
+        [(), (1,), (2,), (3,), (1, 2), (1, 3), (2, 3), (1, 2, 3)]
     """
 
     s = list(iterable)
@@ -284,16 +277,8 @@ def weak_union(ci: CI):
 
     Examples:
         >>> from cslearn import dependence
-        >>> ci = dependence.CI({1,2}, {3,4},{0})
-        >>> print("Original CI:")
-        >>> print(ci)
-        >>> dec = dependence.weak_union(ci)
-        >>> print("CI relations extrracted by WU:")
-        >>> for d in dec:
-        >>>     print(d)
-        Original CI:
-        1, 2 ⊥ 3, 4 | 0
-        CI relations extrracted by WU:
+        >>> for d in dependence.weak_union(dependence.CI({1, 2}, {3, 4}, {0})):
+        ...     print(d)
         1, 2 ⊥ 4 | 0, 3
         1, 2 ⊥ 3 | 0, 4
         2 ⊥ 3, 4 | 0, 1
@@ -329,15 +314,8 @@ def pairwise_cis(ci: CI):
         list: List of pairwise CI relations.
     Examples:
         >>> from cslearn.dependence import CI, pairwise_cis
-        >>>
-        >>> ci = CI({1,2}, {3,4},{0})
-        >>> pw = pairwise_cis(ci)
-        >>> print("Original CI: ", ci)
-        >>> print("Pairwise CIs:")
-        >>> for x in pw:
-        >>>    print(x)
-        Original CI:  1, 2 ⊥ 3, 4 | 0
-        Pairwise CIs:
+        >>> for x in pairwise_cis(CI({1, 2}, {3, 4}, {0})):
+        ...     print(x)
         1 ⊥ 3 | 0, 2, 4
         1 ⊥ 4 | 0, 2, 3
         2 ⊥ 3 | 0, 1, 4
@@ -362,18 +340,10 @@ def pairwise_csis(csi: CSI, cards=None):
         list: List of pairwise CSI relations.
 
     Examples:
-        >>> from cslearn.dependence import CI, pairwise_cis, Context, CSI, pairwise_csis
-        >>>
-        >>> ci = CI({1,2}, {3,4},{0})
-        >>> c = Context({5:0})
-        >>> csi = CSI(ci, c)
-        >>> print("Original CSI: ", csi)
-        >>> pw = pairwise_csis(csi)
-        >>> print("Pairwise CSIs:")
-        >>> for x in pw:
-        >>>    print(x)
-        Original CSI:  1, 2 ⊥ 3, 4 | 0, 5=0
-        Pairwise CSIs:
+        >>> from cslearn.dependence import CI, Context, CSI, pairwise_csis
+        >>> csi = CSI(CI({1, 2}, {3, 4}, {0}), Context({5: 0}))
+        >>> for x in pairwise_csis(csi):
+        ...     print(x)
         1 ⊥ 3 | 0, 2, 4, 5=0
         1 ⊥ 4 | 0, 2, 3, 5=0
         2 ⊥ 3 | 0, 1, 4, 5=0
@@ -445,37 +415,15 @@ def partition_csis(csilist_list, level, cards):
         list: list of disjoint lists of pairwise CSI lists that can possibly be mixed.
 
     Example:
-        >>> from cslearn.dependence import CI, pairwise_cis, Context, CSI, pairwise_csis, partition_csis
-        >>> cards = [2]*5
-        >>> csi1 = CSI(CI({1}, {3},{4}), Context({0:0, 2:0}), cards=cards)
-        >>> csi2 = CSI(CI({1}, {3},{4}), Context({0:0, 2:1}), cards=cards)
-        >>> csi3 = CSI(CI({1}, {3},{4}), Context({0:1, 2:0}), cards=cards)
-        >>>
-        >>> print("CSIs:")
-        >>> for x in [csi1, csi2, csi3]:
-        >>>   print(x)
-        >>>
-        >>> print("CSIs list representations:")
-        >>> for x in [csi1, csi2, csi3]:
-        >>>   print(x.as_list())
-        >>>
-        >>> pairwise_csis = [csi1.as_list() , csi2.as_list(), csi3.as_list()]
-        >>> partitioned_csis = partition_csis(pairwise_csis, 0, cards)
-        >>>
-        >>> print("CSI partitioned bases on values at level 0:")
-        >>> for i, csis in enumerate(partitioned_csis):
-        >>>   print("{}: {}".format(i, csis))
-        CSIs:
-        1 ⊥ 3 | 4, 0=0, 2=0
-        1 ⊥ 3 | 4, 0=0, 2=1
-        1 ⊥ 3 | 4, 0=1, 2=0
-        CSIs list representations:
-        [{0}, None, {0}, None, {0, 1}]
-        [{0}, None, {1}, None, {0, 1}]
-        [{1}, None, {0}, None, {0, 1}]
-        CSI partitioned bases on values at level 0:
-        0: [[{0}, None, {0}, None, {0, 1}], [{0}, None, {1}, None, {0, 1}]]
-        1: [[{1}, None, {0}, None, {0, 1}]]
+        >>> from cslearn.dependence import CI, Context, CSI, partition_csis
+        >>> cards = [2] * 5
+        >>> csis = [
+        ...     CSI(CI({1}, {3}, {4}), Context({0: 0, 2: 0}), cards=cards),
+        ...     CSI(CI({1}, {3}, {4}), Context({0: 0, 2: 1}), cards=cards),
+        ...     CSI(CI({1}, {3}, {4}), Context({0: 1, 2: 0}), cards=cards),
+        ... ]
+        >>> partition_csis([c.as_list() for c in csis], 0, cards)
+        [[[{0}, None, {0}, None, {0, 1}], [{0}, None, {1}, None, {0, 1}]], [[{1}, None, {0}, None, {0, 1}]]]
     """
     logger.debug("Partitioning CSIs")
     logger.debug("level {}".format(level))
@@ -542,26 +490,24 @@ def minimal_csis(paired_csis, cards):
         paired_csis (dict): Dict of csis grouped by pairwise indep rels as Xi ⊥ Xj | ...
         cards (list): Cardinalities of the levels.
     Example:
-        >>> # Figure 1. from (Duarte & Solus 2022)
+        The CStree of Figure 1 in Duarte & Solus (2021):
+
         >>> import cslearn.cstree as ct
-        >>> import cslearn.stage as st
-        >>> tree = ct.CStree([2, 2, 2, 2], labels=["X"+str(i) for i in range(1, 5)])
+        >>> tree = ct.CStree([2, 2, 2, 2], labels=["X" + str(i) for i in range(1, 5)])
         >>> tree.update_stages({
-        >>>     0: [{"context": {0: 0}},
-        >>>         {"context": {0: 1}}],
-        >>>     1: [{"context": {1: 0}, "color": "green"},
-        >>>         {"context": {0: 0, 1: 1}},
-        >>>         {"context": {0: 1, 1: 1}}],
-        >>>     2: [{"context": {0: 0, 2: 0}, "color": "blue"},
-        >>>         {"context": {0: 0, 2: 1}, "color": "orange"},
-        >>>         {"context": {0: 1, 2: 0}, "color": "red"},
-        >>>         {"context": {0: 1, 1: 1, 2: 1}},
-        >>>         {"context": {0: 1, 1: 0, 2: 1}}]})
-        >>> rels = tree.csi_relations()
-        >>> minl_csis = tree.to_minimal_context_csis()
-        >>> for cont, csis in minl_csis.items():
-        >>>    for csi in csis:
-        >>>        print(csi)
+        ...     0: [{"context": {0: 0}},
+        ...         {"context": {0: 1}}],
+        ...     1: [{"context": {1: 0}, "color": "green"},
+        ...         {"context": {0: 0, 1: 1}},
+        ...         {"context": {0: 1, 1: 1}}],
+        ...     2: [{"context": {0: 0, 2: 0}, "color": "blue"},
+        ...         {"context": {0: 0, 2: 1}, "color": "orange"},
+        ...         {"context": {0: 1, 2: 0}, "color": "red"},
+        ...         {"context": {0: 1, 1: 1, 2: 1}},
+        ...         {"context": {0: 1, 1: 0, 2: 1}}]})
+        >>> for csis in tree.to_minimal_context_csis().values():
+        ...     for csi in csis:
+        ...         print(csi)
         X1 ⊥ X3 | X2=0
         X2 ⊥ X4 | X1, X3=0
         X2 ⊥ X4 | X3, X1=0
@@ -794,37 +740,29 @@ def csi_relations_to_dags(csi_relations, p, labels=None):
     Returns:
         dict: A dictionary with contexts as keys and dags as values.
     Examples:
-        >>> # Figure 1. from (Duarte & Solus 2022)
+        The CStree of Figure 1 in Duarte & Solus (2021):
+
         >>> import cslearn.cstree as ct
-        >>> import cslearn.stage as st
         >>> from cslearn import dependence
-        >>> tree = ct.CStree([2, 2, 2, 2], labels=["X"+str(i) for i in range(1, 5)])
+        >>> tree = ct.CStree([2, 2, 2, 2], labels=["X" + str(i) for i in range(1, 5)])
         >>> tree.update_stages({
-        >>>     0: [{"context": {0: 0}},
-        >>>         {"context": {0: 1}}],
-        >>>     1: [{"context": {1: 0}, "color": "green"},
-        >>>         {"context": {0: 0, 1: 1}},
-        >>>         {"context": {0: 1, 1: 1}}],
-        >>>     2: [{"context": {0: 0, 2: 0}, "color": "blue"},
-        >>>         {"context": {0: 0, 2: 1}, "color": "orange"},
-        >>>         {"context": {0: 1, 2: 0}, "color": "red"},
-        >>>         {"context": {0: 1, 1: 1, 2: 1}},
-        >>>         {"context": {0: 1, 1: 0, 2: 1}}]})
-        >>> minl_csis = tree.to_minimal_context_csis()
-        >>> cdags = dependence.csi_relations_to_dags(minl_csis, tree.p, labels=tree.labels)
+        ...     0: [{"context": {0: 0}},
+        ...         {"context": {0: 1}}],
+        ...     1: [{"context": {1: 0}, "color": "green"},
+        ...         {"context": {0: 0, 1: 1}},
+        ...         {"context": {0: 1, 1: 1}}],
+        ...     2: [{"context": {0: 0, 2: 0}, "color": "blue"},
+        ...         {"context": {0: 0, 2: 1}, "color": "orange"},
+        ...         {"context": {0: 1, 2: 0}, "color": "red"},
+        ...         {"context": {0: 1, 1: 1, 2: 1}},
+        ...         {"context": {0: 1, 1: 0, 2: 1}}]})
+        >>> cdags = dependence.csi_relations_to_dags(
+        ...     tree.to_minimal_context_csis(), tree.p, labels=tree.labels)
         >>> for key, dag in cdags.items():
-        >>>    print("{}:".format(key))
-        >>>    print("Nodes: {}".format(dag.nodes()))
-        >>>    print("Edges: {}".format(dag.edges()))
-        X2=0:
-        Nodes: ['X1', 'X3', 'X4']
-        Edges: [('X1', 'X4'), ('X3', 'X4')]
-        X3=0:
-        Nodes: ['X1', 'X2', 'X4']
-        Edges: [('X1', 'X2'), ('X1', 'X4')]
-        X1=0:
-        Nodes: ['X2', 'X3', 'X4']
-        Edges: [('X2', 'X3'), ('X3', 'X4')]
+        ...     print("{}: {}".format(key, sorted(dag.edges())))
+        X2=0: [('X1', 'X4'), ('X3', 'X4')]
+        X3=0: [('X1', 'X2'), ('X1', 'X4')]
+        X1=0: [('X2', 'X3'), ('X3', 'X4')]
     """
 
     graphs = {context: None for context in csi_relations}

@@ -53,7 +53,6 @@ See the [full installation instructions](https://cslearn.readthedocs.io/en/lates
 ## Quick start
 
 ```python
-import pandas as pd
 from cslearn import CStree, sample_cstree
 
 # Sample a random CStree and simulate data
@@ -64,8 +63,9 @@ data = tree.sample(500)
 # Learn a CStree from data
 learned = CStree().fit(data)
 
-# Predict held-out observations
-predictions = learned.predict(data.iloc[:5, :-1])
+# Predict the last variable for five held-out observations
+# (row 0 of `data` holds the cardinalities, so skip it)
+predictions = learned.predict(data.iloc[1:6, :-1])
 ```
 
 See the [example notebooks](https://cslearn.readthedocs.io) for walkthroughs covering CStree construction and visualization, structure learning with exact and Gibbs-sampler search, LDAG representations on the alarm and Sachs datasets, and prediction.

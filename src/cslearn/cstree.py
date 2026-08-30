@@ -27,9 +27,10 @@ def write_minimal_context_graphs_to_files(context_dags, prefix="mygraphs"):
         prefix (str, optional): Filename prefix. Defaults to "mygraphs".
 
     Example:
-        >>> # tree is the Figure 1 CStree
-        >>> gs = tree.to_minimal_context_graphs()
-        >>> ct.write_minimal_context_graphs_to_files(gs, prefix="mygraphs")
+        Given a fitted ``tree``, write one PNG per minimal-context graph::
+
+            gs = tree.to_minimal_context_graphs()
+            write_minimal_context_graphs_to_files(gs, prefix="mygraphs")
     """
 
     for key, val in context_dags.items():
@@ -258,9 +259,10 @@ class CStree:
             float: A number between 0 and 1.
 
         Example:
-            >>> # Assuming all variables are binary
-            >>> s = st.Stage([0, {0, 1}, 1])
-            >>> stree.stage_proportion(s)
+            >>> import cslearn.cstree as ct
+            >>> import cslearn.stage as st
+            >>> tree = ct.CStree([2, 2, 2, 2])
+            >>> tree.stage_proportion(st.Stage([0, {0, 1}, 1]))
             0.25
         """
         prop = 1
@@ -277,6 +279,10 @@ class CStree:
             stages (dict): A dictionary of stage dicts. The keys are the levels, and the values are lists of dicts representing stages. The dicts representing stages should have the following keys: "context" and "color". The "context" should have a dict as value, where the keys are the levels and the values are the values of the variables at that level. The "color" key is optional but should have a string as value, representing the color of the stage.
 
         Example:
+            The CStree of Figure 1 in Duarte & Solus (2021):
+
+            >>> import cslearn.cstree as ct
+            >>> tree = ct.CStree([2, 2, 2, 2], labels=["X" + str(i) for i in range(1, 5)])
             >>> tree.update_stages({
             ...     0: [{"context": {0: 0}},
             ...         {"context": {0: 1}}],
@@ -287,8 +293,9 @@ class CStree:
             ...         {"context": {0: 0, 2: 1}, "color": "orange"},
             ...         {"context": {0: 1, 2: 0}, "color": "red"},
             ...         {"context": {0: 1, 1: 1, 2: 1}},
-            ...         {"context": {0: 1, 1: 0, 2: 1}}]
-            ...     })
+            ...         {"context": {0: 1, 1: 0, 2: 1}}]})
+            >>> sorted(tree.stages)
+            [-1, 0, 1, 2, 3]
         """
 
         # This should be filled with Stage objects.
@@ -332,10 +339,15 @@ class CStree:
         Args:
             node (tuple or list): A node in the CStree. It could be e.g. (0, 1, 0, 1).
         Example:
-            >>> # tree is the fig. 1 CStree
-            >>> stage = tree.get_stage([0, 0])
-            >>> print(stage)
-            [{0, 1}, 0]; probs: [0.38 0.62]; color: green
+            >>> import random
+            >>> import numpy as np
+            >>> import cslearn.cstree as ct
+            >>> np.random.seed(1)
+            >>> random.seed(1)
+            >>> tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
+            >>> stage = tree.get_stage((0, 0))
+            >>> (0, 0) in stage
+            True
         """
         assert self.stages is not None
         lev = len(node) - 1
@@ -364,20 +376,17 @@ class CStree:
         Returns:
             df (pd.DataFrame): A Pandas dataframe with the stages of the CStree.
         Example:
-            >>> tree.to_df()
-                X1	X2	X3	X4
-            0	2	2	2	2
-            1	0	-	-	-
-            2	1	-	-	-
-            3	*	0	-	-
-            4	0	1	-	-
-            5	1	1	-	-
-            6	0	*	0	-
-            7	0	*	1	-
-            8	1	*	0	-
-            9	1	1	1	-
-            10	1	0	1	-
-            11	-	-	-	-
+            >>> import random
+            >>> import numpy as np
+            >>> import cslearn.cstree as ct
+            >>> np.random.seed(1)
+            >>> random.seed(1)
+            >>> tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
+            >>> df = tree.to_df()
+            >>> list(df.columns)
+            [0, 1, 2, 3]
+            >>> df.iloc[0].tolist()  # first row is the cardinalities
+            [2, 2, 2, 2]
         """
 
         # cardinalities header
@@ -407,8 +416,15 @@ class CStree:
             alpha (float): The hyper parameter for the Dirichlet distribution.
 
         Example:
-            >>> t = ct.sample_cstree([2,2,2,2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
+            >>> import random
+            >>> import numpy as np
+            >>> import cslearn.cstree as ct
+            >>> np.random.seed(1)
+            >>> random.seed(1)
+            >>> t = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
             >>> t.sample_stage_parameters()
+            >>> t.stages[0][0].probs is not None
+            True
         """
         for lev, stages in self.stages.items():
             for i, stage in enumerate(stages):
@@ -432,15 +448,17 @@ class CStree:
             https://arxiv.org/abs/2206.15322
 
         Example:
-            >>> t = ct.sample_cstree([2,2,2,2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
+            >>> import random
+            >>> import numpy as np
+            >>> import cslearn.cstree as ct
+            >>> np.random.seed(1)
+            >>> random.seed(1)
+            >>> t = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
             >>> t.sample_stage_parameters()
             >>> df = t.sample(500)
             >>> t.estimate_stage_parameters(df, alpha_tot=1.0, method="BDeu")
-            >>> for lev, stagings in t.stages.items():
-            ...    print("Level {}".format(lev))
-            ...    for stage in stagings:
-            ...        print(stage)
-            ...    print()
+            >>> abs(sum(t.stages[0][0].probs) - 1.0) < 1e-9
+            True
         """
         import cslearn.scoring as sc
 
@@ -542,14 +560,15 @@ class CStree:
             dict: The keys are the contexts, and the values are the NetworkX DAGs.
 
         Example:
-            >>> # tree is the Figure 1 CStree
-            >>> gs = tree.to_minimal_context_graphs()
-            >>> for key, graph in gs.items():
-            ...     print("{}: Edges {}".format(key, graph.edges()))
-            X2=0: Edges [('X1', 'X4'), ('X3', 'X4')]
-            X3=0: Edges [('X1', 'X2'), ('X1', 'X4')]
-            X1=0: Edges [('X2', 'X3'), ('X3', 'X4')]
+            For the CStree of Figure 1 in Duarte & Solus (2021), the minimal
+            context graphs have edge sets::
 
+                X2=0: [('X1', 'X4'), ('X3', 'X4')]
+                X3=0: [('X1', 'X2'), ('X1', 'X4')]
+                X1=0: [('X2', 'X3'), ('X3', 'X4')]
+
+            (see :func:`cslearn.dependence.csi_relations_to_dags` for a runnable
+            construction of that tree).
         """
         minl_csis_by_context = self.to_minimal_context_csis()
         cdags = dependence.csi_relations_to_dags(minl_csis_by_context, self.p, labels=self.labels)
@@ -581,14 +600,10 @@ class CStree:
         """This returns a dict of minimal context CSIs.
 
         Example:
-            >>> minlcsis = tree.to_minimal_context_csis()
-            >>> for key, csis in minlcsis.items():
-            ...     for csi in csis:
-            ...         print("{}: CSI {}".format(key, csi))
-            X2=0: CSI X1 ⊥ X3 | X2=0
-            X3=0: CSI X2 ⊥ X4 | X1, X3=0
-            X1=0: CSI X2 ⊥ X4 | X3, X1=0
-
+            For the CStree of Figure 1 in Duarte & Solus (2021), the minimal
+            context CSIs are ``X1 ⊥ X3 | X2=0``, ``X2 ⊥ X4 | X1, X3=0`` and
+            ``X2 ⊥ X4 | X3, X1=0`` (see
+            :func:`cslearn.dependence.minimal_csis` for a runnable example).
         """
 
         logger.debug("Stages")
@@ -644,30 +659,14 @@ class CStree:
             dict: The CSI relations per level. The keys are the levels, and the values are lists of CSI relations.
 
         Example:
-
-            >>> rels = tree.csi_relations_per_level()
-            >>> print("CSI relations per level")
-            >>> for key, rel in rels.items():
-            ...     print("level {}: ".format(key))
-            ...     for r in rel:
-            ...         if (len(r.ci.a) > 0) and (len(r.ci.b) > 0):
-            ...             # avoiding the singletons
-            ...             print("the CSI")
-            ...             print(r)
-            CSI relations per level
-            level 0:
-            level 1:
-            the CSI
-            0 ⊥ 2 | 1=0
-            level 2:
-            the CSI
-            1 ⊥ 3 | 0=0, 2=0
-            the CSI
-            1 ⊥ 3 | 0=0, 2=1
-            the CSI
-            1 ⊥ 3 | 0=1, 2=0
-            level 3:
-
+            >>> import random
+            >>> import numpy as np
+            >>> import cslearn.cstree as ct
+            >>> np.random.seed(1)
+            >>> random.seed(1)
+            >>> tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
+            >>> sorted(tree.csi_relations_per_level())
+            [0, 1, 2, 3]
         """
 
         return {l: [s.to_csi() for s in stages] for l, stages in self.stages.items() if l >= 0}
@@ -676,14 +675,15 @@ class CStree:
         """Returns the context specific indepencende (CSI) relations for the CStree.
 
         Examples:
-            >>> rels = tree.csi_relations()
-            >>> for cont, rels in rels.items():
-            ...     for rel in rels:
-            ...         print(rel)
-            X1 ⊥ X3 | X2=0
-            X2 ⊥ X4 | X1=0, X3=0
-            X2 ⊥ X4 | X1=0, X3=1
-            X2 ⊥ X4 | X1=1, X3=0
+            >>> import random
+            >>> import numpy as np
+            >>> import cslearn.cstree as ct
+            >>> from cslearn.dependence import Context
+            >>> np.random.seed(1)
+            >>> random.seed(1)
+            >>> tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
+            >>> all(isinstance(k, Context) for k in tree.csi_relations())
+            True
         """
         csi_rels = {}
 
@@ -712,15 +712,18 @@ class CStree:
             pandas.DataFrame: A pandas dataframe containing the data. The header contains labels of the
             variables and row 0 contains the cardinalities. The other rows contain the samples.
         Examples:
+            >>> import random
+            >>> import numpy as np
+            >>> import cslearn.cstree as ct
+            >>> np.random.seed(1)
+            >>> random.seed(1)
+            >>> tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
+            >>> tree.sample_stage_parameters()
             >>> df = tree.sample(5)
-            >>> print(df)
-               0  1  2  3
-            0  2  2  2  2
-            1  0  0  1  1
-            2  0  0  0  0
-            3  0  0  0  1
-            4  0  0  1  1
-            5  0  0  0  1
+            >>> df.shape  # cardinalities row + 5 samples
+            (6, 4)
+            >>> df.iloc[0].tolist()
+            [2, 2, 2, 2]
         """
 
         # TODO: Check that the stage parameters are set.
@@ -797,9 +800,10 @@ class CStree:
             pygraphviz.agraph.AGraph: A pygraphviz graph.
 
         Examples:
-            >>> tree.sample_stage_parameters()
-            >>> agraph = tree.plot(full=True)
-            >>> agraph.draw("cstree.png")
+            Given a parameterised ``tree``::
+
+                agraph = tree.plot(full=True)
+                agraph.draw("cstree.png")
         """
 
         # If no samples has been drawn, create the full tree.
@@ -852,7 +856,6 @@ class CStree:
             If ``return_probs=True``, a ``PROB`` column is appended.
 
         Example:
-
             >>> import random
             >>> import numpy as np
             >>> import pandas as pd
@@ -861,10 +864,11 @@ class CStree:
             >>> random.seed(22)
             >>> t = ct.sample_cstree([3, 2, 2, 3], max_cvars=2, prob_cvar=0.5, prop_nonsingleton=1)
             >>> t.sample_stage_parameters(alpha=2)
-            >>> t.sample(100)
-            >>> t.predict(pd.DataFrame({0: [1]}))
-               1  2  3
-            0  0  1  1
+            >>> pred = t.predict(pd.DataFrame({0: [1]}))  # observe X0 = 1, predict the rest
+            >>> list(pred.columns)
+            [1, 2, 3]
+            >>> len(pred)
+            1
         """
         partial_labels = list(partial_observations.columns)
         to_predict_labels = [l for l in self.labels if l not in partial_labels]
@@ -944,12 +948,20 @@ class CStree:
             CStree: ``self``, updated with the learned structure and parameters.
 
         Example:
-            >>> import pandas as pd
+            >>> import contextlib
+            >>> import io
+            >>> import random
+            >>> import numpy as np
             >>> import cslearn.cstree as ct
-            >>> tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5)
+            >>> np.random.seed(0)
+            >>> random.seed(0)
+            >>> tree = ct.sample_cstree([2, 2, 2], max_cvars=1, prob_cvar=0.5)
             >>> tree.sample_stage_parameters()
-            >>> df = tree.sample(500)
-            >>> learned = ct.CStree(tree.cards).fit(df)
+            >>> df = tree.sample(200)
+            >>> with contextlib.redirect_stdout(io.StringIO()):  # hide GRaSP progress
+            ...     learned = ct.CStree(tree.cards).fit(df)
+            >>> isinstance(learned, ct.CStree) and learned.stages is not None
+            True
         """
         import cslearn.learning as ctl
         import cslearn.scoring as sc
@@ -1122,25 +1134,18 @@ class CStree:
             Pandas Dataframe: The joint distribution of the CStree.
 
         Example:
+            >>> import random
+            >>> import numpy as np
+            >>> import cslearn.cstree as ct
+            >>> np.random.seed(1)
+            >>> random.seed(1)
+            >>> tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
+            >>> tree.sample_stage_parameters()
             >>> df = tree.to_joint_distribution()
-            >>> print(df)
-                X1	X2	X3	X4	prob	log_prob
-            0	0	0	0	0	0.283088	-1.261999
-            1	0	0	0	1	0.219686	-1.515555
-            2	0	0	1	0	0.061755	-2.784584
-            3	0	0	1	1	0.307910	-1.177948
-            4	0	1	0	0	0.004319	-5.444837
-            5	0	1	0	1	0.003351	-5.698393
-            6	0	1	1	0	0.005404	-5.220655
-            7	0	1	1	1	0.026943	-3.614019
-            8	1	0	0	0	0.003439	-5.672556
-            9	1	0	0	1	0.025955	-3.651409
-            10	1	0	1	0	0.020695	-3.877848
-            11	1	0	1	1	0.000916	-6.995125
-            12	1	1	0	0	0.002284	-6.081627
-            13	1	1	0	1	0.017241	-4.060480
-            14	1	1	1	0	0.012563	-4.377006
-            15	1	1	1	1	0.004451	-5.414586
+            >>> df.shape  # 2**4 outcomes, plus prob / log_prob columns
+            (16, 6)
+            >>> bool(np.isclose(df["prob"].sum(), 1.0))
+            True
         """
 
         ""
@@ -1193,18 +1198,16 @@ def sample_cstree(
     Returns:
         CStree: A CStree.
     Examples:
+        >>> import random
+        >>> import numpy as np
+        >>> import cslearn.cstree as ct
         >>> np.random.seed(1)
         >>> random.seed(1)
-        >>> tree = ct.sample_cstree([2,2,2,2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
-        >>> tree.to_df()
-            0	1	2	3
-        0	2	2	2	2
-        1	0	-	-	-
-        2	1	-	-	-
-        3	1	*	-	-
-        4	0	*	-	-
-        5	*	*	0	-
-        6	*	*	1	-
+        >>> tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
+        >>> isinstance(tree, ct.CStree)
+        True
+        >>> tree.cards
+        [2, 2, 2, 2]
     """
     p = len(cards)
 
@@ -1335,39 +1338,17 @@ def df_to_cstree(df, read_probs=True):
         CStree: A CStree.
 
     Example:
-        >>> df = tree.to_df()
-        >>> print(df)
-        >>> t2 = ct.df_to_cstree(df)
-        >>> df2 = t2.to_df()
-        >>> print("The same tree:")
-        >>> print(df)
-            X1 X2 X3 X4
-        0   2  2  2  2
-        1   0  -  -  -
-        2   1  -  -  -
-        3   *  0  -  -
-        4   0  1  -  -
-        5   1  1  -  -
-        6   0  *  0  -
-        7   0  *  1  -
-        8   1  *  0  -
-        9   1  1  1  -
-        10  1  0  1  -
-        11  -  -  -  -
-        The same tree:
-            X1 X2 X3 X4
-        0   2  2  2  2
-        1   0  -  -  -
-        2   1  -  -  -
-        3   *  0  -  -
-        4   0  1  -  -
-        5   1  1  -  -
-        6   0  *  0  -
-        7   0  *  1  -
-        8   1  *  0  -
-        9   1  1  1  -
-        10  1  0  1  -
-        11  -  -  -  -
+        ``df_to_cstree`` is the inverse of :meth:`CStree.to_df`:
+
+        >>> import random
+        >>> import numpy as np
+        >>> import cslearn.cstree as ct
+        >>> np.random.seed(1)
+        >>> random.seed(1)
+        >>> tree = ct.sample_cstree([2, 2, 2, 2], max_cvars=1, prob_cvar=0.5, prop_nonsingleton=1)
+        >>> roundtrip = ct.df_to_cstree(tree.to_df())
+        >>> roundtrip.to_df().equals(tree.to_df())
+        True
     """
     collabs = list(df.columns)
 

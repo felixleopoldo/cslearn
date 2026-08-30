@@ -20,6 +20,11 @@ On macOS (Homebrew)::
 On Windows, install graphviz from https://graphviz.org/download/ and ensure
 it is on your ``PATH``.
 
+Building this documentation additionally requires `pandoc
+<https://pandoc.org/installing.html>`_ on your ``PATH`` (used by ``nbsphinx``
+to render the example notebooks); on Debian/Ubuntu, ``sudo apt install
+pandoc``. It is not needed to use the package.
+
 Package installation
 --------------------
 
